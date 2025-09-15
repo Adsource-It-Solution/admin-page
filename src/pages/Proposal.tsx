@@ -60,7 +60,7 @@ export default function ProposalPage() {
   const fetchProposals = async () => {
     try {
       // const res = await axios.get("http://localhost:5000/api/proposal/proposals");
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`)
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`);
       setProposals(res.data);
     } catch {
       toast.error("❌ Failed to fetch proposals");
@@ -74,8 +74,8 @@ export default function ProposalPage() {
         // axios.get("http://localhost:5000/api/service/products"),
         // axios.get("http://localhost:5000/api/service/employees"),
         axios.get(`${import.meta.env.VITE_API_URL}/api/service`),
-        axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`)
-        axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`)
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`),
       ]);
       setServices(srv.data);
       setProducts(prod.data);

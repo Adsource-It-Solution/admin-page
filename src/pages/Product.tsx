@@ -45,7 +45,10 @@ export default function Product() {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/service/products");
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/service/products`,
+        // "http://localhost:5000/api/service/products"
+      );
       console.log("Fetched products:", res.data);
       setProducts(res.data);
     } catch (error) {
@@ -56,7 +59,10 @@ export default function Product() {
   const handleAddProduct = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/service/add-product", product);
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/service/add-product`,
+        // "http://localhost:5000/api/service/add-product",
+         product);
       setProduct({ name: "", price: "", description: "", specification: "", quantitiy: "" });
       fetchProducts();
       toast.success("✅ Product added");
@@ -77,7 +83,10 @@ export default function Product() {
 
   const handleSaveEdit = async (id: string) => {
     try {
-      await axios.put(`http://localhost:5000/api/service/products/${id}`, editData);
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/service/products/${id}`,
+        // `http://localhost:5000/api/service/products/${id}`,
+         editData);
       setEditingId(null);
       setEditData({});
       fetchProducts();
@@ -91,7 +100,10 @@ export default function Product() {
   const handleDelete = async (id?: string) => {
     if (!id) return;
     try {
-      await axios.delete(`http://localhost:5000/api/service/products/${id}`);
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/service/products/${id}`,
+        // `http://localhost:5000/api/service/products/${id}`
+      );
       fetchProducts();
       toast.success("🗑️ Service deleted!");
     } catch (err) {
