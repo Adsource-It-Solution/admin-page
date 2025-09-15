@@ -59,7 +59,8 @@ export default function ProposalPage() {
 
   const fetchProposals = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/proposal/proposals");
+      // const res = await axios.get("http://localhost:5000/api/proposal/proposals");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`)
       setProposals(res.data);
     } catch {
       toast.error("❌ Failed to fetch proposals");
@@ -69,9 +70,12 @@ export default function ProposalPage() {
   const fetchMasterData = async () => {
     try {
       const [srv, prod, emp] = await Promise.all([
-        axios.get("http://localhost:5000/api/service"),
-        axios.get("http://localhost:5000/api/service/products"),
-        axios.get("http://localhost:5000/api/service/employees"),
+        // axios.get("http://localhost:5000/api/service"),
+        // axios.get("http://localhost:5000/api/service/products"),
+        // axios.get("http://localhost:5000/api/service/employees"),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service`),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`)
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`)
       ]);
       setServices(srv.data);
       setProducts(prod.data);
@@ -95,7 +99,9 @@ export default function ProposalPage() {
       return;
     }
     try {
-      await axios.post("http://localhost:5000/api/proposal/add-proposal", proposal);
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`, proposal);
+        // "http://localhost:5000/api/proposal/add-proposal", proposal);
       setProposal({
         clientName: "",
         clientPhone: "",
@@ -117,7 +123,9 @@ export default function ProposalPage() {
   const handleDelete = async (id?: string) => {
     if (!id) return;
     try {
-      await axios.delete(`http://localhost:5000/api/proposal/proposals/${id}`);
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}`);
+        // `http://localhost:5000/api/proposal/proposals/${id}`);
       fetchProposals();
       toast.success("🗑️ Proposal deleted");
     } catch {
@@ -129,7 +137,8 @@ export default function ProposalPage() {
     if (!id) return;
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/proposal/proposals/${id}/pdf`,
+        `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}/pdf`,
+        // `http://localhost:5000/api/proposal/proposals/${id}/pdf`,
         { responseType: "blob" }
       );
       const url = window.URL.createObjectURL(new Blob([res.data]));

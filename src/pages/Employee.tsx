@@ -37,7 +37,10 @@ export default function EmployeePage() {
 
   const fetchEmployees = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/service/employees");
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/service/employees`,
+        // "http://localhost:5000/api/service/employees"
+      );
       setEmployees(res.data);
     } catch (err) {
       toast.error("❌ Failed to fetch employees");
@@ -47,7 +50,10 @@ export default function EmployeePage() {
   const handleAddEmployee = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/service/add-employee", employee);
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/service/add-employee`,
+        // "http://localhost:5000/api/service/add-employee",
+         employee);
       setEmployee({ name: "", email: "", password: "" });
       fetchEmployees();
       toast.success("✅ Employee added successfully!");
@@ -63,7 +69,10 @@ export default function EmployeePage() {
 
   const handleSaveEdit = async (id: string) => {
     try {
-      await axios.put(`http://localhost:5000/api/service/employees/${id}`, editData);
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/service/employees/${id}`,
+        // `http://localhost:5000/api/service/employees/${id}`,
+         editData);
       setEditingId(null);
       setEditData({});
       fetchEmployees();
@@ -81,7 +90,10 @@ export default function EmployeePage() {
   const handleDelete = async (id?: string) => {
     if (!id) return;
     try {
-      await axios.delete(`http://localhost:5000/api/service/employees/${id}`);
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/service/employees/${id}`
+        // `http://localhost:5000/api/service/employees/${id}`
+      );
       fetchEmployees();
       toast.success("🗑️ Employee deleted");
     } catch (err) {
