@@ -42,8 +42,8 @@ export default function ServiceManager() {
 
   const fetchServices = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/service");
-      // const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/service`);
+      // const res = await axios.get("http://localhost:5000/api/service");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/service`);
       setServices(res.data);
     } catch (err) {
       console.error("Failed to fetch services:", err);
@@ -53,8 +53,8 @@ export default function ServiceManager() {
   const handleAddService = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/service", service);
-      // await axios.post(`${import.meta.env.VITE_API_URL}/api/service`, service);
+      // await axios.post("http://localhost:5000/api/service", service);
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/service`, service);
       setService({ name: "", price: "", description: "" });
       fetchServices();
       // alert("✅ Service added!");
@@ -76,8 +76,8 @@ export default function ServiceManager() {
 
   const handleSaveEdit = async (id: string) => {
     try {
-      await axios.put(`http://localhost:5000/api/service/${id}`, editData);
-      // await axios.put(`${import.meta.env.VITE_API_URL}/api/service/${id}`, editData)
+      // await axios.put(`http://localhost:5000/api/service/${id}`, editData);
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/service/${id}`, editData)
       setEditingId(null);
       setEditData({});
       fetchServices();
@@ -92,8 +92,8 @@ export default function ServiceManager() {
   const handleDelete = async (id?: string) => {
     if (!id) return;
     try {
-      await axios.delete(`http://localhost:5000/api/service/${id}`);
-      // await axios.delete(`${import.meta.env.VITE_API_URL}/api/service/${id}`)
+      // await axios.delete(`http://localhost:5000/api/service/${id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/service/${id}`)
       fetchServices();
       // alert("Service deleted!");
       toast.success("Service deleted!")
