@@ -1,4 +1,4 @@
-import { useState, useEffect,type  FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import axios from "axios";
 import {
   Stack,
@@ -14,11 +14,14 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+// 🔹 Added employeeId field
 type Employee = {
   _id?: string;
   name: string;
   email: string;
   password?: string;
+  phoneno?: string;
+  employeeId?: string;   // ✅ now available in frontend
 };
 
 export default function EmployeePage() {
@@ -26,6 +29,7 @@ export default function EmployeePage() {
     name: "",
     email: "",
     password: "",
+    phoneno: "",
   });
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -50,10 +54,11 @@ export default function EmployeePage() {
   const handleAddEmployee = async (e: FormEvent) => {
     e.preventDefault();
     try {
+      
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/service/add-employee`,
         // "http://localhost:5000/api/service/add-employee",
-         employee);
+        employee);
       setEmployee({ name: "", email: "", password: "" });
       fetchEmployees();
       toast.success("✅ Employee added successfully!");
@@ -69,7 +74,7 @@ export default function EmployeePage() {
 
   const handleSaveEdit = async (id: string) => {
     try {
-      await axios.put(
+     await axios.put(
         `${import.meta.env.VITE_API_URL}/api/service/employees/${id}`,
         // `http://localhost:5000/api/service/employees/${id}`,
          editData);
@@ -91,7 +96,7 @@ export default function EmployeePage() {
     if (!id) return;
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/service/employees/${id}`
+        `${import.meta.env.VITE_API_URL}/api/service/employees/${id}`,
         // `http://localhost:5000/api/service/employees/${id}`
       );
       fetchEmployees();
@@ -117,6 +122,16 @@ export default function EmployeePage() {
                 fullWidth
               />
               <TextField
+                label="Phone no."
+                variant="filled"
+                type="phoneno"
+                value={employee.phoneno}
+                onChange={(e) =>
+                  setEmployee({ ...employee, phoneno: e.target.value })
+                }
+                fullWidth
+              />
+              <TextField
                 label="Email"
                 variant="filled"
                 type="email"
@@ -129,7 +144,8 @@ export default function EmployeePage() {
                 variant="filled"
                 type="password"
                 value={employee.password}
-                onChange={(e) => setEmployee({ ...employee, password: e.target.value })}
+                onChange={(e) =>
+                  setEmployee({ ...employee, password: e.target.value })}
                 fullWidth
               />
               <Button type="submit" variant="contained" color="success">
@@ -151,19 +167,24 @@ export default function EmployeePage() {
           <Card key={emp._id}>
             <CardContent>
               {editingId === emp._id ? (
+                // 🔹 Edit Mode
                 <Stack spacing={2}>
                   <TextField
                     label="Name"
                     variant="filled"
                     value={editData.name || ""}
-                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                    onChange={(e) =>
+                      setEditData({ ...editData, name: e.target.value })
+                    }
                   />
                   <TextField
                     label="Email"
                     variant="filled"
                     type="email"
                     value={editData.email || ""}
-                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                    onChange={(e) =>
+                      setEditData({ ...editData, email: e.target.value })
+                    }
                   />
                   <TextField
                     label="New Password (optional)"
@@ -194,6 +215,7 @@ export default function EmployeePage() {
                   </Stack>
                 </Stack>
               ) : (
+                // 🔹 View Mode
                 <Stack
                   direction="row"
                   justifyContent="space-between"
@@ -202,9 +224,16 @@ export default function EmployeePage() {
                   <div>
                     <h3 className="font-bold">{emp.name}</h3>
                     <p className="text-gray-600">{emp.email}</p>
+                    {/* ✅ Show Employee ID */}
+                    <p className="text-blue-600 font-mono">
+                      ID: {emp.employeeId}
+                    </p>
                   </div>
                   <Stack direction="row" spacing={1}>
-                    <IconButton color="primary" onClick={() => handleEditClick(emp)}>
+                    <IconButton
+                      color="primary"
+                      onClick={() => handleEditClick(emp)}
+                    >
                       <EditIcon />
                     </IconButton>
                     <Button
