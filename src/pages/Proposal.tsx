@@ -16,6 +16,7 @@ import {
 import { toast } from "react-toastify";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { CircularProgress } from "@mui/material";
 
 type Service = { _id: string; name: string; price: string; description: string };
 type Product = { _id: string; name: string; price: string; details: string };
@@ -52,6 +53,8 @@ export default function ProposalPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
 
+  const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
+
   useEffect(() => {
     fetchProposals();
     fetchMasterData();
@@ -59,8 +62,8 @@ export default function ProposalPage() {
 
   const fetchProposals = async () => {
     try {
-      // const res = await axios.get("http://localhost:5000/api/proposal/proposals");
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`);
+      const res = await axios.get("http://localhost:5000/api/proposal/proposals");
+      // const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`);
       setProposals(res.data);
     } catch {
       toast.error("❌ Failed to fetch proposals");
@@ -70,12 +73,12 @@ export default function ProposalPage() {
   const fetchMasterData = async () => {
     try {
       const [srv, prod, emp] = await Promise.all([
-        // axios.get("http://localhost:5000/api/service"),
-        // axios.get("http://localhost:5000/api/service/products"),
-        // axios.get("http://localhost:5000/api/service/employees"),
-        axios.get(`${import.meta.env.VITE_API_URL}/api/service`),
-        axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
-        axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`),
+        axios.get("http://localhost:5000/api/service"),
+        axios.get("http://localhost:5000/api/service/products"),
+        axios.get("http://localhost:5000/api/service/employees"),
+        // axios.get(`${import.meta.env.VITE_API_URL}/api/service`),
+        // axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
+        // axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`),
       ]);
       setServices(srv.data);
       setProducts(prod.data);
@@ -100,8 +103,8 @@ export default function ProposalPage() {
     }
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`, proposal);
-        // "http://localhost:5000/api/proposal/add-proposal", proposal);
+        // `${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`, proposal);
+        "http://localhost:5000/api/proposal/add-proposal", proposal);
       setProposal({
         clientName: "",
         clientPhone: "",
@@ -124,8 +127,8 @@ export default function ProposalPage() {
     if (!id) return;
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}`);
-        // `http://localhost:5000/api/proposal/proposals/${id}`);
+        // `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}`);
+        `http://localhost:5000/api/proposal/proposals/${id}`);
       fetchProposals();
       toast.success("🗑️ Proposal deleted");
     } catch {
@@ -136,9 +139,9 @@ export default function ProposalPage() {
   const handleDownloadPdf = async (id?: string) => {
     if (!id) return;
     try {
+      setLoadingPdf(id);
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}/pdf`,
-        // `http://localhost:5000/api/proposal/proposals/${id}/pdf`,
+        `http://localhost:5000/api/proposal/proposals/${id}/pdf`,
         { responseType: "blob" }
       );
       const url = window.URL.createObjectURL(new Blob([res.data]));
@@ -152,8 +155,11 @@ export default function ProposalPage() {
       toast.success("✅ PDF downloaded");
     } catch {
       toast.error("❌ Failed to download PDF");
+    } finally {
+      setLoadingPdf(null);
     }
   };
+
 
   return (
     <Stack spacing={5} sx={{ maxWidth: 900, margin: "auto", mt: 5 }}>
@@ -172,24 +178,24 @@ export default function ProposalPage() {
               />
               <div className="flex flex-row gap-4">
 
-              <TextField
-                label="Client Phone"
-                variant="filled"
-                value={proposal.clientPhone}
-                onChange={(e) => setProposal({ ...proposal, clientPhone: e.target.value })}
-              />
-              <TextField
-                label="Client Email"
-                variant="filled"
-                value={proposal.clientEmail}
-                onChange={(e) => setProposal({ ...proposal, clientEmail: e.target.value })}
-              />
-                 <TextField
-                label="Budget (₹)"
-                variant="filled"
-                value={proposal.budget}
-                onChange={(e) => setProposal({ ...proposal, budget: e.target.value })}
-              />
+                <TextField
+                  label="Client Phone"
+                  variant="filled"
+                  value={proposal.clientPhone}
+                  onChange={(e) => setProposal({ ...proposal, clientPhone: e.target.value })}
+                />
+                <TextField
+                  label="Client Email"
+                  variant="filled"
+                  value={proposal.clientEmail}
+                  onChange={(e) => setProposal({ ...proposal, clientEmail: e.target.value })}
+                />
+                <TextField
+                  label="Budget (₹)"
+                  variant="filled"
+                  value={proposal.budget}
+                  onChange={(e) => setProposal({ ...proposal, budget: e.target.value })}
+                />
               </div>
               <TextField
                 label="Client Address"
@@ -207,7 +213,7 @@ export default function ProposalPage() {
                 onChange={(e) => setProposal({ ...proposal, projectDetails: e.target.value })}
                 fullWidth
               />
-           
+
 
               {/* Services Multi-Select */}
               <FormControl fullWidth>
@@ -323,10 +329,23 @@ export default function ProposalPage() {
                   )}
                 </div>
                 <Stack direction="row" spacing={1}>
-                  <IconButton color="primary" onClick={() => handleDownloadPdf(p._id)}>
-                    <PictureAsPdfIcon />
+                  <IconButton
+                    color="primary"
+                    onClick={() => handleDownloadPdf(p._id)}
+                    disabled={loadingPdf === p._id} 
+                  >
+                    {loadingPdf === p._id ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      <PictureAsPdfIcon />
+                    )}
                   </IconButton>
-                  <Button color="error" variant="contained" onClick={() => handleDelete(p._id)}>
+                  <Button
+                    color="error"
+                    variant="contained"
+                    onClick={() => handleDelete(p._id)}
+                    disabled={loadingPdf === p._id} 
+                  >
                     <DeleteIcon />
                   </Button>
                 </Stack>
