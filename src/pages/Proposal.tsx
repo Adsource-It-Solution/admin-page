@@ -168,7 +168,6 @@ export default function ProposalPage() {
     setProposal(p);
     setEditingId(p._id || null);
   };
-  
 
   const handleDownloadPdf = async (id?: string) => {
     if (!id) return;
@@ -179,21 +178,34 @@ export default function ProposalPage() {
         // `http://localhost:5000/api/proposal/proposals/${id}/pdf`,
         { responseType: "blob" }
       );
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `proposal_${id}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      toast.success("✅ PDF downloaded");
-    } catch {
+  
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+  
+      // Open in new tab (optional)
+      const newWindow = window.open(url, "_blank");
+      if (!newWindow) {
+        // Fallback: force download
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `proposal_${id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+  
+      // Delay revoking URL to allow download
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+  
+      toast.success("✅ PDF ready");
+    } catch (err) {
+      console.error("PDF download error:", err);
       toast.error("❌ Failed to download PDF");
     } finally {
       setLoadingPdf(null);
     }
   };
+  
 
 
   return (
