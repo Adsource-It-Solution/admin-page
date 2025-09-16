@@ -14,6 +14,7 @@ import {
   Chip,
 } from "@mui/material";
 import { toast } from "react-toastify";
+import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import { CircularProgress } from "@mui/material";
@@ -55,6 +56,10 @@ export default function ProposalPage() {
 
   const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<Partial<Employee>>({});
+
+
   useEffect(() => {
     fetchProposals();
     fetchMasterData();
@@ -62,8 +67,8 @@ export default function ProposalPage() {
 
   const fetchProposals = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/proposal/proposals");
-      // const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`);
+      // const res = await axios.get("http://localhost:5000/api/proposal/proposals");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`);
       setProposals(res.data);
     } catch {
       toast.error("❌ Failed to fetch proposals");
@@ -73,12 +78,12 @@ export default function ProposalPage() {
   const fetchMasterData = async () => {
     try {
       const [srv, prod, emp] = await Promise.all([
-        axios.get("http://localhost:5000/api/service"),
-        axios.get("http://localhost:5000/api/service/products"),
-        axios.get("http://localhost:5000/api/service/employees"),
-        // axios.get(`${import.meta.env.VITE_API_URL}/api/service`),
-        // axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
-        // axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`),
+        // axios.get("http://localhost:5000/api/service"),
+        // axios.get("http://localhost:5000/api/service/products"),
+        // axios.get("http://localhost:5000/api/service/employees"),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service`),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`),
       ]);
       setServices(srv.data);
       setProducts(prod.data);
@@ -88,8 +93,23 @@ export default function ProposalPage() {
     }
   };
 
-  const handleAddProposal = async (e: FormEvent) => {
+  const handleDelete = async (id?: string) => {
+    if (!id) return;
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}`);
+        // `http://localhost:5000/api/proposal/proposals/${id}`);
+      fetchProposals();
+      toast.success("🗑️ Proposal deleted");
+    } catch {
+      toast.error("❌ Failed to delete proposal");
+    }
+  };
+
+  const handleAddOrUpdateProposal = async (e: FormEvent) => {
     e.preventDefault();
+  
+    // Validation
     if (
       !proposal.clientName ||
       !proposal.clientPhone ||
@@ -101,10 +121,26 @@ export default function ProposalPage() {
       toast.error("❌ Please fill all required client and project fields");
       return;
     }
+  
     try {
-      await axios.post(
-        // `${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`, proposal);
-        "http://localhost:5000/api/proposal/add-proposal", proposal);
+      if (editingId) {
+        // Update existing proposal
+        await axios.put(
+          `http://localhost:5000/api/proposal/${editingId}`,
+          proposal
+        );
+        toast.success("✅ Proposal updated");
+      } else {
+        // Add new proposal
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`,
+          // "http://localhost:5000/api/proposal/add-proposal",
+          proposal
+        );
+        toast.success("✅ Proposal added");
+      }
+  
+      // Reset form and state
       setProposal({
         clientName: "",
         clientPhone: "",
@@ -116,32 +152,31 @@ export default function ProposalPage() {
         products: [],
         employees: [],
       });
+      setEditingId(null);
+  
+      // Refresh proposal list
       fetchProposals();
-      toast.success("✅ Proposal added");
     } catch (err: any) {
       toast.error("❌ " + (err.response?.data?.error || "Something went wrong"));
     }
   };
+  
 
-  const handleDelete = async (id?: string) => {
-    if (!id) return;
-    try {
-      await axios.delete(
-        // `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}`);
-        `http://localhost:5000/api/proposal/proposals/${id}`);
-      fetchProposals();
-      toast.success("🗑️ Proposal deleted");
-    } catch {
-      toast.error("❌ Failed to delete proposal");
-    }
+  
+  const handleEditClick = (p: Proposal) => {
+    setEditData(editData);
+    setProposal(p);
+    setEditingId(p._id || null);
   };
+  
 
   const handleDownloadPdf = async (id?: string) => {
     if (!id) return;
     try {
       setLoadingPdf(id);
       const res = await axios.get(
-        `http://localhost:5000/api/proposal/proposals/${id}/pdf`,
+        `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}/pdf`,
+        // `http://localhost:5000/api/proposal/proposals/${id}/pdf`,
         { responseType: "blob" }
       );
       const url = window.URL.createObjectURL(new Blob([res.data]));
@@ -167,7 +202,7 @@ export default function ProposalPage() {
       <Card>
         <h1 className="text-3xl flex justify-center font-bold">📑 Add Proposal</h1>
         <CardContent>
-          <form onSubmit={handleAddProposal}>
+          <form onSubmit={handleAddOrUpdateProposal}>
             <Stack spacing={2}>
               <TextField
                 label="Client Name"
@@ -340,6 +375,12 @@ export default function ProposalPage() {
                       <PictureAsPdfIcon />
                     )}
                   </IconButton>
+                  <IconButton
+                      color="primary"
+                      onClick={() => handleEditClick(p)}
+                    >
+                      <EditIcon />
+                    </IconButton>
                   <Button
                     color="error"
                     variant="contained"
