@@ -1,324 +1,412 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, type FormEvent } from "react";
+import axios from "axios";
+import {
+  Stack,
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  IconButton,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Chip,
+} from "@mui/material";
+import { toast } from "react-toastify";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { CircularProgress } from "@mui/material";
 
-type Product = {
-  id: number;
-  name: string;
-  qty: number;
-  pricePerUnit: number;
-  notes: string;
+type Service = { _id: string; name: string; price: string; description: string };
+type Product = { _id: string; name: string; price: string; details: string };
+type Employee = { _id: string; name: string; role: string; contact: string };
+
+type Proposal = {
+  _id?: string;
+  clientName: string;
+  clientPhone: string;
+  clientEmail: string;
+  clientAddress: string;
+  projectDetails: string;
+  budget: string;
+  services: string[];
+  products: string[];
+  employees: string[];
 };
 
-type Employee = {
-  id: number;
-  name: string;
-  role: string;
-};
+export default function ProposalPage() {
+  const [proposal, setProposal] = useState<Proposal>({
+    clientName: "",
+    clientPhone: "",
+    clientEmail: "",
+    clientAddress: "",
+    projectDetails: "",
+    budget: "",
+    services: [],
+    products: [],
+    employees: [],
+  });
 
-type ProposalData = {
-  preparedFor: { name: string; phone: string; address: string };
-  preparedBy: { company: string; address: string; phone: string; mail: string };
-  project: { title: string; location: string; capacity: string; inverter: string; structure: string };
-  products: Product[];
-  costs: {
-    systemCost: number;
-    structureCost: number;
-    subtotal: number;
-    gstPercent: number;
-    gstAmount: number;
-    totalCost: number;
-    subsidy: number;
-    netPayable: number;
-    amountInWords: string;
-  };
-  paymentSchedule: { stage: string; percent: number }[];
-  billOfMaterials: { inverterSize: string; phase: string };
-  employees: Employee[];
-};
+  const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
-export default function ProposalEditor() {
-  const initial: ProposalData = {
-    preparedFor: {
-      name: "MR. NISHEETH PANDEY",
-      phone: "+919971490782",
-      address: "H.NO. 25, 2ND FLOOR BLOCK-E, ASHOK VIHAR, DELHI",
-    },
-    preparedBy: {
-      company: "SUNMAYO PRIVATE LIMITED",
-      address: "26/18 Laxmi Garden, Sector 11, Gurgaon, Haryana 122001",
-      phone: "+919643800850",
-      mail: "info@sunmayo.com",
-    },
-    project: {
-      title: "5 KW Grid Tie Rooftop Solar System",
-      location: "H.NO. 25, 2ND FLOOR BLOCK-E, ASHOK VIHAR, DELHI",
-      capacity: "5 KW String Inverter",
-      inverter: "5 KW",
-      structure: "Elevated Plant",
-    },
-    products: [
-      { id: 1, name: "550 Wp Premier Energies / Renew Power Panel", qty: 9, pricePerUnit: 59000 / 5, notes: "TopCon BiFacial" },
-      { id: 2, name: "5 KW Inverter (Single Phase)", qty: 1, pricePerUnit: 0, notes: "Genus / Secure Net & Solar Meter" },
-      { id: 3, name: "Structure & Mounting", qty: 1, pricePerUnit: 0, notes: "Galvanized" },
-    ],
-    costs: {
-      systemCost: 295000,
-      structureCost: 0,
-      subtotal: 295000,
-      gstPercent: 13.8,
-      gstAmount: 40710,
-      totalCost: 335710,
-      subsidy: 88000,
-      netPayable: 247710,
-      amountInWords: "Two Lakh Forty Seven Thousand Seven Hundred Ten Rupees",
-    },
-    paymentSchedule: [
-      { stage: "Advance (with PO)", percent: 30 },
-      { stage: "Before Dispatch", percent: 65 },
-      { stage: "After Installation", percent: 5 },
-    ],
-    billOfMaterials: {
-      inverterSize: "10 kW",
-      phase: "Single Phase",
-    },
-    employees: [{ id: 1, name: "Sanjay Kumar", role: "Site Engineer" }],
+  const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
+
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editData, setEditData] = useState<Partial<Employee>>({});
+
+
+  useEffect(() => {
+    fetchProposals();
+    fetchMasterData();
+  }, []);
+
+  const fetchProposals = async () => {
+    try {
+      // const res = await axios.get("http://localhost:5000/api/proposal/proposals");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`);
+      setProposals(res.data);
+    } catch {
+      toast.error("❌ Failed to fetch proposals");
+    }
   };
 
-  const [data, setData] = useState<ProposalData>(initial);
-  const previewRef = useRef<HTMLDivElement | null>(null);
+  const fetchMasterData = async () => {
+    try {
+      const [srv, prod, emp] = await Promise.all([
+        // axios.get("http://localhost:5000/api/service"),
+        // axios.get("http://localhost:5000/api/service/products"),
+        // axios.get("http://localhost:5000/api/service/employees"),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service`),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`),
+      ]);
+      setServices(srv.data);
+      setProducts(prod.data);
+      setEmployees(emp.data);
+    } catch {
+      toast.error("❌ Failed to fetch services/products/employees");
+    }
+  };
 
-  function updatePreparedFor(field: keyof ProposalData["preparedFor"], value: string) {
-    setData((d) => ({ ...d, preparedFor: { ...d.preparedFor, [field]: value } }));
-  }
+  const handleDelete = async (id?: string) => {
+    if (!id) return;
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}`);
+        // `http://localhost:5000/api/proposal/proposals/${id}`);
+      fetchProposals();
+      toast.success("🗑️ Proposal deleted");
+    } catch {
+      toast.error("❌ Failed to delete proposal");
+    }
+  };
 
-  function updatePreparedBy(field: keyof ProposalData["preparedBy"], value: string) {
-    setData((d) => ({ ...d, preparedBy: { ...d.preparedBy, [field]: value } }));
-  }
+  const handleAddOrUpdateProposal = async (e: FormEvent) => {
+    e.preventDefault();
+  
+    // Validation
+    if (
+      !proposal.clientName ||
+      !proposal.clientPhone ||
+      !proposal.clientEmail ||
+      !proposal.clientAddress ||
+      !proposal.projectDetails ||
+      !proposal.budget
+    ) {
+      toast.error("❌ Please fill all required client and project fields");
+      return;
+    }
+  
+    try {
+      if (editingId) {
+        // Update existing proposal
+        await axios.put(
+          `http://localhost:5000/api/proposal/${editingId}`,
+          proposal
+        );
+        toast.success("✅ Proposal updated");
+      } else {
+        // Add new proposal
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`,
+          // "http://localhost:5000/api/proposal/add-proposal",
+          proposal
+        );
+        toast.success("✅ Proposal added");
+      }
+  
+      // Reset form and state
+      setProposal({
+        clientName: "",
+        clientPhone: "",
+        clientEmail: "",
+        clientAddress: "",
+        projectDetails: "",
+        budget: "",
+        services: [],
+        products: [],
+        employees: [],
+      });
+      setEditingId(null);
+  
+      // Refresh proposal list
+      fetchProposals();
+    } catch (err: any) {
+      toast.error("❌ " + (err.response?.data?.error || "Something went wrong"));
+    }
+  };
+  
 
-  function updateProject(field: keyof ProposalData["project"], value: string) {
-    setData((d) => ({ ...d, project: { ...d.project, [field]: value } }));
-  }
+  
+  const handleEditClick = (p: Proposal) => {
+    setEditData(editData);
+    setProposal(p);
+    setEditingId(p._id || null);
+  };
 
-  function addProduct() {
-    setData((d) => ({
-      ...d,
-      products: [...d.products, { id: Date.now(), name: "New Product", qty: 1, pricePerUnit: 0, notes: "" }],
-    }));
-  }
+  const handleDownloadPdf = async (id?: string) => {
+    if (!id) return;
+    try {
+      setLoadingPdf(id);
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}/pdf`,
+        // `http://localhost:5000/api/proposal/proposals/${id}/pdf`,
+        { responseType: "blob" }
+      );
+  
+      const blob = new Blob([res.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+  
+      // Open in new tab (optional)
+      const newWindow = window.open(url, "_blank");
+      if (!newWindow) {
+        // Fallback: force download
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `proposal_${id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+  
+      // Delay revoking URL to allow download
+      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+  
+      toast.success("✅ PDF ready");
+    } catch (err) {
+      console.error("PDF download error:", err);
+      toast.error("❌ Failed to download PDF");
+    } finally {
+      setLoadingPdf(null);
+    }
+  };
+  
 
-  function updateProduct(idx: number, field: keyof Product, value: string | number) {
-    setData((d) => {
-      const products = d.products.map((p, i) => (i === idx ? { ...p, [field]: value } : p));
-      return { ...d, products };
-    });
-  }
-
-  function removeProduct(idx: number) {
-    setData((d) => ({ ...d, products: d.products.filter((_, i) => i !== idx) }));
-  }
-
-  function addEmployee() {
-    setData((d) => ({ ...d, employees: [...d.employees, { id: Date.now(), name: "New Employee", role: "" }] }));
-  }
-
-  function updateEmployee(idx: number, field: keyof Employee, value: string) {
-    setData((d) => ({ ...d, employees: d.employees.map((e, i) => (i === idx ? { ...e, [field]: value } : e)) }));
-  }
-
-  function removeEmployee(idx: number) {
-    setData((d) => ({ ...d, employees: d.employees.filter((_, i) => i !== idx) }));
-  }
-
-  function recalcCosts() {
-    const systemCost = Number(data.costs.systemCost) || 0;
-    const structureCost = Number(data.costs.structureCost) || 0;
-    const subtotal = systemCost + structureCost;
-    const gstAmount = Math.round((subtotal * Number(data.costs.gstPercent || 0)) / 100);
-    const totalCost = subtotal + gstAmount;
-    const netPayable = totalCost - Number(data.costs.subsidy || 0);
-    setData((d) => ({ ...d, costs: { ...d.costs, systemCost, structureCost, subtotal, gstAmount, totalCost, netPayable, gstPercent: d.costs.gstPercent, subsidy: d.costs.subsidy, amountInWords: d.costs.amountInWords } }));
-  }
-
-  async function exportToPDF() {
-    const html2canvas = (await import("html2canvas")).default;
-    const jsPDF = (await import("jspdf")).jsPDF;
-    if (!previewRef.current) return;
-    const canvas = await html2canvas(previewRef.current, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF({ unit: "pt", format: "a4" });
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save("proposal.pdf");
-  }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-6">
-        {/* Editor */}
-        <div className="bg-white p-4 rounded shadow">
-          <h2 className="text-xl font-semibold mb-3">Proposal Editor</h2>
+    <Stack spacing={5} sx={{ maxWidth: 900, margin: "auto", mt: 5 }}>
+      {/* Add Proposal Form */}
+      <Card>
+        <h1 className="text-3xl flex justify-center font-bold">📑 Add Proposal</h1>
+        <CardContent>
+          <form onSubmit={handleAddOrUpdateProposal}>
+            <Stack spacing={2}>
+              <TextField
+                label="Client Name"
+                variant="filled"
+                value={proposal.clientName}
+                onChange={(e) => setProposal({ ...proposal, clientName: e.target.value })}
+                fullWidth
+              />
+              <div className="flex flex-row gap-4">
 
-          <section className="mb-4">
-            <h3 className="font-medium">Prepared For</h3>
-            <input className="w-full p-2 border rounded mt-2" value={data.preparedFor.name} onChange={(e) => updatePreparedFor("name", e.target.value)} />
-            <input className="w-full p-2 border rounded mt-2" value={data.preparedFor.phone} onChange={(e) => updatePreparedFor("phone", e.target.value)} />
-            <textarea className="w-full p-2 border rounded mt-2" value={data.preparedFor.address} onChange={(e) => updatePreparedFor("address", e.target.value)} />
-          </section>
-
-          <section className="mb-4">
-            <h3 className="font-medium">Prepared By</h3>
-            <input className="w-full p-2 border rounded mt-2" value={data.preparedBy.company} onChange={(e) => updatePreparedBy("company", e.target.value)} />
-            <input className="w-full p-2 border rounded mt-2" value={data.preparedBy.phone} onChange={(e) => updatePreparedBy("phone", e.target.value)} />
-            <input className="w-full p-2 border rounded mt-2" value={data.preparedBy.mail} onChange={(e) => updatePreparedBy("mail", e.target.value)} />
-            <input className="w-full p-2 border rounded mt-2" value={data.preparedBy.address} onChange={(e) => updatePreparedBy("address", e.target.value)} />
-          </section>
-
-          <section className="mb-4">
-            <h3 className="font-medium">Project</h3>
-            <input className="w-full p-2 border rounded mt-2" value={data.project.title} onChange={(e) => updateProject("title", e.target.value)} />
-            <input className="w-full p-2 border rounded mt-2" value={data.project.location} onChange={(e) => updateProject("location", e.target.value)} />
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <input className="p-2 border rounded" value={data.project.capacity} onChange={(e) => updateProject("capacity", e.target.value)} />
-              <input className="p-2 border rounded" value={data.project.inverter} onChange={(e) => updateProject("inverter", e.target.value)} />
-            </div>
-          </section>
-
-          <section className="mb-4">
-            <h3 className="font-medium">Products</h3>
-            {data.products.map((p: Product, idx: number) => (
-              <div key={p.id} className="border rounded p-2 mb-2">
-                <input className="w-full p-1 border rounded" value={p.name} onChange={(e) => updateProduct(idx, "name", e.target.value)} />
-                <div className="grid grid-cols-3 gap-2 mt-2">
-                  <input className="p-1 border rounded" type="number" value={p.qty} onChange={(e) => updateProduct(idx, "qty", Number(e.target.value))} />
-                  <input className="p-1 border rounded" type="number" value={p.pricePerUnit} onChange={(e) => updateProduct(idx, "pricePerUnit", Number(e.target.value))} />
-                  <input className="p-1 border rounded" value={p.notes} onChange={(e) => updateProduct(idx, "notes", e.target.value)} />
-                </div>
-                <div className="flex gap-2 justify-end mt-2">
-                  <button className="text-sm px-2 py-1 bg-red-500 text-white rounded" onClick={() => removeProduct(idx)}>Remove</button>
-                </div>
+                <TextField
+                  label="Client Phone"
+                  variant="filled"
+                  value={proposal.clientPhone}
+                  onChange={(e) => setProposal({ ...proposal, clientPhone: e.target.value })}
+                />
+                <TextField
+                  label="Client Email"
+                  variant="filled"
+                  value={proposal.clientEmail}
+                  onChange={(e) => setProposal({ ...proposal, clientEmail: e.target.value })}
+                />
+                <TextField
+                  label="Budget (₹)"
+                  variant="filled"
+                  value={proposal.budget}
+                  onChange={(e) => setProposal({ ...proposal, budget: e.target.value })}
+                />
               </div>
-            ))}
-            <div className="flex gap-2">
-              <button className="px-3 py-1 bg-green-600 text-white rounded" onClick={addProduct}>Add Product</button>
-            </div>
-          </section>
+              <TextField
+                label="Client Address"
+                variant="filled"
+                value={proposal.clientAddress}
+                onChange={(e) => setProposal({ ...proposal, clientAddress: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="Project Details"
+                variant="filled"
+                multiline
+                rows={3}
+                value={proposal.projectDetails}
+                onChange={(e) => setProposal({ ...proposal, projectDetails: e.target.value })}
+                fullWidth
+              />
 
-          <section className="mb-4">
-            <h3 className="font-medium">Employees</h3>
-            {data.employees.map((e: Employee, idx: number) => (
-              <div key={e.id} className="border rounded p-2 mb-2">
-                <input className="w-full p-1 border rounded" value={e.name} onChange={(ev) => updateEmployee(idx, "name", ev.target.value)} />
-                <input className="w-full p-1 border rounded mt-2" value={e.role} onChange={(ev) => updateEmployee(idx, "role", ev.target.value)} />
-                <div className="flex gap-2 justify-end mt-2">
-                  <button className="text-sm px-2 py-1 bg-red-500 text-white rounded" onClick={() => removeEmployee(idx)}>Remove</button>
-                </div>
-              </div>
-            ))}
-            <button className="px-3 py-1 bg-green-600 text-white rounded" onClick={addEmployee}>Add Employee</button>
-          </section>
 
-          <section className="mb-4">
-            <h3 className="font-medium">Costs & Payment</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <input className="p-2 border rounded" type="number" value={data.costs.systemCost} onChange={(e) => setData((d) => ({ ...d, costs: { ...d.costs, systemCost: Number(e.target.value) } }))} />
-              <input className="p-2 border rounded" type="number" value={data.costs.structureCost} onChange={(e) => setData((d) => ({ ...d, costs: { ...d.costs, structureCost: Number(e.target.value) } }))} />
-              <input className="p-2 border rounded" type="number" value={data.costs.gstPercent} onChange={(e) => setData((d) => ({ ...d, costs: { ...d.costs, gstPercent: Number(e.target.value) } }))} />
-              <input className="p-2 border rounded" type="number" value={data.costs.subsidy} onChange={(e) => setData((d) => ({ ...d, costs: { ...d.costs, subsidy: Number(e.target.value) } }))} />
-            </div>
-            <div className="flex gap-2 mt-2">
-              <button className="px-3 py-1 bg-blue-600 text-white rounded" onClick={recalcCosts}>Recalculate</button>
-              <button className="px-3 py-1 bg-indigo-600 text-white rounded" onClick={exportToPDF}>Export Preview to PDF</button>
-            </div>
-          </section>
-        </div>
-
-        {/* Preview */}
-        <div className="bg-white p-4 rounded shadow">
-          <div className="flex justify-between items-start mb-4">
-            <h2 className="text-xl font-semibold">Preview</h2>
-            <div className="text-right text-sm">
-              <div>{data.preparedBy.company}</div>
-              <div>{data.preparedBy.address}</div>
-              <div>{data.preparedBy.phone} | {data.preparedBy.mail}</div>
-            </div>
-          </div>
-
-          <div ref={previewRef} className="p-4 border rounded bg-white text-gray-800">
-            <header className="mb-4">
-              <h1 className="text-2xl font-bold">New Template 35 - Proposal</h1>
-              <div className="mt-2">Prepared For: <strong>{data.preparedFor.name}</strong></div>
-              <div>{data.preparedFor.phone}</div>
-              <div className="mb-2">{data.preparedFor.address}</div>
-            </header>
-
-            <section className="mb-4">
-              <h3 className="font-semibold">Project</h3>
-              <div>{data.project.title} — {data.project.location}</div>
-              <div>Capacity: {data.project.capacity} | Inverter: {data.project.inverter}</div>
-            </section>
-            <section className="mb-4">
-              <h3 className="font-semibold">Bill of Materials</h3>
-              <table className="w-full text-sm border-collapse">
-                <thead>
-                  <tr>
-                    <th className="text-left border-b py-1">Description</th>
-                    <th className="text-right border-b py-1">Qty</th>
-                    <th className="text-right border-b py-1">Price/Unit</th>
-                    <th className="text-right border-b py-1">Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.products.map((p) => (
-                    <tr key={p.id}>
-                      <td className="py-1">{p.name}</td>
-                      <td className="py-1 text-right">{p.qty}</td>
-                      <td className="py-1 text-right">{Number(p.pricePerUnit).toLocaleString()}</td>
-                      <td className="py-1 text-right">{(Number(p.qty) * Number(p.pricePerUnit)).toLocaleString()}</td>
-                    </tr>
+              {/* Services Multi-Select */}
+              <FormControl fullWidth>
+                <InputLabel>Services</InputLabel>
+                <Select
+                  multiple
+                  value={proposal.services}
+                  onChange={(e) =>
+                    setProposal({ ...proposal, services: e.target.value as string[] })
+                  }
+                  renderValue={(selected) => (
+                    <Stack direction="row" gap={1} flexWrap="wrap">
+                      {(selected as string[]).map((id) => {
+                        const s = services.find((srv) => srv._id === id);
+                        return <Chip key={id} label={s?.name || id} />;
+                      })}
+                    </Stack>
+                  )}
+                >
+                  {services.map((s) => (
+                    <MenuItem key={s._id} value={s._id}>
+                      {s.name} — ₹{s.price}
+                    </MenuItem>
                   ))}
-                </tbody>
-              </table>
-            </section>
+                </Select>
+              </FormControl>
 
-            <section className="mb-4 text-sm">
-              <div className="flex justify-end">
-                <div className="w-1/2">
-                  <div className="flex justify-between py-1"><span>Subtotal</span><span>₹{(data.costs.subtotal || 0).toLocaleString()}</span></div>
-                  <div className="flex justify-between py-1"><span>GST ({data.costs.gstPercent}%)</span><span>₹{(data.costs.gstAmount || 0).toLocaleString()}</span></div>
-                  <div className="flex justify-between font-semibold py-1"><span>Total</span><span>₹{(data.costs.totalCost || 0).toLocaleString()}</span></div>
-                  <div className="flex justify-between py-1"><span>Subsidy</span><span>- ₹{(data.costs.subsidy || 0).toLocaleString()}</span></div>
-                  <div className="flex justify-between font-bold py-1"><span>Net Payable</span><span>₹{(data.costs.netPayable || 0).toLocaleString()}</span></div>
-                  <div className="mt-2">Amount in words: {data.costs.amountInWords}</div>
+              {/* Products Multi-Select */}
+              <FormControl fullWidth>
+                <InputLabel>Products</InputLabel>
+                <Select
+                  multiple
+                  value={proposal.products}
+                  onChange={(e) =>
+                    setProposal({ ...proposal, products: e.target.value as string[] })
+                  }
+                  renderValue={(selected) => (
+                    <Stack direction="row" gap={1} flexWrap="wrap">
+                      {(selected as string[]).map((id) => {
+                        const p = products.find((pr) => pr._id === id);
+                        return <Chip key={id} label={p?.name || id} />;
+                      })}
+                    </Stack>
+                  )}
+                >
+                  {products.map((p) => (
+                    <MenuItem key={p._id} value={p._id}>
+                      {p.name} — ₹{p.price}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* Employees Multi-Select */}
+              <FormControl fullWidth>
+                <InputLabel>Employees</InputLabel>
+                <Select
+                  multiple
+                  value={proposal.employees}
+                  onChange={(e) =>
+                    setProposal({ ...proposal, employees: e.target.value as string[] })
+                  }
+                  renderValue={(selected) => (
+                    <Stack direction="row" gap={1} flexWrap="wrap">
+                      {(selected as string[]).map((id) => {
+                        const emp = employees.find((em) => em._id === id);
+                        return <Chip key={id} label={emp?.name || id} />;
+                      })}
+                    </Stack>
+                  )}
+                >
+                  {employees.map((em) => (
+                    <MenuItem key={em._id} value={em._id}>
+                      {em.name} — {em.role}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <Button type="submit" variant="contained" color="success">
+                Add Proposal
+              </Button>
+            </Stack>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Proposal List */}
+      <Stack spacing={2}>
+        {proposals.length === 0 && (
+          <p className="border border-slate-600 flex justify-center py-3">
+            ❌ No proposals added yet.
+          </p>
+        )}
+        {proposals.map((p) => (
+          <Card key={p._id}>
+            <CardContent>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <div>
+                  <h3 className="font-bold">{p.clientName}</h3>
+                  <p>{p.clientPhone} | {p.clientEmail}</p>
+                  <p>{p.clientAddress}</p>
+                  <p className="text-gray-600">{p.projectDetails}</p>
+                  <span className="font-semibold text-blue-700">₹ {p.budget}</span>
+                  {p.services.length > 0 && (
+                    <p className="text-sm text-gray-500">{p.services.length} Services selected</p>
+                  )}
+                  {p.products.length > 0 && (
+                    <p className="text-sm text-gray-500">{p.products.length} Products selected</p>
+                  )}
+                  {p.employees.length > 0 && (
+                    <p className="text-sm text-gray-500">{p.employees.length} Employees selected</p>
+                  )}
                 </div>
-              </div>
-            </section>
-
-            <section className="mb-4">
-              <h3 className="font-semibold">Payment Schedule</h3>
-              <ul className="list-disc ml-6">
-                {data.paymentSchedule.map((p, i) => (
-                  <li key={i}>{p.stage} — {p.percent}%</li>
-                ))}
-              </ul>
-            </section>
-
-            <section className="mb-4">
-              <h3 className="font-semibold">Employees</h3>
-              <ul className="ml-6 list-disc">
-                {data.employees.map((e) => (
-                  <li key={e.id}>{e.name} — {e.role}</li>
-                ))}
-              </ul>
-            </section>
-
-            <footer className="text-xs mt-6">
-              <div>Bank Details: IDFC FIRST BANK — ACCOUNT NAME: SUNMAYO PRIVATE LIMITED — ACCOUNT NO: 10223162147 — IFSC: IDFB0021005</div>
-              <div className="mt-2">Address: {data.preparedBy.address} | Contact: {data.preparedBy.phone} | Mail: {data.preparedBy.mail}</div>
-            </footer>
-          </div>
-        </div>
-      </div>
-    </div>
+                <Stack direction="row" spacing={1}>
+                  <IconButton
+                    color="primary"
+                    onClick={() => handleDownloadPdf(p._id)}
+                    disabled={loadingPdf === p._id} 
+                  >
+                    {loadingPdf === p._id ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      <PictureAsPdfIcon />
+                    )}
+                  </IconButton>
+                  <IconButton
+                      color="primary"
+                      onClick={() => handleEditClick(p)}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  <Button
+                    color="error"
+                    variant="contained"
+                    onClick={() => handleDelete(p._id)}
+                    disabled={loadingPdf === p._id} 
+                  >
+                    <DeleteIcon />
+                  </Button>
+                </Stack>
+              </Stack>
+            </CardContent>
+          </Card>
+        ))}
+      </Stack>
+    </Stack>
   );
 }
