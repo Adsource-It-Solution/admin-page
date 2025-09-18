@@ -1,4 +1,5 @@
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
+import html2canvas from "html2canvas";
 import axios from "axios";
 import {
   Stack,
@@ -35,6 +36,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
+  Legend
 } from "recharts";
 import { toWords } from 'number-to-words';
 import { toast } from "react-toastify";
@@ -69,13 +71,14 @@ type Proposal = {
   clientPhone: string;
   clientEmail: string;
   clientAddress: string;
-  projectDetails: string;
-  coustomertype: string;
+  // projectDetails: string;
+  customerType: string;
   projectsize: string;
   consumption: string;
   electricity: string;
   generation: string;
   Wattpeak: string;
+  proposalWattpeak: string;
   warranty: string;
   Invertorwarranty: string;
   InvertorSize: string;
@@ -85,24 +88,28 @@ type Proposal = {
   proposalStructure: string;
   structureDes: string;
   systemwarranty: string;
-  ourscope: string;
-  coustomerscope: string;
+  balanceOfSystem: string;
+  ourScope: string;
+  customerScope: string;
   stage1: string;
   stage2: string;
   stage3: string;
   stage4: string;
   yearlyconsumption: string;
   yearlysolargeneration: string;
-  priceunitelectricity: string;
   decrementgeneration: string;
   plotgraph: string;
   priceincrement: string;
   directionType: string;
-  graphType: string;
+  // graphType: string;
   services: string[];
   products: string[];
   employees: string[];
+
+  // Index signature for dynamically accessed fields
+  [key: string]: string | string[] | undefined;  // Allow 'undefined' for dynamically added properties
 };
+
 
 type CustomerType = "Industrial" | "Commercial" | "Government" | "Residential" | "others";
 type PanelType = "Mono" | "Mono-Perv" | "Poly" | "BIVP" | "Mono-Prev Half Cut" | "Mono BiFacial" | "TopCon MonoFacial" | "TopCon BiFacial";
@@ -111,14 +118,18 @@ type InvertorPhase = "Single Phase" | "Three Phase";
 type Invertortype = "String Invertor" | "Micro Invertor";
 type ProposalStructure = "Elevated" | "Standard" | "Metal Shed";
 type StrucrtureDes = "Hot Dip Galvanised" | "Pre Galvanised" | "Slotted Channel" | "Ms Channel & Gi Channel"
-type GraphType = "Mono" | "Mono-Perv" | "Poly" | "BIVP" | "Mono-Prev Half Cut" | "Mono BiFacial" | "TopCon MonoFacial" | "TopCon BiFacial";
+// type  GraphType= "Mono" | "Mono-Perv" | "Poly" | "BIVP" | "Mono-Prev Half Cut" | "Mono BiFacial" | "TopCon MonoFacial" | "TopCon BiFacial";
 type DirectionType = "Left to Right" | "Right to left";
-interface Row {
-  itemType: "service" | "product";
-  itemId: string;
+type RowType = {
+  description: string;
   price: number;
   quantity: number;
-  itemname: string;
+  note: string;
+};
+interface GraphDatum {
+  month: string;
+  increment: number;
+  decrement: number;
 }
 
 export default function ProposalPage() {
@@ -127,13 +138,14 @@ export default function ProposalPage() {
     clientPhone: "",
     clientEmail: "",
     clientAddress: "",
-    projectDetails: "",
-    coustomertype: "",
+    // projectDetails: "",
+    customerType: "",
     projectsize: "",
     consumption: "",
     electricity: "",
     generation: "",
     Wattpeak: "",
+    proposalWattpeak: "",
     warranty: "",
     Invertorwarranty: "",
     InvertorSize: "",
@@ -143,8 +155,6 @@ export default function ProposalPage() {
     proposalStructure: "",
     structureDes: "",
     systemwarranty: "",
-    ourscope: "",
-    coustomerscope: "",
     stage1: "",
     stage2: "",
     stage3: "",
@@ -156,15 +166,35 @@ export default function ProposalPage() {
     plotgraph: "",
     priceincrement: "",
     directionType: "",
-    graphType: "",
+    // graphType: "",
     services: [],
     products: [],
     employees: [],
+    balanceOfSystem: `Net & Solar Meter: Genus / Secure
+    DC Cables & Conduits: Reputed Make
+    AC Cables: Reputed Make
+    DCDB: Reputed Make
+    ACDB: Reputed Make
+    Termination Accessories: Reputed Make
+    Earthing (Pits, Strips and Cables): Reputed Make - 3 Nos.
+    Lightning Arrestor: Reputed Make - 1 Nos.`,
+
+    ourScope: `1. Preparation of Engineering Drawing, Design for Solar structure and solar power plant as per Relevant IS standard.
+    2. Supply of Solar Modules, Inverter, Structure, Cables, and balance of Plant.
+    3. Installation of structure, solar modules, inverter, AC-DC cable, LT panel etc for solar power plant. 
+    4. Installation of monitoring and controlling system for solar plant .
+    5. Commissioning of Solar Power Plant and supply of Power to LT panel of SGD.
+    6. Zero Export Device installation.`,
+
+    customerScope: `1. Providing safe storage place for material during installation & commissioning period.
+    2. Provide space to evacuate the solar power.
+    3. Design/Drawing approval within 7 days.`,
+
   });
 
   const [proposals, setProposals] = useState<Proposal[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [, setServices] = useState<Service[]>([]);
+  const [, setProducts] = useState<Product[]>([]);
   const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
 
   // State for editing proposal and employee details
@@ -172,29 +202,29 @@ export default function ProposalPage() {
   const [editData, setEditData] = useState<Partial<Employee>>({});
 
   // Customer and proposal-related states
-  const [customerType, setCustomerType] = useState<CustomerType>("Residential");
+  // const [customerType, setCustomerType] = useState<CustomerType>();
   const [openPanel, setOpenPanel] = useState(false);
   const [openInvertor, setOpenInvertor] = useState(false);
   const [openProposal, setOpenPropsal] = useState(false);
 
   // Panel, invertor, and proposal structure states
-  const [paneltype, setPanelType] = useState<PanelType | "">("");
-  const [invertorSize, setInverotorSize] = useState<InvertorSize | "">("");
-  const [proposalStructure, setProposalStructure] = useState<ProposalStructure | "">("");
-  const [invertortype, setInvertortype] = useState<Invertortype | "">("");
-  const [invertorPhase, setInvertorPhase] = useState<InvertorPhase | "">("");
+  // const [paneltype, setPanelType] = useState<PanelType | "">("");
+  // const [invertorSize, setInverotorSize] = useState<InvertorSize | "">("");
+  // const [proposalStructure, setProposalStructure] = useState<ProposalStructure | "">("");
+  // const [invertortype, setInvertortype] = useState<Invertortype | "">("");
+  // const [invertorPhase, setInvertorPhase] = useState<InvertorPhase | "">("");
 
   // Invertor and cable brands
   const [invertorBrands, setInvertorBrands] = useState<string[]>([]);
   const [brands, setBrands] = useState<{ name: string; logo?: string }[]>([
-    { name: "Luminous", logo: "https://upload.wikimedia.org/wikipedia/commons/3/3f/Luminous_Power_Technologies_logo.png" },
-    { name: "Tata Power Solar", logo: "https://www.tatapowersolar.com/wp-content/uploads/2021/05/tata-logo.png" },
-    { name: "Microtek", logo: "https://www.microtekdirect.com/images/microtek-logo.png" },
-    { name: "Su-Kam", logo: "https://seeklogo.com/images/S/su-kam-logo-9D73728E6D-seeklogo.com.png" },
-    { name: "Delta", logo: "https://www.deltaww.com/Images/delta-logo.png" },
-    { name: "ABB", logo: "https://upload.wikimedia.org/wikipedia/commons/5/5a/ABB_logo.svg" },
-    { name: "Schneider Electric", logo: "https://upload.wikimedia.org/wikipedia/commons/0/0d/Schneider_Electric_logo.svg" },
-    { name: "Huawei", logo: "https://upload.wikimedia.org/wikipedia/commons/0/04/Huawei_Standard_logo.svg" }
+    { name: "Luminous", logo: "/office.svg" },
+    { name: "Tata Power Solar", logo: "/office.svg" },
+    { name: "Microtek", logo: "/office.svg" },
+    { name: "Su-Kam", logo: "/office.svg" },
+    { name: "Delta", logo: "/office.svg" },
+    { name: "ABB", logo: "/office.svg" },
+    { name: "Schneider Electric", logo: "/office.svg" },
+    { name: "Huawei", logo: "/office.svg" }
   ]);
 
   // Cable brands
@@ -208,30 +238,76 @@ export default function ProposalPage() {
   const [newBrand, setNewBrand] = useState("");
   const [newLogo, setNewLogo] = useState<string | null>(null);
   const [openGraph, setOpenGraph] = useState(false);
-  const [graphType, setGraphType] = useState<GraphType | "">("");
-  const [directionType, setDirectionType] = useState<DirectionType | "">("");
+  // const [graphType, setGraphType] = useState<GraphType | "">("");
+  // const [directionType, setDirectionType] = useState<DirectionType | "">("");
 
   // Structure description
-  const [structureDes, setStructureDes] = useState<string>("");
+  // const [structureDes, setStructureDes] = useState<string>("");
   const [newCable, setNewCable] = useState<string>(" ");
-  const [openCableDialog, setOpenCableDialog] = useState(false)
+  const [openCableDialog, setOpenCableDialog] = useState(false);
 
-  // Graph data for dynamic chart building
-  const graphData = [
-    { month: "Jan", amount: 10000 }, { month: "Feb", amount: 10500 },
-    { month: "Mar", amount: 12000 }, { month: "Apr", amount: 12500 },
-    { month: "May", amount: 13000 }, { month: "Jun", amount: 11000 },
-    { month: "Jul", amount: 8000 }, { month: "Aug", amount: 8500 },
-    { month: "Sep", amount: 11000 }, { month: "Oct", amount: 12000 },
-    { month: "Nov", amount: 10000 }, { month: "Dec", amount: 9000 }
-  ];
+  const [graphData, setGraphData] = useState<GraphDatum[]>([]);
+  const chartRef = useRef<HTMLDivElement>(null);
 
-  // State for rows in the invoice table
-  const [rows, setRows] = useState<Row[]>([]);
-  const [gst, setGst] = useState(18); // Default GST percentage
-  const [subtotal, setSubtotal] = useState(0);
-  const [gstAmount, setGstAmount] = useState(0);
-  const [total, setTotal] = useState(0);
+
+  useEffect(() => {
+    const yearlyConsumption = parseFloat(proposal.yearlyconsumption || "0");
+    const yearlyGeneration = parseFloat(proposal.yearlysolargeneration || "0");
+    const priceIncrement = parseFloat(proposal.priceincrement || "0");
+    const generationDecrement = parseFloat(proposal.decrementgeneration || "0");
+    const yearsToPlot = parseInt(proposal.plotgraph || "0", 10);
+
+    const newData: { month: string; increment: number; decrement: number }[] = [];
+
+    for (let year = 1; year <= yearsToPlot; year++) {
+      const adjustedGeneration =
+        yearlyGeneration *
+        Math.pow(1 - generationDecrement / 100, year - 1);
+
+      const adjustedPrice =
+        yearlyConsumption *
+        Math.pow(1 + priceIncrement / 100, year - 1);
+
+      newData.push({
+        month: `${year}`,
+        increment: adjustedPrice,
+        decrement: adjustedGeneration
+      });
+    }
+
+    // 🔹 reverse if direction is "Right to Left"
+    const finalData =
+      proposal.directionType === "Right to Left" ? [...newData].reverse() : newData;
+
+    setGraphData(finalData);
+  }, [
+    proposal.yearlyconsumption,
+    proposal.yearlysolargeneration,
+    proposal.priceincrement,
+    proposal.decrementgeneration,
+    proposal.plotgraph,
+    proposal.directionType
+  ]);
+
+  const handleSaveImage = async () => {
+    if (!chartRef.current) return;
+
+    // Take screenshot
+    const canvas = await html2canvas(chartRef.current, {
+      scale: 2
+    });
+    const dataUrl = canvas.toDataURL("image/png");
+
+    await fetch(
+      // "http://localhost:5000/upload/uploadGraph"
+      `${import.meta.env.VITE_API_URL}/upload/uploadGraph`
+      ,{
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: dataUrl })
+    });
+  };
+
 
   // Function to fetch master data (services, products, employees)
   const fetchMasterData = async () => {
@@ -241,6 +317,11 @@ export default function ProposalPage() {
         axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
         axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`)
       ]);
+      // const [srv, prod] = await Promise.all([
+      //   axios.get(`http://localhost:5000/api/service`),
+      //   axios.get(`http://localhost:5000/api/service/products`),
+      //   axios.get(`http://localhost:5000/api/service/employees`)
+      // ]);
       setServices(srv.data);
       setProducts(prod.data);
     } catch (error) {
@@ -253,59 +334,32 @@ export default function ProposalPage() {
     fetchMasterData();
   }, []);
 
-  // Pre-fill first row with the first service
-  useEffect(() => {
-    if (services.length > 0) {
-      setRows([{
-        itemType: "service",
-        itemId: services[0]._id,
-        price: services[0].price,
-        quantity: 1,
-        itemname: "System Cost"
-      }]);
-    }
-  }, [services]);
+  const [rows, setRows] = useState<RowType[]>([
+    { description: "", price: 0, quantity: 0, note: "" },
+  ]);
+  const [gst, setGst] = useState<number>(0);
+  const [subtotal, setSubtotal] = useState<number>(0);
+  const [gstAmount, setGstAmount] = useState<number>(0);
+  const [total, setTotal] = useState<number>(0);
+  const tableRef = useRef<HTMLDivElement>(null);
 
-  // Handler for item type change (service or product)
-  const handleItemTypeChange = (index: number, value: "service" | "product") => {
-    const newRows = [...rows];
-    newRows[index].itemType = value;
-    newRows[index].itemId = ""; // Reset itemId when changing type
-    setRows(newRows);
+  const handleRowChange = <K extends keyof RowType>(
+    index: number,
+    field: K,
+    value: RowType[K]
+  ) => {
+    const updated = [...rows];
+    updated[index][field] = value;
+    setRows(updated);
   };
 
-  // Handler for item change (selecting service/product)
-  const handleItemChange = (index: number, value: string) => {
-    const newRows = [...rows];
-    const selectedItem = (newRows[index].itemType === "service" ? services : products)
-      .find((item) => item._id === value);
-    newRows[index].itemId = value;
-    newRows[index].price = selectedItem ? selectedItem.price : 0;
-    setRows(newRows);
-  };
-
-  // Handler for field change (price or quantity)
-  const handleFieldChange = (index: number, field: "price" | "quantity", value: number) => {
-    const newRows = [...rows];
-    newRows[index][field] = value;
-    setRows(newRows);
-  };
-
-  // Handler to delete a row
-  const handleDeleteRow = (index: number) => {
-    const newRows = rows.filter((_, i) => i !== index);
-    setRows(newRows);
-  };
-
-  // Handler to add a row
   const handleAddRow = () => {
-    setRows([...rows, {
-      itemType: "service",
-      itemId: services[0]?._id || "",
-      price: services[0]?.price || 0,
-      quantity: 1,
-      itemname: "System Cost"
-    }]);
+    setRows([...rows, { description: "", price: 0, quantity: 0, note: "" }]);
+  };
+
+  const handleDeleteRow = (index: number) => {
+    const updated = rows.filter((_, i) => i !== index);
+    setRows(updated);
   };
 
 
@@ -330,6 +384,21 @@ export default function ProposalPage() {
     fetchMasterData();
   }, []);
 
+  const handleCapture = async () => {
+    if (!tableRef.current) return;
+    const canvas = await html2canvas(tableRef.current);
+    const dataUrl = canvas.toDataURL("image/png");
+
+    // Send to backend
+    await fetch("http://localhost:5000/api/upload-table-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: dataUrl }),
+    });
+
+    alert("Table image sent!");
+  };
+
   const fetchProposals = async () => {
     try {
       // const res = await axios.get("http://localhost:5000/api/proposal/proposals");
@@ -340,29 +409,12 @@ export default function ProposalPage() {
     }
   };
 
-  // const fetchMasterData = async () => {
-  //   try {
-  //     const [srv, prod] = await Promise.all([
-  //       // axios.get("http://localhost:5000/api/service"),
-  //       // axios.get("http://localhost:5000/api/service/products"),
-  //       // axios.get("http://localhost:5000/api/service/employees"),
-  //       axios.get(`${import.meta.env.VITE_API_URL}/api/service`),
-  //       axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
-  //       axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`),
-  //     ]);
-  //     setServices(srv.data);
-  //     setProducts(prod.data);
-  //   } catch {
-  //     toast.error("❌ Failed to fetch services/products/employees");
-  //   }
-  // };
-
   const handleDelete = async (id?: string) => {
     if (!id) return;
     try {
       await axios.delete(
         `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}`);
-      // `http://localhost:5000/api/proposal/proposals/${id}`);
+        // `http://localhost:5000/api/proposal/proposals/${id}`);
       fetchProposals();
       toast.success("🗑️ Proposal deleted");
     } catch {
@@ -373,44 +425,49 @@ export default function ProposalPage() {
   const handleAddOrUpdateProposal = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Validation
-    if (
-      !proposal.clientName ||
-      !proposal.clientPhone ||
-      !proposal.clientEmail ||
-      !proposal.clientAddress ||
-      !proposal.projectDetails ||
-      !proposal.coustomertype ||
-      !proposal.projectsize ||
-      !proposal.coustomertype ||
-      !proposal.consumption ||
-      !proposal.electricity ||
-      !proposal.generation ||
-      !proposal.warranty ||
-      !proposal.Invertorwarranty ||
-      !proposal.performancewarranty ||
-      !proposal.quantity ||
-      !proposal.InvertorSize ||
-      !proposal.invertorquantitiy ||
-      !proposal.proposalStructure ||
-      !proposal.structureDes ||
-      !proposal.systemwarranty ||
-      !proposal.ourscope ||
-      !proposal.coustomerscope ||
-      !proposal.stage1 ||
-      !proposal.stage2 ||
-      !proposal.stage3 ||
-      !proposal.stage4 ||
-      !proposal.yearlyconsumption ||
-      !proposal.yearlysolargeneration ||
-      !proposal.priceunitelectricity ||
-      !proposal.decrementgeneration ||
-      !proposal.plotgraph ||
-      !proposal.directionType ||
-      !proposal.priceincrement ||
-      !proposal.graphType
-    ) {
-      toast.error("❌ Please fill all required client and project fields");
+    // Create an array of required fields to check
+    const requiredFields = [
+      "clientName",
+      "clientPhone",
+      "clientEmail",
+      "clientAddress",
+      // "projectDetails",
+      "customerType",
+      "projectsize",
+      "consumption",
+      "electricity",
+      "generation",
+      "warranty",
+      "proposalWattpeak",
+      "Invertorwarranty",
+      "performancewarranty",
+      "quantity",
+      "InvertorSize",
+      "invertorquantitiy",
+      "proposalStructure",
+      "structureDes",
+      "systemwarranty",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "yearlyconsumption",
+      "yearlysolargeneration",
+      "decrementgeneration",
+      "plotgraph",
+      "directionType",
+      "priceincrement",
+      // "graphType"
+    ];
+
+    // Check for missing required fields
+    console.log(proposal);  // Log the current state of the form fields
+
+    const missingFields = requiredFields.filter(field => !proposal[field]);
+
+    if (missingFields.length > 0) {
+      console.error("❌ Missing fields:", missingFields);  // Log missing fields
+      toast.error(`❌ Please fill all required client and project fields: ${missingFields.join(', ')}`);
       return;
     }
 
@@ -418,7 +475,8 @@ export default function ProposalPage() {
       if (editingId) {
         // Update existing proposal
         await axios.put(
-          `http://localhost:5000/api/proposal/${editingId}`,
+          `${import.meta.env.VITE_API_URL}/api/proposal/${editingId}`,
+          // `http://localhost:5000/api/proposal/${editingId}`,
           proposal
         );
         toast.success("✅ Proposal updated");
@@ -438,13 +496,13 @@ export default function ProposalPage() {
         clientPhone: "",
         clientEmail: "",
         clientAddress: "",
-        projectDetails: "",
-        coustomertype: "",
+        customerType: "",
         projectsize: "",
         consumption: "",
         electricity: "",
         generation: "",
         Wattpeak: "",
+        proposalWattpeak: "",
         warranty: "",
         performancewarranty: "",
         Invertorwarranty: "",
@@ -454,23 +512,39 @@ export default function ProposalPage() {
         proposalStructure: "",
         structureDes: "",
         systemwarranty: "",
-        ourscope: "",
-        coustomerscope: "",
         stage1: "",
         stage2: "",
         stage3: "",
         stage4: "",
         yearlyconsumption: "",
         yearlysolargeneration: "",
-        priceunitelectricity: "",
         decrementgeneration: "",
         plotgraph: "",
         directionType: "",
         priceincrement: "",
-        graphType: "",
+        // graphType: "",
         services: [],
         products: [],
         employees: [],
+        balanceOfSystem: `Net & Solar Meter: Genus / Secure
+        DC Cables & Conduits: Reputed Make
+        AC Cables: Reputed Make
+        DCDB: Reputed Make
+        ACDB: Reputed Make
+        Termination Accessories: Reputed Make
+        Earthing (Pits, Strips and Cables): Reputed Make - 3 Nos.
+        Lightning Arrestor: Reputed Make - 1 Nos.`,
+
+        ourScope: `1. Preparation of Engineering Drawing, Design for Solar structure and solar power plant as per Relevant IS standard.
+        2. Supply of Solar Modules, Inverter, Structure, Cables, and balance of Plant.
+        3. Installation of structure, solar modules, inverter, AC-DC cable, LT panel etc for solar power plant. 
+        4. Installation of monitoring and controlling system for solar plant .
+        5. Commissioning of Solar Power Plant and supply of Power to LT panel of SGD.
+        6. Zero Export Device installation.`,
+
+        customerScope: `1. Providing safe storage place for material during installation & commissioning period.
+        2. Provide space to evacuate the solar power.
+        3. Design/Drawing approval within 7 days.`,
       });
       setEditingId(null);
 
@@ -480,6 +554,7 @@ export default function ProposalPage() {
       toast.error("❌ " + (err.response?.data?.error || "Something went wrong"));
     }
   };
+
 
 
 
@@ -495,7 +570,7 @@ export default function ProposalPage() {
       setLoadingPdf(id);
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}/pdf`,
-        // `http://localhost:5000/api/proposal/proposals/${id}/pdf`,
+        // `http://localhost:5000/api/proposal/${id}/pdf`,
         { responseType: "blob" }
       );
 
@@ -599,16 +674,19 @@ export default function ProposalPage() {
                   <InputLabel id="customer-type-label">Customer Type</InputLabel>
                   <Select
                     labelId="customer-type-label"
-                    value={customerType}
-                    onChange={(e) => setCustomerType(e.target.value as CustomerType)}
+                    value={proposal.customerType}
+                    onChange={(e) =>
+                      setProposal({ ...proposal, customerType: e.target.value as CustomerType })
+                    }
                   >
                     <MenuItem value="Residential">Residential</MenuItem>
-                    <MenuItem value="Company">Commercial</MenuItem>
+                    <MenuItem value="Commercial">Commercial</MenuItem>
                     <MenuItem value="Government">Government</MenuItem>
                     <MenuItem value="Industrial">Industrial</MenuItem>
-                    <MenuItem value="others">others</MenuItem>
+                    <MenuItem value="others">Others</MenuItem>
                   </Select>
                 </FormControl>
+
               </div>
               <div className="flex flex-row gap-4">
 
@@ -658,6 +736,7 @@ export default function ProposalPage() {
               <Stack spacing={2}>
                 {/* Button to toggle panel section */}
                 <button
+                  type="button"
                   className="rounded-2xl p-5 bg-blue-200"
                   onClick={() => setOpenPanel(!openPanel)}
                 >
@@ -701,16 +780,16 @@ export default function ProposalPage() {
                         <InputLabel id="panel-type-label">Panel Type</InputLabel>
                         <Select
                           labelId="panel-type-label"
-                          value={paneltype}
-                          onChange={(e) => setPanelType(e.target.value as PanelType)}
+                          value={proposal.paneltype || ""}  // add this field to Proposal interface if missing
+                          onChange={(e) =>
+                            setProposal({ ...proposal, paneltype: e.target.value as PanelType })
+                          }
                         >
                           <MenuItem value="Mono">Mono</MenuItem>
                           <MenuItem value="Mono-Perv">Mono-Perv</MenuItem>
                           <MenuItem value="Poly">Poly</MenuItem>
                           <MenuItem value="BIVP">BIVP</MenuItem>
-                          <MenuItem value="Mono-Prev Half Cut">
-                            Mono-Prev Half Cut
-                          </MenuItem>
+                          <MenuItem value="Mono-Prev Half Cut">Mono-Prev Half Cut</MenuItem>
                           <MenuItem value="Mono BiFacial">Mono BiFacial</MenuItem>
                           <MenuItem value="TopCon MonoFacial">TopCon MonoFacial</MenuItem>
                           <MenuItem value="TopCon BiFacial">TopCon BiFacial</MenuItem>
@@ -761,6 +840,7 @@ export default function ProposalPage() {
               <Stack spacing={2}>
                 {/* Button to toggle invertor section */}
                 <button
+                  type="button"
                   className="rounded-2xl p-5 bg-blue-200"
                   onClick={() => setOpenInvertor(!openInvertor)}
                 >
@@ -786,24 +866,25 @@ export default function ProposalPage() {
                   >
                     <Stack spacing={2}>
                       {/* Multi Select */}
+                      {/* ✅ Inverter Brands (multiple select) */}
                       <FormControl fullWidth variant="filled">
                         <InputLabel id="invertor-brand-label">Select Inverter Brands</InputLabel>
                         <Select
                           labelId="invertor-brand-label"
                           multiple
-                          value={invertorBrands}
-                          onChange={(e) => setInvertorBrands(e.target.value as string[])}
+                          value={proposal.invertorBrands || []}
+                          onChange={(e) =>
+                            setProposal({ ...proposal, invertorBrands: e.target.value as string[] })
+                          }
                           renderValue={(selected) => (
                             <Stack direction="row" spacing={1} flexWrap="wrap">
-                              {selected.map((value) => {
+                              {(selected as string[]).map((value) => {
                                 const brand = brands.find((b) => b.name === value);
                                 return (
                                   <Chip
                                     key={value}
                                     label={value}
-                                    avatar={
-                                      brand?.logo ? <Avatar src={brand.logo} /> : undefined
-                                    }
+                                    avatar={brand?.logo ? <Avatar src={brand.logo} /> : undefined}
                                   />
                                 );
                               })}
@@ -937,8 +1018,10 @@ export default function ProposalPage() {
                         <InputLabel id="invertor-size">Invertor Size</InputLabel>
                         <Select
                           labelId="invertor-size"
-                          value={invertorSize}
-                          onChange={(e) => setInverotorSize(e.target.value as InvertorSize)}
+                          value={proposal.InvertorSize}
+                          onChange={(e) =>
+                            setProposal({ ...proposal, InvertorSize: e.target.value as InvertorSize })
+                          }
                         >
                           <MenuItem value="5KW- 3P">5KW- 3P</MenuItem>
                           <MenuItem value="6KW- 3P">6KW- 3P</MenuItem>
@@ -954,23 +1037,30 @@ export default function ProposalPage() {
                         </Select>
                       </FormControl>
 
+                      {/* ✅ Inverter Type */}
                       <FormControl fullWidth variant="filled">
                         <InputLabel id="invertor-type">Invertor Type</InputLabel>
                         <Select
                           labelId="invertor-type"
-                          value={invertortype}
-                          onChange={(e) => setInvertortype(e.target.value as Invertortype)}
+                          value={proposal.invertortype || ""}
+                          onChange={(e) =>
+                            setProposal({ ...proposal, invertortype: e.target.value as Invertortype })
+                          }
                         >
                           <MenuItem value="String Invertor">String Invertor</MenuItem>
                           <MenuItem value="Micro Invertor">Micro Invertor</MenuItem>
                         </Select>
                       </FormControl>
+
+                      {/* ✅ Inverter Phase */}
                       <FormControl fullWidth variant="filled">
                         <InputLabel id="invertor-phase">Invertor Phase</InputLabel>
                         <Select
                           labelId="invertor-phase"
-                          value={invertorPhase}
-                          onChange={(e) => setInvertorPhase(e.target.value as InvertorPhase)}
+                          value={proposal.invertorPhase || ""}
+                          onChange={(e) =>
+                            setProposal({ ...proposal, invertorPhase: e.target.value as InvertorPhase })
+                          }
                         >
                           <MenuItem value="Single Phase">Single Phase</MenuItem>
                           <MenuItem value="Three Phase">Three Phase</MenuItem>
@@ -995,6 +1085,7 @@ export default function ProposalPage() {
               <Stack spacing={2}>
                 {/* Button to toggle panel section */}
                 <button
+                  type="button"
                   className="rounded-2xl p-5 bg-blue-200"
                   onClick={() => setOpenPropsal(!openProposal)}
                 >
@@ -1027,10 +1118,11 @@ export default function ProposalPage() {
                         <InputLabel id="structure-label">Structure</InputLabel>
                         <Select
                           labelId="structure-label"
-                          value={proposalStructure}
-                          onChange={(e) => setProposalStructure(e.target.value as ProposalStructure)}
+                          value={proposal.proposalStructure}
+                          onChange={(e) =>
+                            setProposal({ ...proposal, proposalStructure: e.target.value as ProposalStructure })
+                          }
                         >
-
                           <MenuItem value="Elevated">Elevated</MenuItem>
                           <MenuItem value="Standard">Standard</MenuItem>
                           <MenuItem value="Metal Shed">Metal Shed</MenuItem>
@@ -1041,9 +1133,9 @@ export default function ProposalPage() {
                         label="Watt Peak (WP)"
                         placeholder="e.g: 590"
                         variant="filled"
-                        value={proposal.warranty || ""}
+                        value={proposal.proposalWattpeak || ""}
                         onChange={(e) =>
-                          setProposal({ ...proposal, warranty: e.target.value })
+                          setProposal({ ...proposal, proposalWattpeak: e.target.value })
                         }
                         fullWidth
                       />
@@ -1054,16 +1146,17 @@ export default function ProposalPage() {
                         <Select
                           labelId="cable-brand-label"
                           multiple
-                          value={cableBrands}
-                          onChange={(e) => setCableBrands(e.target.value as string[])}
+                          value={proposal.cableBrands || []}
+                          onChange={(e) =>
+                            setProposal({ ...proposal, cableBrands: e.target.value as string[] })
+                          }
                           renderValue={(selected) => (
                             <Stack direction="row" spacing={1} flexWrap="wrap">
-                              {selected.map((value) => (
+                              {(selected as string[]).map((value) => (
                                 <Chip key={value} label={value} />
                               ))}
                             </Stack>
-                          )}
-                        >
+                          )}>
                           {cableBrandList.map((brand, index) => (
                             <MenuItem key={index} value={brand}>
                               {brand}
@@ -1141,10 +1234,11 @@ export default function ProposalPage() {
                         <InputLabel id="structure-description-label">Structure Description</InputLabel>
                         <Select
                           labelId="structure-description-label"
-                          value={structureDes}
-                          onChange={(e) => setStructureDes(e.target.value as StrucrtureDes)}
+                          value={proposal.structureDes}
+                          onChange={(e) =>
+                            setProposal({ ...proposal, structureDes: e.target.value as StrucrtureDes })
+                          }
                         >
-
                           <MenuItem value="Hot Dip Galvanised">Hot Dip Galvanised</MenuItem>
                           <MenuItem value="Pre Galvanised">Pre Galvanised</MenuItem>
                           <MenuItem value="Slotted Channel">Slotted Channel</MenuItem>
@@ -1158,7 +1252,7 @@ export default function ProposalPage() {
                         variant="filled"
                         value={proposal.systemwarranty || ""}
                         onChange={(e) =>
-                          setProposal({ ...proposal, quantity: e.target.value })
+                          setProposal({ ...proposal, systemwarranty: e.target.value })
                         }
                         fullWidth
                       />
@@ -1166,14 +1260,10 @@ export default function ProposalPage() {
                       <TextareaAutosize
                         maxRows={10}
                         aria-label="Balance of System"
-                        defaultValue={`Net & Solar Meter: Genus / Secure
-DC Cables & Conduits: Reputed Make
-AC Cables: Reputed Make
-DCDB: Reputed Make
-ACDB: Reputed Make
-Termination Accessories: Reputed Make
-Earthing (Pits, Strips and Cables): Reputed Make - 3 Nos.
-Lightning Arrestor: Reputed Make - 1 Nos`}
+                        value={proposal.balanceOfSystem}
+                        onChange={(e) =>
+                          setProposal({ ...proposal, balanceOfSystem: e.target.value })
+                        }
                         style={{
                           width: "100%",
                           padding: "12px",
@@ -1184,16 +1274,15 @@ Lightning Arrestor: Reputed Make - 1 Nos`}
                           lineHeight: "1.5",
                         }}
                       />
+
                       <span>Our Scope</span>
                       <TextareaAutosize
                         maxRows={10}
                         aria-label="Our Scope"
-                        defaultValue={`1. Preparation of Engineering Drawing, Design for Solar structure and solar power plant as per Relavant IS standard.
-2. Supply of Solar Modules, Inverter, Structure, Cables, and balance of Plant.
-3. Installation of structure, solar modules, inverter, AC-DC cable, LT panel etc for solar power plant. 
-4. Installition of monitoring and controlling system for solar plant .
-5. Comissioning of Solar Power Plant and supply of Power to LT panel of SGD.
-6. Zero Export Device installation.`}
+                        value={proposal.ourScope}
+                        onChange={(e) =>
+                          setProposal({ ...proposal, ourScope: e.target.value })
+                        }
                         style={{
                           width: "100%",
                           padding: "12px",
@@ -1203,17 +1292,16 @@ Lightning Arrestor: Reputed Make - 1 Nos`}
                           resize: "vertical",
                           lineHeight: "1.5",
                         }}
-                        value={proposal.ourscope}
-                        onChange={(e) => setProposal({ ...proposal, ourscope: e.target.value })}
                       />
-                      <span>Coustomer Scope</span>
+
+                      <span>Customer Scope</span>
                       <TextareaAutosize
                         maxRows={10}
-                        aria-label="Coustomer Scope"
-                        defaultValue={`1. Providing safe storage place for materaial during installation & commissioning period.
-2. Provide space to evacute the solar power.
-3. Design/Drawing approval within 7 days. 
-`}
+                        aria-label="Customer Scope"
+                        value={proposal.customerScope}
+                        onChange={(e) =>
+                          setProposal({ ...proposal, customerScope: e.target.value })
+                        }
                         style={{
                           width: "100%",
                           padding: "12px",
@@ -1223,9 +1311,8 @@ Lightning Arrestor: Reputed Make - 1 Nos`}
                           resize: "vertical",
                           lineHeight: "1.5",
                         }}
-                        value={proposal.coustomerscope}
-                        onChange={(e) => setProposal({ ...proposal, coustomerscope: e.target.value })}
                       />
+
                       <TextField
                         label="Stage 1"
                         placeholder="e.g: 5 Days"
@@ -1269,6 +1356,7 @@ Lightning Arrestor: Reputed Make - 1 Nos`}
 
                 {/* Button to toggle graph section */}
                 <button
+                  type="button"
                   className="rounded-2xl p-5 bg-blue-200"
                   onClick={() => setOpenGraph(!openGraph)}
                 >
@@ -1296,12 +1384,14 @@ Lightning Arrestor: Reputed Make - 1 Nos`}
                       </Typography>
 
                       {/* Graph type */}
-                      <FormControl fullWidth variant="filled">
+                      {/* <FormControl fullWidth variant="filled">
                         <InputLabel id="graph-type-label">Graph Type</InputLabel>
                         <Select
                           labelId="graph-type-label"
-                          value={graphType}
-                          onChange={(e) => setGraphType(e.target.value as GraphType)}
+                          value={proposal.graphType}
+                          onChange={(e) =>
+                            setProposal({ ...proposal, graphType: e.target.value as GraphType })
+                          }
                         >
                           <MenuItem value="Mono">Mono</MenuItem>
                           <MenuItem value="Mono-Perv">Mono-Perv</MenuItem>
@@ -1312,7 +1402,7 @@ Lightning Arrestor: Reputed Make - 1 Nos`}
                           <MenuItem value="TopCon MonoFacial">TopCon MonoFacial</MenuItem>
                           <MenuItem value="TopCon BiFacial">TopCon BiFacial</MenuItem>
                         </Select>
-                      </FormControl>
+                      </FormControl> */}
 
                       <span>Data:</span>
 
@@ -1375,13 +1465,13 @@ Lightning Arrestor: Reputed Make - 1 Nos`}
                         <InputLabel id="direction-type-label">Direction</InputLabel>
                         <Select
                           labelId="direction-type-label"
-                          value={directionType}
+                          value={proposal.directionType}
                           onChange={(e) =>
-                            setDirectionType(e.target.value as DirectionType)
+                            setProposal({ ...proposal, directionType: e.target.value as DirectionType })
                           }
                         >
                           <MenuItem value="Left to Right">Left to Right</MenuItem>
-                          <MenuItem value="Right to Left">Right to left</MenuItem>
+                          <MenuItem value="Right to Left">Right to Left</MenuItem>
                         </Select>
                       </FormControl>
 
@@ -1402,15 +1492,27 @@ Lightning Arrestor: Reputed Make - 1 Nos`}
                           📊 Monthly Generation Values (per kWp)
                         </Typography>
 
-                        <ResponsiveContainer width="100%" height="85%">
-                          <BarChart data={graphData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" />
-                            <YAxis label={{ value: "Amount (₹)", angle: -90, position: "insideLeft", }} />
-                            <Tooltip />
-                            <Bar dataKey="amount" fill="#1f3c88" barSize={35} />
-                          </BarChart>
-                        </ResponsiveContainer>
+                        <div>
+                          <div ref={chartRef}>
+                            <ResponsiveContainer width="100%" height="85%">
+                              <BarChart data={graphData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="month" />
+                                <YAxis
+                                  label={{ value: "Amount (kWh)", angle: -90, position: "insideLeft" }}
+                                />
+                                <Tooltip />
+                                <Legend />
+                                <Bar dataKey="increment" name="Increment" fill="#1f3c88" barSize={20} />
+                                <Bar dataKey="decrement" name="Decrement" fill="#ff6b6b" barSize={20} />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
+
+                          <button onClick={handleSaveImage}>Save Graph to Backend</button>
+                        </div>
+
+
                       </Box>
                       <span>Monthly Generation Value (per kWp)</span>
                       <Box
@@ -1446,185 +1548,192 @@ Lightning Arrestor: Reputed Make - 1 Nos`}
 
 
               <Box sx={{ width: '100%', mt: 3 }}>
-                <Table>
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: "#003366" }}>
-                      <TableCell sx={{ color: "white" }}>Type</TableCell>
-                      <TableCell sx={{ color: "white" }}>Description</TableCell>
-                      <TableCell sx={{ color: "white" }}>Price</TableCell>
-                      <TableCell sx={{ color: "white" }}>Quantity</TableCell>
-                      <TableCell sx={{ color: "white" }}>Subtotal</TableCell>
-                      <TableCell sx={{ color: "white" }}></TableCell>
-                    </TableRow>
+                <div>
+                  <div ref={tableRef}>
+                    <Table>
+                      <TableHead>
+                        <TableRow sx={{ backgroundColor: "#003366" }}>
+                          <TableCell sx={{ color: "white" }}>Description</TableCell>
+                          <TableCell sx={{ color: "white" }}>Price</TableCell>
+                          <TableCell sx={{ color: "white" }}>Quantity</TableCell>
+                          <TableCell sx={{ color: "white" }}>Subtotal</TableCell>
+                          <TableCell sx={{ color: "white" }}></TableCell>
+                        </TableRow>
+                      </TableHead>
 
-                  </TableHead>
-                  <TableBody>
-                    {rows.map((row, index) => (
-                      <TableRow key={index}
-                        sx={{
-                          backgroundColor: index % 2 === 0 ? "lightblue" : "white", // alternate row bg
-                        }}>
-                        {/* Item Type (read-only text instead of dropdown) */}
-                        <TableCell>
-                          <Select
-                            value={row.itemType}
-                            onChange={(e) => handleItemTypeChange(index, e.target.value)}
-                            fullWidth
-                            variant="standard"
-                            disableUnderline
-                            IconComponent={() => null} // removes the dropdown arrow
-                            sx={{ border: "none", "& fieldset": { border: "none" } }}
-                          >
-                            <MenuItem value="service">Service</MenuItem>
-                            <MenuItem value="product">Product</MenuItem>
-                          </Select>
-                        </TableCell>
-
-
-                        {/* Item Name (read-only text instead of dropdown) */}
-                        <TableCell>
-                          <Select
-                            value={row.itemId}
-                            onChange={(e) => handleItemChange(index, e.target.value)}
-                            fullWidth
-                            displayEmpty
-                            variant="standard"
-                            disableUnderline
-                            IconComponent={() => null} // 🔹 Removes dropdown arrow
-                            sx={{ border: "none", "& fieldset": { border: "none" } }}
-                          >
-                            <MenuItem value="">
-                              <em>Select</em>
-                            </MenuItem>
-                            {(row.itemType === "service" ? services : products).map((item) => (
-                              <MenuItem key={item._id} value={item._id}>
-                                {item.name} — ₹{item.price}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </TableCell>
-
-
-                        {/* Price input with ₹ logo */}
-                        <TableCell>
-                          <TextField
-                            type="number"
-                            value={row.price === 0 ? "" : row.price}  // 👈 Empty string instead of 0
-                            onChange={(e) => {
-                              const value = e.target.value === "" ? 0 : Number(e.target.value); // keep state numeric
-                              handleFieldChange(index, "price", value);
-                            }}
-                            variant="standard"
-                            InputProps={{
-                              disableUnderline: true,
-                              startAdornment: <span style={{ marginRight: 4 }}>₹</span>,
-                            }}
+                      <TableBody>
+                        {rows.map((row, index) => (
+                          <TableRow
+                            key={index}
                             sx={{
-                              border: "none",
-                              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
-                                WebkitAppearance: "none",
-                                margin: 0,
-                              },
-                              "& input[type=number]": { MozAppearance: "textfield" },
+                              backgroundColor: index % 2 === 0 ? "lightblue" : "white",
                             }}
-                          />
-                        </TableCell>
+                          >
+                            {/* Description */}
+                            <TableCell>
+                              <TextField
+                                variant="standard"
+                                placeholder="Give Description"
+                                fullWidth
+                                value={row.description}
+                                onChange={(e) => handleRowChange(index, "description", e.target.value)}
+                                InputProps={{ disableUnderline: true }}
+                              />
+                            </TableCell>
+
+                            {/* Price */}
+                            <TableCell>
+                              <TextField
+                                type="number"
+                                variant="standard"
+                                placeholder="0"
+                                fullWidth
+                                value={row.price === 0 ? "" : row.price}
+                                onChange={(e) =>
+                                  handleRowChange(index, "price", e.target.value === "" ? 0 : Number(e.target.value))
+                                }
+                                InputProps={{
+                                  disableUnderline: true,
+                                  startAdornment: <span style={{ marginRight: 4 }}>₹</span>,
+                                }}
+                                sx={{
+                                  "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+                                    { WebkitAppearance: "none", margin: 0 },
+                                  "& input[type=number]": { MozAppearance: "textfield" },
+                                }}
+                              />
+                            </TableCell>
+
+                            {/* Quantity */}
+                            <TableCell>
+                              <TextField
+                                type="number"
+                                variant="standard"
+                                placeholder="0"
+                                fullWidth
+                                value={row.quantity === 0 ? "" : row.quantity}
+                                onChange={(e) =>
+                                  handleRowChange(index, "quantity", e.target.value === "" ? 0 : Number(e.target.value))
+                                }
+                                InputProps={{ disableUnderline: true }}
+                                sx={{
+                                  "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+                                    { WebkitAppearance: "none", margin: 0 },
+                                  "& input[type=number]": { MozAppearance: "textfield" },
+                                }}
+                              />
+                            </TableCell>
+
+                            {/* Subtotal */}
+                            <TableCell>
+                              {/* subtotal */}
+                              <div>₹ {(Number(row.price) * Number(row.quantity)).toLocaleString("en-IN")}</div>
+
+                              {/* small note field */}
+                              <TextField
+                                variant="standard"
+                                placeholder="Add note"
+                                fullWidth
+                                value={row.note}
+                                onChange={(e) => handleRowChange(index, "note", e.target.value)}
+                                InputProps={{ disableUnderline: true }}
+                                sx={{
+                                  fontSize: "0.8rem",
+                                  mt: 0.5,
+                                  "& input": {
+                                    fontSize: "0.8rem",
+                                    color: "gray",
+                                  },
+                                }}
+                              />
+                            </TableCell>
 
 
-                        {/* Quantity input */}
-                        <TableCell>
-                          <TextField
-                            type="number"
-                            value={row.quantity === 0 ? "" : row.quantity}
-                            onChange={(e) => {
-                              const value = e.target.value === "" ? 0 : Number(e.target.value);
-                              handleFieldChange(index, "quantity", value);
-                            }}
-                            variant="standard"
-                            InputProps={{ disableUnderline: true }}
-                            sx={{
-                              border: "none",
-                              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button": {
-                                WebkitAppearance: "none",
-                                margin: 0,
-                              },
-                              "& input[type=number]": { MozAppearance: "textfield" },
-                            }}
-                          />
-                        </TableCell>
+                            {/* Delete */}
+                            <TableCell>
+                              <IconButton onClick={() => handleDeleteRow(index)}>
+                                <DeleteIcon />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        ))}
 
+                        {/* Add Row */}
+                        <TableRow>
+                          <TableCell colSpan={5}>
+                            <Button startIcon={<AddIcon />} onClick={handleAddRow}>
+                              Add Row
+                            </Button>
+                          </TableCell>
+                        </TableRow>
 
                         {/* Subtotal */}
-                        <TableCell>
-                          ₹ {(row.price * row.quantity).toLocaleString("en-IN")}
-                        </TableCell>
-
-                        {/* Delete Row Button */}
-                        <TableCell>
-                          <IconButton onClick={() => handleDeleteRow(index)}>
-                            <DeleteIcon />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-
-                    {/* Add Row Button */}
-                    <TableRow>
-                      <TableCell colSpan={6}>
-                        <Button startIcon={<AddIcon />} onClick={handleAddRow}>
-                          Add Row
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-
-                    {/* Subtotal */}
-                    <TableRow sx={{ backgroundColor: (rows.length + 1) % 2 === 0 ? "lightblue" : "white" }}>
-                      <TableCell colSpan={3}>Subtotal</TableCell>
-                      <TableCell colSpan={3}>₹ {subtotal.toLocaleString("en-IN")}</TableCell>
-                    </TableRow>
-
-                    {/* GST */}
-                    <TableRow sx={{ backgroundColor: (rows.length + 2) % 2 === 0 ? "lightblue" : "white" }}>
-                      <TableCell>GST %</TableCell>
-                      <TableCell>
-                        <TextField
-                          type="number"
-                          value={gst}
-                          onChange={(e) => setGst(Number(e.target.value))}
-                          variant="standard"
-                          InputProps={{ disableUnderline: true }}
+                        <TableRow
                           sx={{
-                            border: "none",
-                            "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-                              { WebkitAppearance: "none", margin: 0 },
-                            "& input[type=number]": { MozAppearance: "textfield" },
+                            backgroundColor:
+                              (rows.length + 1) % 2 === 0 ? "lightblue" : "white",
                           }}
-                        />
-                      </TableCell>
-                      <TableCell colSpan={3}>₹ {gstAmount.toLocaleString("en-IN")}</TableCell>
-                    </TableRow>
+                        >
+                          <TableCell colSpan={3}>Subtotal</TableCell>
+                          <TableCell colSpan={2}>₹ {subtotal.toLocaleString("en-IN")}</TableCell>
 
-                    {/* Total */}
-                    <TableRow sx={{ backgroundColor: (rows.length + 3) % 2 === 0 ? "lightblue" : "white" }}>
-                      <TableCell colSpan={3}>
-                        <strong>Total Cost</strong>
-                      </TableCell>
-                      <TableCell colSpan={3}>
-                        <strong>₹ {total.toLocaleString("en-IN")}</strong>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
+                        </TableRow>
 
+                        {/* GST */}
+                        <TableRow
+                          sx={{
+                            backgroundColor:
+                              (rows.length + 2) % 2 === 0 ? "lightblue" : "white",
+                          }}
+                        >
+                          <TableCell>GST %</TableCell>
+                          <TextField
+                            type="number"
+                            variant="standard"
+                            value={gst === 0 ? "" : gst}
+                            onChange={(e) => {
 
+                              const val = e.target.value === "" ? 0 : Number(e.target.value);
+                              setGst(val);
+                            }}
+                            InputProps={{ disableUnderline: true }}
+                            sx={{
+                              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
+                                { WebkitAppearance: "none", margin: 0 },
+                              "& input[type=number]": { MozAppearance: "textfield" },
+                            }}
+                            placeholder="0"
+                          />
 
-                </Table>
+                          <TableCell colSpan={3}>₹ {gstAmount.toLocaleString("en-IN")}</TableCell>
+                        </TableRow>
+
+                        {/* Total */}
+                        <TableRow
+                          sx={{
+                            backgroundColor:
+                              (rows.length + 3) % 2 === 0 ? "lightblue" : "white",
+                          }}
+                        >
+                          <TableCell colSpan={3}>
+                            <strong>Total Cost</strong>
+                          </TableCell>
+                          <TableCell colSpan={2}>
+                            <strong>₹ {total.toLocaleString("en-IN")}</strong>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <Button onClick={handleCapture}>Save Table as Image</Button>
+                </div>
 
                 {/* Amount in Words Section */}
                 <Box sx={{ mt: 2, p: 2, backgroundColor: '#003366', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                     Amount in Words:
                   </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'semibold', fontSize: 15 }}>
                     {numberToWords(total)}
                   </Typography>
                 </Box>
@@ -1649,21 +1758,12 @@ Lightning Arrestor: Reputed Make - 1 Nos`}
           <Card key={p._id}>
             <CardContent>
               <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <div>
-                  <h3 className="font-bold">{p.clientName}</h3>
-                  <p>{p.clientPhone} | {p.clientEmail}</p>
-                  <p>{p.clientAddress}</p>
-                  <p className="text-gray-600">{p.projectDetails}</p>
-                  <span className="font-semibold text-blue-700">₹ {p.coustomertype}</span>
-                  {p.services.length > 0 && (
-                    <p className="text-sm text-gray-500">{p.services.length} Services selected</p>
-                  )}
-                  {p.products.length > 0 && (
-                    <p className="text-sm text-gray-500">{p.products.length} Products selected</p>
-                  )}
-                  {p.employees.length > 0 && (
-                    <p className="text-sm text-gray-500">{p.employees.length} Employees selected</p>
-                  )}
+                <div className="font7">
+                  <h3 className="font-bold text-lg">{p.clientName}</h3>
+                  <p>Phone no. : <span className="text-base font-semibold">{p.clientPhone}</span></p>
+                  <p>Email : <span className="text-base font-semibold">{p.clientEmail}</span></p>
+                  <p>Address : <span className="text-base font-semibold">{p.clientAddress}</span></p>
+                  <p className="text-lg font8">✅ Proposal Created!</p>
                 </div>
                 <Stack direction="row" spacing={1}>
                   <IconButton
