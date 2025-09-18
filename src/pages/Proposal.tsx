@@ -390,7 +390,10 @@ export default function ProposalPage() {
     const dataUrl = canvas.toDataURL("image/png");
 
     // Send to backend
-    await fetch("http://localhost:5000/api/upload-table-image", {
+    await fetch(
+      // "http://localhost:5000/api/upload-table-image",
+      `${import.meta.env.VITE_API_URL}/api/upload-table-image`,
+      {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image: dataUrl }),
