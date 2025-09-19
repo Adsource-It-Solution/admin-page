@@ -85,6 +85,7 @@ type Proposal = {
   performancewarranty: string;
   quantity: string;
   invertorquantitiy: string;
+  invertortype: string;
   proposalStructure: string;
   structureDes: string;
   systemwarranty: string;
@@ -152,6 +153,7 @@ export default function ProposalPage() {
     performancewarranty: "",
     quantity: "",
     invertorquantitiy: "",
+    invertortype: "",
     proposalStructure: "",
     structureDes: "",
     systemwarranty: "",
@@ -301,11 +303,11 @@ export default function ProposalPage() {
     await fetch(
       // "http://localhost:5000/upload/uploadGraph"
       `${import.meta.env.VITE_API_URL}/upload/uploadGraph`
-      ,{
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: dataUrl })
-    });
+      , {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl })
+      });
   };
 
 
@@ -313,9 +315,9 @@ export default function ProposalPage() {
   const fetchMasterData = async () => {
     try {
       const [srv, prod] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_URL}/api/service`),
-        axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
-        axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`)
+      axios.get(`${import.meta.env.VITE_API_URL}/api/service`),
+      axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
+      axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`)
       ]);
       // const [srv, prod] = await Promise.all([
       //   axios.get(`http://localhost:5000/api/service`),
@@ -394,10 +396,10 @@ export default function ProposalPage() {
       // "http://localhost:5000/api/upload-table-image",
       `${import.meta.env.VITE_API_URL}/api/upload-table-image`,
       {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: dataUrl }),
-    });
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl }),
+      });
 
     alert("Table image sent!");
   };
@@ -416,8 +418,8 @@ export default function ProposalPage() {
     if (!id) return;
     try {
       await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}`);
-        // `http://localhost:5000/api/proposal/proposals/${id}`);
+        `${import.meta.env.VITE_API_URL}/api/proposal/${id}`);
+        // `http://localhost:5000/api/proposal/${id}`);
       fetchProposals();
       toast.success("🗑️ Proposal deleted");
     } catch {
@@ -427,14 +429,24 @@ export default function ProposalPage() {
 
   const handleAddOrUpdateProposal = async (e: FormEvent) => {
     e.preventDefault();
-
-    // Create an array of required fields to check
+  
+    // 1️⃣ Capture chart image if present
+    if (chartRef.current) {
+      const canvas = await html2canvas(chartRef.current, { scale: 2 });
+      const dataUrl = canvas.toDataURL("image/png");
+      // store base64 into the proposal state before validation
+      setProposal(prev => ({ ...prev, plotgraph: dataUrl }));
+    }
+  
+    // Small delay to ensure state update above is committed
+    await new Promise(r => setTimeout(r, 0));
+  
+    // 2️⃣ Required fields check
     const requiredFields = [
       "clientName",
       "clientPhone",
       "clientEmail",
       "clientAddress",
-      // "projectDetails",
       "customerType",
       "projectsize",
       "consumption",
@@ -460,26 +472,23 @@ export default function ProposalPage() {
       "plotgraph",
       "directionType",
       "priceincrement",
-      // "graphType"
     ];
-
-    // Check for missing required fields
-    console.log(proposal);  // Log the current state of the form fields
-
+  
+    console.log("Current proposal:", proposal);
+  
     const missingFields = requiredFields.filter(field => !proposal[field]);
-
     if (missingFields.length > 0) {
-      console.error("❌ Missing fields:", missingFields);  // Log missing fields
-      toast.error(`❌ Please fill all required client and project fields: ${missingFields.join(', ')}`);
+      console.error("❌ Missing fields:", missingFields);
+      toast.error(`❌ Please fill all required client and project fields: ${missingFields.join(", ")}`);
       return;
     }
-
+  
+    // 3️⃣ Send to backend
     try {
       if (editingId) {
         // Update existing proposal
         await axios.put(
           `${import.meta.env.VITE_API_URL}/api/proposal/${editingId}`,
-          // `http://localhost:5000/api/proposal/${editingId}`,
           proposal
         );
         toast.success("✅ Proposal updated");
@@ -487,13 +496,12 @@ export default function ProposalPage() {
         // Add new proposal
         await axios.post(
           `${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`,
-          // "http://localhost:5000/api/proposal/add-proposal",
           proposal
         );
         toast.success("✅ Proposal added");
       }
-
-      // Reset form and state
+  
+      // 4️⃣ Reset state
       setProposal({
         clientName: "",
         clientPhone: "",
@@ -512,6 +520,7 @@ export default function ProposalPage() {
         InvertorSize: "",
         quantity: "",
         invertorquantitiy: "",
+        invertortype: "",
         proposalStructure: "",
         structureDes: "",
         systemwarranty: "",
@@ -525,39 +534,36 @@ export default function ProposalPage() {
         plotgraph: "",
         directionType: "",
         priceincrement: "",
-        // graphType: "",
         services: [],
         products: [],
         employees: [],
         balanceOfSystem: `Net & Solar Meter: Genus / Secure
-        DC Cables & Conduits: Reputed Make
-        AC Cables: Reputed Make
-        DCDB: Reputed Make
-        ACDB: Reputed Make
-        Termination Accessories: Reputed Make
-        Earthing (Pits, Strips and Cables): Reputed Make - 3 Nos.
-        Lightning Arrestor: Reputed Make - 1 Nos.`,
-
+  DC Cables & Conduits: Reputed Make
+  AC Cables: Reputed Make
+  DCDB: Reputed Make
+  ACDB: Reputed Make
+  Termination Accessories: Reputed Make
+  Earthing (Pits, Strips and Cables): Reputed Make - 3 Nos.
+  Lightning Arrestor: Reputed Make - 1 Nos.`,
         ourScope: `1. Preparation of Engineering Drawing, Design for Solar structure and solar power plant as per Relevant IS standard.
-        2. Supply of Solar Modules, Inverter, Structure, Cables, and balance of Plant.
-        3. Installation of structure, solar modules, inverter, AC-DC cable, LT panel etc for solar power plant. 
-        4. Installation of monitoring and controlling system for solar plant .
-        5. Commissioning of Solar Power Plant and supply of Power to LT panel of SGD.
-        6. Zero Export Device installation.`,
-
+  2. Supply of Solar Modules, Inverter, Structure, Cables, and balance of Plant.
+  3. Installation of structure, solar modules, inverter, AC-DC cable, LT panel etc for solar power plant. 
+  4. Installation of monitoring and controlling system for solar plant .
+  5. Commissioning of Solar Power Plant and supply of Power to LT panel of SGD.
+  6. Zero Export Device installation.`,
         customerScope: `1. Providing safe storage place for material during installation & commissioning period.
-        2. Provide space to evacuate the solar power.
-        3. Design/Drawing approval within 7 days.`,
+  2. Provide space to evacuate the solar power.
+  3. Design/Drawing approval within 7 days.`,
       });
       setEditingId(null);
-
+  
       // Refresh proposal list
       fetchProposals();
     } catch (err: any) {
       toast.error("❌ " + (err.response?.data?.error || "Something went wrong"));
     }
   };
-
+  
 
 
 
@@ -1496,14 +1502,12 @@ export default function ProposalPage() {
                         </Typography>
 
                         <div>
-                          <div ref={chartRef}>
-                            <ResponsiveContainer width="100%" height="85%">
+                          <div ref={chartRef} style={{ width: "100%", height: "400px" }}>
+                            <ResponsiveContainer width="100%" height="100%">
                               <BarChart data={graphData}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="month" />
-                                <YAxis
-                                  label={{ value: "Amount (kWh)", angle: -90, position: "insideLeft" }}
-                                />
+                                <YAxis label={{ value: "Amount (kWh)", angle: -90, position: "insideLeft" }} />
                                 <Tooltip />
                                 <Legend />
                                 <Bar dataKey="increment" name="Increment" fill="#1f3c88" barSize={20} />
@@ -1511,10 +1515,31 @@ export default function ProposalPage() {
                               </BarChart>
                             </ResponsiveContainer>
                           </div>
+                          <div className="flex justify-center">
+                            <Button
+                              type="button"
+                              onClick={handleSaveImage}
+                              variant="contained"
+                              sx={{
+                                px: 4,
+                                py: 1.5,
+                                borderRadius: "9999px",
+                                boxShadow: "inset 5px 1px 17px 9px rgba(0,0,0,0.35)",
+                                textTransform: "none",
+                                fontWeight: "600",
+                                marginBottom: 6,
+                                backgroundColor: "#1f3c88",
+                                "&:hover": {
+                                  backgroundColor: "#162b63",
+                                },
+                              }}
+                            >
+                              Click to Save Graph
+                            </Button>
 
-                          <button onClick={handleSaveImage}>Save Graph to Backend</button>
+                          </div>
+
                         </div>
-
 
                       </Box>
                       <span>Monthly Generation Value (per kWp)</span>
@@ -1728,7 +1753,25 @@ export default function ProposalPage() {
                       </TableBody>
                     </Table>
                   </div>
-                  <Button onClick={handleCapture}>Save Table as Image</Button>
+                  <Button
+                    onClick={handleCapture}
+                    variant="contained"
+                    sx={{
+                      px: 4,
+                      py: 1.5,
+                      borderRadius: "9999px",
+                      boxShadow: "inset 5px 1px 17px 9px rgba(0,0,0,0.35)",
+                      textTransform: "none",
+                      fontWeight: "600",
+                      marginBottom: 6,
+                      backgroundColor: "#1f3c88",
+                      "&:hover": {
+                        backgroundColor: "#162b63",
+                      },
+                    }}
+                  >
+                    Save image as table
+                  </Button>
                 </div>
 
                 {/* Amount in Words Section */}
@@ -1742,9 +1785,12 @@ export default function ProposalPage() {
                 </Box>
               </Box>
 
-              <Button type="submit" variant="contained" color="success">
-                Add Proposal
-              </Button>
+              <div className="flex justify-center">
+                <Button type="submit" variant="contained" color="success">
+                  Add Proposal
+                </Button>
+
+              </div>
             </Stack>
           </form>
         </CardContent>

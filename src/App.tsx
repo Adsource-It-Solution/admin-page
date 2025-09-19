@@ -5,7 +5,6 @@ import Product from "./pages/Product"
 import Employee from "./pages/Employee"
 import Proposal from "./pages/Proposal"
 import Dashboard from "./components/Dashboard.tsx"
-// import Proposalpagepdf from "./components/Proposalpagepdf.tsx"
 
 function App() {
   return (
@@ -17,7 +16,6 @@ function App() {
           <Route path="/product" element= {<Product/>}/>
           <Route path="/employee" element= {<Employee/>}/>
           <Route path="/proposal" element= {<Proposal/>}/>
-          {/* <Route path="/pdf" element= {<Proposalpagepdf/>}/> */}
         </Route>
 
       </Routes>
