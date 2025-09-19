@@ -558,7 +558,6 @@ export default function ProposalPage() {
 
   const handleSaveImage = async (
     elementRef: React.RefObject<HTMLDivElement | null>,
-    proposal: Proposal,
     setProposal: React.Dispatch<React.SetStateAction<Proposal>>,
     type: "table" | "graph"
   ) => {
@@ -1540,7 +1539,7 @@ export default function ProposalPage() {
                           <div className="flex justify-center">
                             <Button
                               type="button"
-                              onClick={() => handleSaveImage(chartRef, proposal, setProposal, "graph")}
+                              onClick={() => handleSaveImage(chartRef, setProposal, "graph")}
                               variant="contained"
                               sx={{
                                 px: 4,
