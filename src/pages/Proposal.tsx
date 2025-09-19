@@ -578,7 +578,7 @@ export default function ProposalPage() {
     try {
       setLoadingPdf(id);
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/proposal/proposals/${id}/pdf`,
+        `${import.meta.env.VITE_API_URL}/api/proposal/${id}/pdf`,
         // `http://localhost:5000/api/proposal/${id}/pdf`,
         { responseType: "blob" }
       );
