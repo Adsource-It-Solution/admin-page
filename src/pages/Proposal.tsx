@@ -86,6 +86,8 @@ type Proposal = {
   quantity: string;
   invertorquantitiy: string;
   invertortype: string;
+  invertorPhase: string;
+  cableBrands: string;
   proposalStructure: string;
   structureDes: string;
   systemwarranty: string;
@@ -107,6 +109,8 @@ type Proposal = {
   products: string[];
   employees: string[];
 
+  tableImage?: string;
+  graphimage?: string;
   // Index signature for dynamically accessed fields
   [key: string]: string | string[] | undefined;  // Allow 'undefined' for dynamically added properties
 };
@@ -150,11 +154,13 @@ export default function ProposalPage() {
     warranty: "",
     Invertorwarranty: "",
     InvertorSize: "",
+    invertorPhase: "",
     performancewarranty: "",
     quantity: "",
     invertorquantitiy: "",
     invertortype: "",
     proposalStructure: "",
+    cableBrands: "",
     structureDes: "",
     systemwarranty: "",
     stage1: "",
@@ -291,33 +297,15 @@ export default function ProposalPage() {
     proposal.directionType
   ]);
 
-  const handleSaveImage = async () => {
-    if (!chartRef.current) return;
-
-    // Take screenshot
-    const canvas = await html2canvas(chartRef.current, {
-      scale: 2
-    });
-    const dataUrl = canvas.toDataURL("image/png");
-
-    await fetch(
-      // "http://localhost:5000/upload/uploadGraph"
-      `${import.meta.env.VITE_API_URL}/upload/uploadGraph`
-      , {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: dataUrl })
-      });
-  };
 
 
   // Function to fetch master data (services, products, employees)
   const fetchMasterData = async () => {
     try {
       const [srv, prod] = await Promise.all([
-      axios.get(`${import.meta.env.VITE_API_URL}/api/service`),
-      axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
-      axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`)
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service`),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
+        axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`)
       ]);
       // const [srv, prod] = await Promise.all([
       //   axios.get(`http://localhost:5000/api/service`),
@@ -386,23 +374,25 @@ export default function ProposalPage() {
     fetchMasterData();
   }, []);
 
-  const handleCapture = async () => {
+  const handleCapture = async (proposal: Proposal) => {
     if (!tableRef.current) return;
+
     const canvas = await html2canvas(tableRef.current);
     const dataUrl = canvas.toDataURL("image/png");
 
+    // Save image in the proposal object
+    proposal.tableImage = dataUrl;
+
     // Send to backend
-    await fetch(
-      // "http://localhost:5000/api/upload-table-image",
-      `${import.meta.env.VITE_API_URL}/api/upload-table-image`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: dataUrl }),
-      });
+    await fetch(`${import.meta.env.VITE_API_URL}/api/upload-table-image`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: dataUrl }),
+    });
 
     alert("Table image sent!");
   };
+
 
   const fetchProposals = async () => {
     try {
@@ -419,7 +409,7 @@ export default function ProposalPage() {
     try {
       await axios.delete(
         `${import.meta.env.VITE_API_URL}/api/proposal/${id}`);
-        // `http://localhost:5000/api/proposal/${id}`);
+      // `http://localhost:5000/api/proposal/${id}`);
       fetchProposals();
       toast.success("🗑️ Proposal deleted");
     } catch {
@@ -429,7 +419,7 @@ export default function ProposalPage() {
 
   const handleAddOrUpdateProposal = async (e: FormEvent) => {
     e.preventDefault();
-  
+
     // 1️⃣ Capture chart image if present
     if (chartRef.current) {
       const canvas = await html2canvas(chartRef.current, { scale: 2 });
@@ -437,10 +427,10 @@ export default function ProposalPage() {
       // store base64 into the proposal state before validation
       setProposal(prev => ({ ...prev, plotgraph: dataUrl }));
     }
-  
+
     // Small delay to ensure state update above is committed
     await new Promise(r => setTimeout(r, 0));
-  
+
     // 2️⃣ Required fields check
     const requiredFields = [
       "clientName",
@@ -473,16 +463,16 @@ export default function ProposalPage() {
       "directionType",
       "priceincrement",
     ];
-  
+
     console.log("Current proposal:", proposal);
-  
+
     const missingFields = requiredFields.filter(field => !proposal[field]);
     if (missingFields.length > 0) {
       console.error("❌ Missing fields:", missingFields);
       toast.error(`❌ Please fill all required client and project fields: ${missingFields.join(", ")}`);
       return;
     }
-  
+
     // 3️⃣ Send to backend
     try {
       if (editingId) {
@@ -500,7 +490,7 @@ export default function ProposalPage() {
         );
         toast.success("✅ Proposal added");
       }
-  
+
       // 4️⃣ Reset state
       setProposal({
         clientName: "",
@@ -518,9 +508,11 @@ export default function ProposalPage() {
         performancewarranty: "",
         Invertorwarranty: "",
         InvertorSize: "",
+        invertorPhase: "",
         quantity: "",
         invertorquantitiy: "",
         invertortype: "",
+        cableBrands: "",
         proposalStructure: "",
         structureDes: "",
         systemwarranty: "",
@@ -556,15 +548,42 @@ export default function ProposalPage() {
   3. Design/Drawing approval within 7 days.`,
       });
       setEditingId(null);
-  
+
       // Refresh proposal list
       fetchProposals();
     } catch (err: any) {
       toast.error("❌ " + (err.response?.data?.error || "Something went wrong"));
     }
   };
-  
 
+  const handleSaveImage = async (
+    elementRef: React.RefObject<HTMLDivElement | null>,
+    proposal: Proposal,
+    setProposal: React.Dispatch<React.SetStateAction<Proposal>>,
+    type: "table" | "graph"
+  ) => {
+    if (!elementRef.current) return;
+  
+    const canvas = await html2canvas(elementRef.current, { scale: 2 });
+    const dataUrl = canvas.toDataURL("image/png");
+  
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: dataUrl }),
+    });
+  
+    const json = await res.json();
+    const uploadedUrl = `${import.meta.env.VITE_API_URL}/api/proposal/${type}/${json.id}`;
+  
+    setProposal(prev => ({
+      ...prev,
+      [type === "table" ? "tableImage" : "graphimage"]: uploadedUrl,
+    }));
+  
+    toast.success(`✅ ${type === "table" ? "Table" : "Graph"} saved and linked to proposal`);
+  };
+  
 
 
   const handleEditClick = (p: Proposal) => {
@@ -1156,8 +1175,11 @@ export default function ProposalPage() {
                           labelId="cable-brand-label"
                           multiple
                           value={proposal.cableBrands || []}
+                          // onChange={(e) =>
+                          //   setProposal({ ...proposal, cableBrands: e.target.value as string[] })
+                          // }
                           onChange={(e) =>
-                            setProposal({ ...proposal, cableBrands: e.target.value as string[] })
+                            setProposal({ ...proposal, cableBrands: e.target.value as ProposalStructure })
                           }
                           renderValue={(selected) => (
                             <Stack direction="row" spacing={1} flexWrap="wrap">
@@ -1518,7 +1540,7 @@ export default function ProposalPage() {
                           <div className="flex justify-center">
                             <Button
                               type="button"
-                              onClick={handleSaveImage}
+                              onClick={() => handleSaveImage(chartRef, proposal, setProposal, "graph")}
                               variant="contained"
                               sx={{
                                 px: 4,
@@ -1536,6 +1558,7 @@ export default function ProposalPage() {
                             >
                               Click to Save Graph
                             </Button>
+
 
                           </div>
 
@@ -1754,7 +1777,7 @@ export default function ProposalPage() {
                     </Table>
                   </div>
                   <Button
-                    onClick={handleCapture}
+                    onClick={() => handleCapture(proposal)} // pass your proposal explicitly
                     variant="contained"
                     sx={{
                       px: 4,
@@ -1772,6 +1795,7 @@ export default function ProposalPage() {
                   >
                     Save image as table
                   </Button>
+
                 </div>
 
                 {/* Amount in Words Section */}
