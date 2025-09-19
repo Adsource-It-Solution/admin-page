@@ -390,7 +390,8 @@ export default function ProposalPage() {
       body: JSON.stringify({ image: dataUrl }),
     });
 
-    alert("Table image sent!");
+    // alert("Table image sent!");
+    toast.success("✅ Image Saved")
   };
 
 
@@ -580,7 +581,7 @@ export default function ProposalPage() {
       [type === "table" ? "tableImage" : "graphimage"]: uploadedUrl,
     }));
 
-    toast.success(`✅ ${type === "table" ? "Table" : "Graph"} saved and linked to proposal`);
+    toast.success(`✅ Saved Image`);
   };
 
 
