@@ -87,7 +87,7 @@ type Proposal = {
   invertorquantitiy: string;
   invertortype: string;
   invertorPhase: string;
-  cableBrands: string;
+  cableBrands: string[];
   proposalStructure: string;
   structureDes: string;
   systemwarranty: string;
@@ -160,7 +160,7 @@ export default function ProposalPage() {
     invertorquantitiy: "",
     invertortype: "",
     proposalStructure: "",
-    cableBrands: "",
+    cableBrands: [],
     structureDes: "",
     systemwarranty: "",
     stage1: "",
@@ -512,7 +512,7 @@ export default function ProposalPage() {
         quantity: "",
         invertorquantitiy: "",
         invertortype: "",
-        cableBrands: "",
+        cableBrands: [],
         proposalStructure: "",
         structureDes: "",
         systemwarranty: "",
@@ -562,27 +562,27 @@ export default function ProposalPage() {
     type: "table" | "graph"
   ) => {
     if (!elementRef.current) return;
-  
+
     const canvas = await html2canvas(elementRef.current, { scale: 2 });
     const dataUrl = canvas.toDataURL("image/png");
-  
+
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image: dataUrl }),
     });
-  
+
     const json = await res.json();
     const uploadedUrl = `${import.meta.env.VITE_API_URL}/api/proposal/${type}/${json.id}`;
-  
+
     setProposal(prev => ({
       ...prev,
       [type === "table" ? "tableImage" : "graphimage"]: uploadedUrl,
     }));
-  
+
     toast.success(`✅ ${type === "table" ? "Table" : "Graph"} saved and linked to proposal`);
   };
-  
+
 
 
   const handleEditClick = (p: Proposal) => {
@@ -1168,32 +1168,27 @@ export default function ProposalPage() {
                       />
 
                       {/* Multi Select */}
-                      <FormControl fullWidth variant="filled">
-                        <InputLabel id="cable-brand-label">Select Cable Brands</InputLabel>
-                        <Select
-                          labelId="cable-brand-label"
-                          multiple
-                          value={proposal.cableBrands || []}
-                          // onChange={(e) =>
-                          //   setProposal({ ...proposal, cableBrands: e.target.value as string[] })
-                          // }
-                          onChange={(e) =>
-                            setProposal({ ...proposal, cableBrands: e.target.value as ProposalStructure })
-                          }
-                          renderValue={(selected) => (
-                            <Stack direction="row" spacing={1} flexWrap="wrap">
-                              {(selected as string[]).map((value) => (
-                                <Chip key={value} label={value} />
-                              ))}
-                            </Stack>
-                          )}>
-                          {cableBrandList.map((brand, index) => (
-                            <MenuItem key={index} value={brand}>
-                              {brand}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                      <Select
+                        multiple
+                        value={proposal.cableBrands || []}
+                        onChange={(e) =>
+                          setProposal({ ...proposal, cableBrands: e.target.value as string[] })
+                        }
+                        renderValue={(selected) => (
+                          <Stack direction="row" spacing={1} flexWrap="wrap">
+                            {(selected as string[]).map((value) => (
+                              <Chip key={value} label={value} />
+                            ))}
+                          </Stack>
+                        )}
+                      >
+                        {cableBrandList.map((brand, index) => (
+                          <MenuItem key={index} value={brand}>
+                            {brand}
+                          </MenuItem>
+                        ))}
+                      </Select>
+
 
                       {/* Button to open dialog */}
                       <Button
