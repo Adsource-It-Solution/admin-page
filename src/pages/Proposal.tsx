@@ -573,20 +573,20 @@ export default function ProposalPage() {
   
       console.log("📌 Converting canvas to data URL...");
       const dataUrl = canvas.toDataURL("image/png");
-      console.log("📌 Data URL generated:", dataUrl.slice(0, 100), "..."); // only show first 100 chars
+      console.log("📌 Data URL generated:", dataUrl.slice(0, 100), "...");
   
-      // Save image in the proposal object
       proposal.graphimage = dataUrl;
       console.log("📌 proposal.graphimage updated");
   
-      console.log("📌 Sending image to backend...");
+      // Show loading toast or spinner
+      toast.info("📤 Uploading image...");
+  
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: dataUrl }),
       });
   
-      console.log("📌 Fetch response:", res);
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(`Upload failed: ${res.status} ${errorText}`);
@@ -601,9 +601,6 @@ export default function ProposalPage() {
       toast.error(`Failed to save graph: ${err.message}`);
     }
   };
-  
-
-
   const handleEditClick = (p: Proposal) => {
     setEditData(editData);
     setProposal(p);
