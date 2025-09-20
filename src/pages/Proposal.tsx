@@ -580,7 +580,7 @@ export default function ProposalPage() {
       console.log("📌 proposal.graphimage updated");
   
       console.log("📌 Sending image to backend...");
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload-graph-image`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: dataUrl }),
