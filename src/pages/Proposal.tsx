@@ -223,7 +223,7 @@ export default function ProposalPage() {
   // const [invertorPhase, setInvertorPhase] = useState<InvertorPhase | "">("");
 
   // Invertor and cable brands
-  const [invertorBrands, setInvertorBrands] = useState<string[]>([]);
+  const [, setInvertorBrands] = useState<string[]>([]);
   const [brands, setBrands] = useState<{ name: string; logo?: string }[]>([
     { name: "Luminous", logo: "/office.svg" },
     { name: "Tata Power Solar", logo: "/office.svg" },
@@ -239,7 +239,7 @@ export default function ProposalPage() {
   const [cableBrandList, setCableBrandList] = useState<string[]>([
     "Polycab", "Havells", "Finolex", "KEI", "RR Kabel", "Syska", "V-Guard", "Anchor"
   ]);
-  const [cableBrands, setCableBrands] = useState<string[]>([]);
+  const [, setCableBrands] = useState<string[]>([]);
 
   // Dialog and other UI related states
   const [openDialog, setOpenDialog] = useState(false);
@@ -559,48 +559,55 @@ export default function ProposalPage() {
 
   const handleSaveImage = async (
     elementRef: React.RefObject<HTMLDivElement | null>,
-    setProposal: React.Dispatch<React.SetStateAction<Proposal>>,
-    type: "table" | "graph"
+    setProposal: React.Dispatch<React.SetStateAction<Proposal>>
   ) => {
-    if (!elementRef.current) return;
-  
+    if (!elementRef.current) {
+      toast.error("❌ Graph element not found");
+      return;
+    }
+
     try {
-      // 1️⃣ Take screenshot
+      // 1️⃣ Take screenshot of the graph element
       const canvas = await html2canvas(elementRef.current, { scale: 2 });
+
+      // 2️⃣ Convert canvas to Blob
       const blob = await new Promise<Blob | null>(resolve =>
         canvas.toBlob(resolve, "image/png")
       );
       if (!blob) throw new Error("Failed to create image blob");
-  
-      // 2️⃣ Prepare FormData
+
+      // 3️⃣ Prepare FormData
       const formData = new FormData();
-      formData.append("file", blob, `${type}-${Date.now()}.png`);
-  
-      // 3️⃣ Upload using multipart/form-data
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`, {
-        method: "POST",
-        body: formData, // No Content-Type header! Let browser set it automatically
-      });
-  
-      if (!res.ok) throw new Error(`Upload failed: ${res.statusText}`);
+      formData.append("file", blob, `graph-${Date.now()}.png`);
+      formData.append("type", "graph"); // Pass type to backend
+
+      // 4️⃣ Upload to backend
+      // const res = await fetch(`http://localhost:5000/api/proposal/uploadGraph`,
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`,
+        {
+          method: "POST",
+          body: formData, // multipart/form-data
+        });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Upload failed: ${res.status} ${errorText}`);
+      }
+
       const json = await res.json();
-  
-      // 4️⃣ Build image URL
-      const uploadedUrl = `${import.meta.env.VITE_API_URL}/api/proposal/graph/${json.id}`;
-  
-      // 5️⃣ Update state
+
+      // 5️⃣ Update proposal state with returned graph URL
       setProposal(prev => ({
         ...prev,
-        [type === "table" ? "tableImage" : "graphimage"]: uploadedUrl,
+        graphimage: json.url,
       }));
-  
-      toast.success(`✅ ${type === "table" ? "Table" : "Graph"} saved successfully`);
+
+      toast.success("✅ Graph saved successfully");
     } catch (err: any) {
-      console.error(err);
-      toast.error(`❌ Failed to save image: ${err.message}`);
+      console.error("❌ handleSaveGraph Error:", err);
+      toast.error(`Failed to save graph: ${err.message}`);
     }
   };
-
 
   const handleEditClick = (p: Proposal) => {
     setEditData(editData);
@@ -665,8 +672,10 @@ export default function ProposalPage() {
     setOpenDialog(false);
   };
   const handleDeleteBrand = (brandName: string) => {
-    setBrands(brands.filter((b) => b.name !== brandName));
-    setInvertorBrands(invertorBrands.filter((b) => b !== brandName));
+    setProposal((prev) => ({
+      ...prev,
+      invertorBrands: (prev.invertorBrands as string[]).filter((b) => b !== brandName),
+    }));
   };
 
   const handleDeleteCableBrand = (brandToDelete: string) => {
@@ -966,10 +975,12 @@ export default function ProposalPage() {
 
                       {/* Show selected brands in separate box */}
                       <Box sx={{ mt: 3, p: 2, border: "1px solid #ccc", borderRadius: 2 }}>
-                        <h3>Selected Brands:</h3>
+                        <h3>Selected Inverter Brands:</h3>
                         <Stack direction="column" spacing={2}>
-                          {invertorBrands.map((brandName) => {
+                          {(proposal.invertorBrands as string[] | undefined)?.map((brandName) => {
                             const brand = brands.find((b) => b.name === brandName);
+                            if (!brand) return null;
+
                             return (
                               <Stack
                                 key={brandName}
@@ -984,18 +995,22 @@ export default function ProposalPage() {
                                   bgcolor: "#fafafa",
                                 }}
                               >
-                                {/* Left side: logo + name */}
-                                <Stack direction="row" spacing={2} alignItems="center">
-                                  <Avatar src={brand?.logo} alt={brandName} variant="square" sx={{ width: 100, height: 40, borderRadius: 1 }} />
-                                  <span style={{ fontWeight: 500 }}>{brandName}</span>
+                                {/* Brand logo + name */}
+                                <Stack direction="row" alignItems="center" spacing={1}>
+                                  {brand.logo && (
+                                    <Avatar
+                                      src={brand.logo}
+                                      alt={brand.name}
+                                      sx={{ width: 32, height: 32 }}
+                                    />
+                                  )}
+                                  <span style={{ fontWeight: 500 }}>{brand.name}</span>
                                 </Stack>
-                                <IconButton
-                                  color="error"
-                                  onClick={() => handleDeleteBrand(brandName)}
-                                >
+
+                                {/* Delete button */}
+                                <IconButton color="error" onClick={() => handleDeleteBrand(brandName)}>
                                   <ClearIcon />
                                 </IconButton>
-
                               </Stack>
                             );
                           })}
@@ -1199,6 +1214,9 @@ export default function ProposalPage() {
                           </Stack>
                         )}
                       >
+                        <MenuItem disabled value="">
+                          Select Cable Brands
+                        </MenuItem>
                         {cableBrandList.map((brand, index) => (
                           <MenuItem key={index} value={brand}>
                             {brand}
@@ -1245,7 +1263,7 @@ export default function ProposalPage() {
                       <Box sx={{ mt: 3 }}>
                         <h3>Selected Cable Brands:</h3>
                         <Stack direction="column" spacing={2}>
-                          {cableBrands.map((brand) => (
+                          {proposal.cableBrands?.map((brand) => (
                             <Stack
                               key={brand}
                               direction="row"
@@ -1259,8 +1277,15 @@ export default function ProposalPage() {
                                 bgcolor: "#fafafa",
                               }}
                             >
-                              {/* Brand name */}
-                              <span style={{ fontWeight: 500 }}>{brand}</span>
+                              {/* Brand logo + name */}
+                              <Stack direction="row" alignItems="center" spacing={1}>
+                                <img
+                                  src={`/assets/cable-logos/${brand.toLowerCase()}.png`} // put logos in public/assets/cable-logos/
+                                  alt={brand}
+                                  style={{ width: 40, height: 40, objectFit: "contain" }}
+                                />
+                                <span style={{ fontWeight: 500 }}>{brand}</span>
+                              </Stack>
 
                               {/* Delete button */}
                               <IconButton color="error" onClick={() => handleDeleteCableBrand(brand)}>
@@ -1270,8 +1295,7 @@ export default function ProposalPage() {
                           ))}
                         </Stack>
                       </Box>
-
-
+                      {/* structure description  */}
                       <FormControl fullWidth variant="filled">
                         <InputLabel id="structure-description-label">Structure Description</InputLabel>
                         <Select
@@ -1551,7 +1575,7 @@ export default function ProposalPage() {
                           <div className="flex justify-center">
                             <Button
                               type="button"
-                              onClick={() => handleSaveImage(chartRef, setProposal, "graph")}
+                              onClick={() => handleSaveImage(chartRef, setProposal)}
                               variant="contained"
                               sx={{
                                 px: 4,
