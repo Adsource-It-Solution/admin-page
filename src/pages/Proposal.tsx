@@ -1567,7 +1567,7 @@ export default function ProposalPage() {
                               </BarChart>
                             </ResponsiveContainer>
                           </div>
-                          <div className="flex justify-center">
+                          <div className="flex justify-center" ref={graphRef}>
                             <Button
                               type="button"
                               onClick={() => handleSaveGraph(proposal)}
