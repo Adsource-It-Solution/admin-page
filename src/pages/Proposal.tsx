@@ -563,27 +563,43 @@ export default function ProposalPage() {
     type: "table" | "graph"
   ) => {
     if (!elementRef.current) return;
-
-    const canvas = await html2canvas(elementRef.current, { scale: 2 });
-    const dataUrl = canvas.toDataURL("image/png");
-
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: dataUrl }),
-    });
-
-    const json = await res.json();
-    const uploadedUrl = `${import.meta.env.VITE_API_URL}/api/proposal/${type}/${json.id}`;
-
-    setProposal(prev => ({
-      ...prev,
-      [type === "table" ? "tableImage" : "graphimage"]: uploadedUrl,
-    }));
-
-    toast.success(`✅ Saved Image`);
+  
+    try {
+      // 1️⃣ Take screenshot
+      const canvas = await html2canvas(elementRef.current, { scale: 2 });
+      const blob = await new Promise<Blob | null>(resolve =>
+        canvas.toBlob(resolve, "image/png")
+      );
+      if (!blob) throw new Error("Failed to create image blob");
+  
+      // 2️⃣ Prepare FormData
+      const formData = new FormData();
+      formData.append("file", blob, `${type}-${Date.now()}.png`);
+  
+      // 3️⃣ Upload using multipart/form-data
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`, {
+        method: "POST",
+        body: formData, // No Content-Type header! Let browser set it automatically
+      });
+  
+      if (!res.ok) throw new Error(`Upload failed: ${res.statusText}`);
+      const json = await res.json();
+  
+      // 4️⃣ Build image URL
+      const uploadedUrl = `${import.meta.env.VITE_API_URL}/api/proposal/graph/${json.id}`;
+  
+      // 5️⃣ Update state
+      setProposal(prev => ({
+        ...prev,
+        [type === "table" ? "tableImage" : "graphimage"]: uploadedUrl,
+      }));
+  
+      toast.success(`✅ ${type === "table" ? "Table" : "Graph"} saved successfully`);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(`❌ Failed to save image: ${err.message}`);
+    }
   };
-
 
 
   const handleEditClick = (p: Proposal) => {
