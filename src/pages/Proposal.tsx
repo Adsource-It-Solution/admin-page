@@ -557,57 +557,58 @@ export default function ProposalPage() {
     }
   };
 
-  const handleSaveImage = async (
+  const handleSaveGraph = async (
     elementRef: React.RefObject<HTMLDivElement | null>,
+    proposalId: string,
     setProposal: React.Dispatch<React.SetStateAction<Proposal>>
   ) => {
     if (!elementRef.current) {
       toast.error("❌ Graph element not found");
       return;
     }
-
+  
     try {
-      // 1️⃣ Take screenshot of the graph element
+      // 1️⃣ Capture the chart as canvas
       const canvas = await html2canvas(elementRef.current, { scale: 2 });
-
+  
       // 2️⃣ Convert canvas to Blob
       const blob = await new Promise<Blob | null>(resolve =>
         canvas.toBlob(resolve, "image/png")
       );
       if (!blob) throw new Error("Failed to create image blob");
-
+  
       // 3️⃣ Prepare FormData
       const formData = new FormData();
       formData.append("file", blob, `graph-${Date.now()}.png`);
-      formData.append("type", "graph"); // Pass type to backend
-
+      formData.append("type", "graph");
+      formData.append("proposalId", proposalId);
+  
       // 4️⃣ Upload to backend
-      // const res = await fetch(`http://localhost:5000/api/proposal/uploadGraph`,
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`,
-        {
-          method: "POST",
-          body: formData, // multipart/form-data
-        });
-
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`, {
+        method: "POST",
+        body: formData,
+      });
+  
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(`Upload failed: ${res.status} ${errorText}`);
       }
-
+  
       const json = await res.json();
-
+  
       // 5️⃣ Update proposal state with returned graph URL
       setProposal(prev => ({
         ...prev,
         graphimage: json.url,
       }));
-
+  
       toast.success("✅ Graph saved successfully");
     } catch (err: any) {
       console.error("❌ handleSaveGraph Error:", err);
       toast.error(`Failed to save graph: ${err.message}`);
     }
   };
+
 
   const handleEditClick = (p: Proposal) => {
     setEditData(editData);
@@ -1575,7 +1576,7 @@ export default function ProposalPage() {
                           <div className="flex justify-center">
                             <Button
                               type="button"
-                              onClick={() => handleSaveImage(chartRef, setProposal)}
+                              onClick={() => handleSaveGraph(chartRef, proposal._id!, setProposal)}
                               variant="contained"
                               sx={{
                                 px: 4,
