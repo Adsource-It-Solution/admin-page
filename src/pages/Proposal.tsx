@@ -559,24 +559,49 @@ export default function ProposalPage() {
   };
 
   const handleSaveGraph = async (proposal: Proposal) => {
-    if (!graphRef.current) return;
+    console.log("📌 handleSaveGraph called");
   
-    // take snapshot of the graph DOM
-    const canvas = await html2canvas(graphRef.current);
-    const dataUrl = canvas.toDataURL("image/png");
+    if (!graphRef.current) {
+      console.error("❌ graphRef.current is null");
+      toast.error("Graph element not found");
+      return;
+    }
   
-    // Save image in the proposal object
-    proposal.graphimage = dataUrl;
+    try {
+      console.log("📌 Taking snapshot of the graph DOM...");
+      const canvas = await html2canvas(graphRef.current);
   
-    // Send to backend
-    await fetch(`${import.meta.env.VITE_API_URL}/api/upload-graph-image`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: dataUrl }),
-    });
+      console.log("📌 Converting canvas to data URL...");
+      const dataUrl = canvas.toDataURL("image/png");
+      console.log("📌 Data URL generated:", dataUrl.slice(0, 100), "..."); // only show first 100 chars
   
-    toast.success("✅ Graph Image Saved");
+      // Save image in the proposal object
+      proposal.graphimage = dataUrl;
+      console.log("📌 proposal.graphimage updated");
+  
+      console.log("📌 Sending image to backend...");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload-graph-image`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl }),
+      });
+  
+      console.log("📌 Fetch response:", res);
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Upload failed: ${res.status} ${errorText}`);
+      }
+  
+      const json = await res.json();
+      console.log("📌 Backend response:", json);
+  
+      toast.success("✅ Graph Image Saved");
+    } catch (err: any) {
+      console.error("❌ handleSaveGraph Error:", err);
+      toast.error(`Failed to save graph: ${err.message}`);
+    }
   };
+  
 
 
   const handleEditClick = (p: Proposal) => {
@@ -1782,7 +1807,7 @@ export default function ProposalPage() {
                     </Table>
                   </div>
                   <Button
-                    onClick={() => handleCapture(proposal)} // pass your proposal explicitly
+                    onClick={() => handleCapture(proposal)} 
                     variant="contained"
                     sx={{
                       px: 4,
