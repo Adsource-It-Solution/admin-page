@@ -90,7 +90,7 @@ export type Proposal = {
   invertorquantitiy: string;
   invertortype: string;
   invertorPhase: string;
-  batteryBrand: string;
+  batteryBrands: string;
   batterytype: BatteryType | "";
   leadAcidSubtype?: LeadAcidSubtype | "";
   cableBrands: string;
@@ -160,7 +160,7 @@ export default function ProposalPage() {
     quantity: "",
     invertorquantitiy: "",
     invertortype: "",
-    batteryBrand: "",
+    batteryBrands: "",
     batterytype: "",
     proposalStructure: "",
     cableBrands: "",
@@ -489,7 +489,7 @@ export default function ProposalPage() {
       "warranty",
       "proposalWattpeak",
       "Invertorwarranty",
-      "batteryBrand",
+      "batteryBrands",
       "batterytype",
       "performancewarranty",
       "quantity",
@@ -559,7 +559,7 @@ export default function ProposalPage() {
         quantity: "",
         invertorquantitiy: "",
         invertortype: "",
-        batteryBrand: "",
+        batteryBrands: "",
         batterytype: "",
         cableBrands: "",
         proposalStructure: "",
@@ -1257,7 +1257,7 @@ export default function ProposalPage() {
                           <Select
                             labelId="battery-brand-label"
                             // ❌ remove multiple
-                            value={proposal.batteryBrand || ''} 
+                            value={proposal.batteryBrands || ''} 
                             onChange={(e) => setBatteryBrand(e.target.value as string)}
                             renderValue={(selected) => {
                               // selected is a string here
