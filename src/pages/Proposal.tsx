@@ -27,6 +27,8 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  Menu,
+  Divider,
 } from "@mui/material";
 import {
   ResponsiveContainer,
@@ -40,17 +42,15 @@ import {
 } from "recharts";
 import { toWords } from 'number-to-words';
 import { toast } from "react-toastify";
-import EditIcon from "@mui/icons-material/Edit";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditNoteIcon from '@mui/icons-material/EditNote';
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
-import { CircularProgress } from "@mui/material";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import UploadIcon from "@mui/icons-material/Upload";
 import ClearIcon from '@mui/icons-material/Clear';
-
-
+// import generateSolarQuoteHTML from "./utils/generateSolarHtml";
 
 interface Service {
   _id: string;
@@ -58,19 +58,22 @@ interface Service {
   price: number;
 }
 
-interface Product {
-  _id: string;
+export type Product = {
   name: string;
+  qty: number;
   price: number;
-}
-type Employee = { _id: string; name: string; role: string; contact: string };
+};
 
-type Proposal = {
+type BatteryType = "Li-Ion" | "Lead-Acid";
+type LeadAcidSubtype = "40Ah" | "75Ah" | "100Ah" | "150Ah" | "200Ah";
+
+export type Proposal = {
   _id?: string;
   clientName: string;
   clientPhone: string;
   clientEmail: string;
   clientAddress: string;
+  clienttitle: string;
   // projectDetails: string;
   customerType: string;
   projectsize: string;
@@ -87,7 +90,10 @@ type Proposal = {
   invertorquantitiy: string;
   invertortype: string;
   invertorPhase: string;
-  cableBrands: string[];
+  batteryBrands: string;
+  batterytype: BatteryType | "";
+  leadAcidSubtype?: LeadAcidSubtype | "";
+  cableBrands: string;
   proposalStructure: string;
   structureDes: string;
   systemwarranty: string;
@@ -98,12 +104,6 @@ type Proposal = {
   stage2: string;
   stage3: string;
   stage4: string;
-  yearlyconsumption: string;
-  yearlysolargeneration: string;
-  decrementgeneration: string;
-  plotgraph: string;
-  priceincrement: string;
-  directionType: string;
   // graphType: string;
   services: string[];
   products: string[];
@@ -115,16 +115,16 @@ type Proposal = {
   [key: string]: string | string[] | undefined;  // Allow 'undefined' for dynamically added properties
 };
 
-
+type ClientPrefix = "Mr." | "Mrs." | "Ms.";
 type CustomerType = "Industrial" | "Commercial" | "Government" | "Residential" | "others";
 type PanelType = "Mono" | "Mono-Perv" | "Poly" | "BIVP" | "Mono-Prev Half Cut" | "Mono BiFacial" | "TopCon MonoFacial" | "TopCon BiFacial";
-type InvertorSize = "5KW- 3P" | "6KW- 3P" | "8KW- 3P" | "10KW- 3P" | "12KW- 3P" | "15KW- 3P" | "20KW- 3P" | "25KW- 3P" | "30KW- 3P" | "50KW- 3P" | "100KW- 3P";
+type InvertorSize = "2kw-1ph" | "3kw-1ph" | "5kw-1ph" | "5KW- 3P" | "6KW- 3P" | "8KW- 3P" | "10KW- 3P" | "12KW- 3P" | "15KW- 3P" | "20KW- 3P" | "25KW- 3P" | "30KW- 3P" | "50KW- 3P" | "100KW- 3P";
 type InvertorPhase = "Single Phase" | "Three Phase";
-type Invertortype = "String Invertor" | "Micro Invertor";
+type Invertortype = "String Invertor" | "Micro Invertor" | "Off Grid Inverter" | "Hybrid Inverter";
 type ProposalStructure = "Elevated" | "Standard" | "Metal Shed";
 type StrucrtureDes = "Hot Dip Galvanised" | "Pre Galvanised" | "Slotted Channel" | "Ms Channel & Gi Channel"
-// type  GraphType= "Mono" | "Mono-Perv" | "Poly" | "BIVP" | "Mono-Prev Half Cut" | "Mono BiFacial" | "TopCon MonoFacial" | "TopCon BiFacial";
-type DirectionType = "Left to Right" | "Right to left";
+// type DirectionType = "Left to Right" | "Right to left";
+
 type RowType = {
   description: string;
   price: number;
@@ -144,6 +144,7 @@ export default function ProposalPage() {
     clientEmail: "",
     clientAddress: "",
     // projectDetails: "",
+    clienttitle: "",
     customerType: "",
     projectsize: "",
     consumption: "",
@@ -159,21 +160,17 @@ export default function ProposalPage() {
     quantity: "",
     invertorquantitiy: "",
     invertortype: "",
+    batteryBrands: "",
+    batterytype: "",
     proposalStructure: "",
-    cableBrands: [],
+    cableBrands: "",
     structureDes: "",
     systemwarranty: "",
     stage1: "",
     stage2: "",
     stage3: "",
     stage4: "",
-    yearlyconsumption: "",
-    yearlysolargeneration: "",
     priceunitelectricity: "",
-    decrementgeneration: "",
-    plotgraph: "",
-    priceincrement: "",
-    directionType: "",
     // graphType: "",
     services: [],
     products: [],
@@ -200,29 +197,37 @@ export default function ProposalPage() {
 
   });
 
-  const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [, setProposals] = useState<Proposal[]>([]);
   const [, setServices] = useState<Service[]>([]);
   const [, setProducts] = useState<Product[]>([]);
-  const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
 
   // State for editing proposal and employee details
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editData, setEditData] = useState<Partial<Employee>>({});
 
   // Customer and proposal-related states
   // const [customerType, setCustomerType] = useState<CustomerType>();
   const [openPanel, setOpenPanel] = useState(false);
-  const [openInvertor, setOpenInvertor] = useState(false);
   const [openProposal, setOpenPropsal] = useState(false);
+  const [openBattery, setOpenBattery] = useState(false);
+  const [batteryBrand, setBatteryBrand] = useState<string>('');
+  const [batteryBrandList, setBatteryBrandList] = useState<{ name: string; logo?: string }[]>([
+    { name: "Luminous", logo: "/office.svg" },
+    { name: "Exide", logo: "/office.svg" },
+    { name: "Amaron", logo: "/office.svg" },
+    { name: "Okaya", logo: "/office.svg" },
+    { name: "LG", logo: "/office.svg" },
+    { name: "Samsung", logo: "/office.svg" },
+    { name: "Panasonic", logo: "/office.svg" },
+    { name: "CATL", logo: "/office.svg" },
+  ]);
+  const [newBattery, setNewBattery] = useState("");
+  const [newBatteryLogo, setNewBatteryLogo] = useState<string | null>(null);
+  const [openBatteryDialog, setOpenBatteryDialog] = useState(false);
+  const LeadAcidSubtype: LeadAcidSubtype[] = ["40Ah", "75Ah", "100Ah", "150Ah", "200Ah"];
 
-  // Panel, invertor, and proposal structure states
-  // const [paneltype, setPanelType] = useState<PanelType | "">("");
-  // const [invertorSize, setInverotorSize] = useState<InvertorSize | "">("");
-  // const [proposalStructure, setProposalStructure] = useState<ProposalStructure | "">("");
-  // const [invertortype, setInvertortype] = useState<Invertortype | "">("");
-  // const [invertorPhase, setInvertorPhase] = useState<InvertorPhase | "">("");
 
   // Invertor and cable brands
+  const [openInvertor, setOpenInvertor] = useState(false);
   const [, setInvertorBrands] = useState<string[]>([]);
   const [brands, setBrands] = useState<{ name: string; logo?: string }[]>([
     { name: "Luminous", logo: "/office.svg" },
@@ -234,6 +239,9 @@ export default function ProposalPage() {
     { name: "Schneider Electric", logo: "/office.svg" },
     { name: "Huawei", logo: "/office.svg" }
   ]);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [newBrand, setNewBrand] = useState("");
+  const [newLogo, setNewLogo] = useState<string | null>(null);
 
   // Cable brands
   const [cableBrandList, setCableBrandList] = useState<string[]>([
@@ -241,16 +249,16 @@ export default function ProposalPage() {
   ]);
   const [, setCableBrands] = useState<string[]>([]);
 
-  // Dialog and other UI related states
-  const [openDialog, setOpenDialog] = useState(false);
-  const [newBrand, setNewBrand] = useState("");
-  const [newLogo, setNewLogo] = useState<string | null>(null);
-  const [openGraph, setOpenGraph] = useState(false);
-  // const [graphType, setGraphType] = useState<GraphType | "">("");
-  // const [directionType, setDirectionType] = useState<DirectionType | "">("");
+  const [panelBrand,] = useState<string[]>([
+    "Waaree Energies", "Tata Power Solar", "Adani Solar", "Vikram Solar", " Goldi Solar", "Rayzon Solar"
+  ]);
+  // const [, setPanelBrands] = useState<string[]>([]);
+  // const [newPanel, setNewPanel] = useState<string>("")
+  // const [, setOpenPanelDialog] = useState(false)
 
-  // Structure description
-  // const [structureDes, setStructureDes] = useState<string>("");
+  // Dialog and other UI related states
+
+  // const [openGraph, setOpenGraph] = useState(false);
   const [newCable, setNewCable] = useState<string>(" ");
   const [openCableDialog, setOpenCableDialog] = useState(false);
 
@@ -260,43 +268,32 @@ export default function ProposalPage() {
 
 
   useEffect(() => {
-    const yearlyConsumption = parseFloat(proposal.yearlyconsumption || "0");
-    const yearlyGeneration = parseFloat(proposal.yearlysolargeneration || "0");
-    const priceIncrement = parseFloat(proposal.priceincrement || "0");
-    const generationDecrement = parseFloat(proposal.decrementgeneration || "0");
-    const yearsToPlot = parseInt(proposal.plotgraph || "0", 10);
+    const consumption = parseFloat(proposal.consumption || "0");
+    const generation = parseFloat(proposal.generation || "0");
 
-    const newData: { month: string; increment: number; decrement: number }[] = [];
+    const yearsToPlot = 10; // fixed
+
+    const newData: GraphDatum[] = [];
 
     for (let year = 1; year <= yearsToPlot; year++) {
-      const adjustedGeneration =
-        yearlyGeneration *
-        Math.pow(1 - generationDecrement / 100, year - 1);
+      const adjustedConsumption =
+        consumption * Math.pow(1 + 0.02, year - 1); // +2% each year
 
-      const adjustedPrice =
-        yearlyConsumption *
-        Math.pow(1 + priceIncrement / 100, year - 1);
+      const adjustedGeneration =
+        generation * Math.pow(1 - 0.004, year - 1); // -0.4% each year
 
       newData.push({
-        month: `${year}`,
-        increment: adjustedPrice,
-        decrement: adjustedGeneration
+        month: `${year}`, // keep property name "month"
+        increment: adjustedConsumption, // match GraphDatum
+        decrement: adjustedGeneration,  // match GraphDatum
       });
     }
 
-    // 🔹 reverse if direction is "Right to Left"
-    const finalData =
-      proposal.directionType === "Right to Left" ? [...newData].reverse() : newData;
+    setGraphData(newData);
+  }, [proposal.consumption, proposal.generation]);
 
-    setGraphData(finalData);
-  }, [
-    proposal.yearlyconsumption,
-    proposal.yearlysolargeneration,
-    proposal.priceincrement,
-    proposal.decrementgeneration,
-    proposal.plotgraph,
-    proposal.directionType
-  ]);
+
+
 
 
 
@@ -325,9 +322,11 @@ export default function ProposalPage() {
     fetchMasterData();
   }, []);
 
-  const [rows, setRows] = useState<RowType[]>([
+  const [rows, setRows] = useState([
+    { description: "", price: 0, quantity: 0, note: "" },
     { description: "", price: 0, quantity: 0, note: "" },
   ]);
+
   const [gst, setGst] = useState<number>(0);
   const [subtotal, setSubtotal] = useState<number>(0);
   const [gstAmount, setGstAmount] = useState<number>(0);
@@ -343,16 +342,48 @@ export default function ProposalPage() {
     updated[index][field] = value;
     setRows(updated);
   };
+  // State to track which row the menu is open for
+  const [openNoteRow, setOpenNoteRow] = useState<number | null>(null);
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [menuRowIndex, setMenuRowIndex] = useState<number | null>(null);
 
-  const handleAddRow = () => {
-    setRows([...rows, { description: "", price: 0, quantity: 0, note: "" }]);
+
+  // Open menu handler
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, rowIndex: number) => {
+    setAnchorEl(event.currentTarget as HTMLElement);
+    setMenuRowIndex(rowIndex);
   };
 
+
+  // Close menu
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuRowIndex(null);
+  };
+
+  // Delete row
   const handleDeleteRow = (index: number) => {
     const updated = rows.filter((_, i) => i !== index);
     setRows(updated);
+    handleMenuClose();
   };
+  const handleDeleteNote = (rowIndex: number) => {
+    handleRowChange(rowIndex, "note", ""); // clear the note field
+    setOpenNoteRow(null); // hide the note input again if you want
+  }
 
+  // Add row below
+  const handleAddRowBelow = () => {
+    if (menuRowIndex === null) return;
+    const newRow = { description: "", price: 0, quantity: 0, note: "" };
+    const updated = [
+      ...rows.slice(0, menuRowIndex + 1),
+      newRow,
+      ...rows.slice(menuRowIndex + 1),
+    ];
+    setRows(updated);
+    handleMenuClose();
+  };
 
   // Calculate subtotal, GST, and total
   useEffect(() => {
@@ -383,18 +414,21 @@ export default function ProposalPage() {
 
     // Save image in the proposal object
     proposal.tableImage = dataUrl;
+    toast.info("📤 Uploading image...");
 
     // Send to backend
-    await fetch(`${import.meta.env.VITE_API_URL}/api/upload-table-image`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: dataUrl }),
-    });
+    await fetch(
+      // `http://localhost:5000/api/upload-table-image`,
+      `${import.meta.env.VITE_API_URL}/api/upload-table-image`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl }),
+      });
 
     // alert("Table image sent!");
     toast.success("✅ Image Saved")
   };
-
 
   const fetchProposals = async () => {
     try {
@@ -406,18 +440,6 @@ export default function ProposalPage() {
     }
   };
 
-  const handleDelete = async (id?: string) => {
-    if (!id) return;
-    try {
-      await axios.delete(
-        `${import.meta.env.VITE_API_URL}/api/proposal/${id}`);
-      // `http://localhost:5000/api/proposal/${id}`);
-      fetchProposals();
-      toast.success("🗑️ Proposal deleted");
-    } catch {
-      toast.error("❌ Failed to delete proposal");
-    }
-  };
 
   const handleAddOrUpdateProposal = async (e: FormEvent) => {
     e.preventDefault();
@@ -432,6 +454,25 @@ export default function ProposalPage() {
 
     // Small delay to ensure state update above is committed
     await new Promise(r => setTimeout(r, 0));
+    const currentProposal: Proposal = { ...proposal };
+
+    // 1️⃣ capture graph if present
+    if (graphRef.current) {
+      try {
+        await handleSaveGraph(currentProposal); // will set currentProposal.graphimage + upload
+      } catch (err) {
+        console.error("Graph capture failed", err);
+      }
+    }
+
+    // 2️⃣ capture table if present
+    if (tableRef.current) {
+      try {
+        await handleCapture(currentProposal); // will set currentProposal.tableImage + upload
+      } catch (err) {
+        console.error("Table capture failed", err);
+      }
+    }
 
     // 2️⃣ Required fields check
     const requiredFields = [
@@ -439,6 +480,7 @@ export default function ProposalPage() {
       "clientPhone",
       "clientEmail",
       "clientAddress",
+      "clienttitle",
       "customerType",
       "projectsize",
       "consumption",
@@ -447,6 +489,8 @@ export default function ProposalPage() {
       "warranty",
       "proposalWattpeak",
       "Invertorwarranty",
+      "batteryBrands",
+      "batterytype",
       "performancewarranty",
       "quantity",
       "InvertorSize",
@@ -475,11 +519,14 @@ export default function ProposalPage() {
       return;
     }
 
+
+
     // 3️⃣ Send to backend
     try {
       if (editingId) {
         // Update existing proposal
         await axios.put(
+          // `http://localhost:5000/api/proposal/${editingId}`,
           `${import.meta.env.VITE_API_URL}/api/proposal/${editingId}`,
           proposal
         );
@@ -487,11 +534,14 @@ export default function ProposalPage() {
       } else {
         // Add new proposal
         await axios.post(
+          // `http://localhost:5000/api/proposal/add-proposal`,
           `${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`,
           proposal
         );
         toast.success("✅ Proposal added");
       }
+      // const html = generateSolarQuoteHTML(currentProposal);
+      // setPreviewHtml(html);
 
       // 4️⃣ Reset state
       setProposal({
@@ -499,6 +549,7 @@ export default function ProposalPage() {
         clientPhone: "",
         clientEmail: "",
         clientAddress: "",
+        clienttitle: "",
         customerType: "",
         projectsize: "",
         consumption: "",
@@ -514,7 +565,9 @@ export default function ProposalPage() {
         quantity: "",
         invertorquantitiy: "",
         invertortype: "",
-        cableBrands: [],
+        batteryBrands: "",
+        batterytype: "",
+        cableBrands: "",
         proposalStructure: "",
         structureDes: "",
         systemwarranty: "",
@@ -522,12 +575,6 @@ export default function ProposalPage() {
         stage2: "",
         stage3: "",
         stage4: "",
-        yearlyconsumption: "",
-        yearlysolargeneration: "",
-        decrementgeneration: "",
-        plotgraph: "",
-        directionType: "",
-        priceincrement: "",
         services: [],
         products: [],
         employees: [],
@@ -560,87 +607,48 @@ export default function ProposalPage() {
 
   const handleSaveGraph = async (proposal: Proposal) => {
     console.log("📌 handleSaveGraph called");
-  
+
     if (!graphRef.current) {
       console.error("❌ graphRef.current is null");
       toast.error("Graph element not found");
       return;
     }
-  
+
     try {
       console.log("📌 Taking snapshot of the graph DOM...");
       const canvas = await html2canvas(graphRef.current);
-  
+
       console.log("📌 Converting canvas to data URL...");
       const dataUrl = canvas.toDataURL("image/png");
       console.log("📌 Data URL generated:", dataUrl.slice(0, 100), "...");
-  
+
       proposal.graphimage = dataUrl;
       console.log("📌 proposal.graphimage updated");
-  
+
       // Show loading toast or spinner
       toast.info("📤 Uploading image...");
-  
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: dataUrl }),
-      });
-  
+
+      const res = await fetch(
+        // `http://localhost:5000/api/proposal/uploadGraph`,
+        `${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: dataUrl }),
+        });
+
       if (!res.ok) {
         const errorText = await res.text();
         throw new Error(`Upload failed: ${res.status} ${errorText}`);
       }
-  
+
       const json = await res.json();
       console.log("📌 Backend response:", json);
-  
+
       toast.success("✅ Graph Image Saved");
     } catch (err: any) {
       console.error("❌ handleSaveGraph Error:", err);
       toast.error(`Failed to save graph: ${err.message}`);
-    }
-  };
-  const handleEditClick = (p: Proposal) => {
-    setEditData(editData);
-    setProposal(p);
-    setEditingId(p._id || null);
-  };
-
-  const handleDownloadPdf = async (id?: string) => {
-    if (!id) return;
-    try {
-      setLoadingPdf(id);
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/proposal/${id}/pdf`,
-        // `http://localhost:5000/api/proposal/${id}/pdf`,
-        { responseType: "blob" }
-      );
-
-      const blob = new Blob([res.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-
-      // Open in new tab (optional)
-      const newWindow = window.open(url, "_blank");
-      if (!newWindow) {
-        // Fallback: force download
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `proposal_${id}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-      }
-
-      // Delay revoking URL to allow download
-      setTimeout(() => window.URL.revokeObjectURL(url), 1000);
-
-      toast.success("✅ PDF ready");
-    } catch (err) {
-      console.error("PDF download error:", err);
-      toast.error("❌ Failed to download PDF");
-    } finally {
-      setLoadingPdf(null);
     }
   };
 
@@ -670,9 +678,6 @@ export default function ProposalPage() {
     }));
   };
 
-  const handleDeleteCableBrand = (brandToDelete: string) => {
-    setCableBrands((prev) => prev.filter((b) => b !== brandToDelete));
-  };
   const handleAddCable = () => {
     if (newCable.trim() && !cableBrandList.includes(newCable)) {
       setCableBrandList((prev) => [...prev, newCable]);
@@ -683,6 +688,37 @@ export default function ProposalPage() {
   };
 
 
+  const handleBatteryLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewBatteryLogo(reader.result as string);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  const handleAddBattery = () => {
+    if (
+      newBattery.trim() &&
+      !batteryBrandList.some((t) => t.name === newBattery)
+    ) {
+      // add to list
+      setBatteryBrandList([
+        ...batteryBrandList,
+        { name: newBattery, logo: newBatteryLogo || undefined },
+      ]);
+
+      // set selected brand to the new one (single string)
+      setBatteryBrand(newBattery);
+    }
+    setNewBattery('');
+    setNewBatteryLogo(null);
+    setOpenBatteryDialog(false);
+  };
+
+
+
 
   return (
     <Stack spacing={5} sx={{ maxWidth: 900, margin: "auto", mt: 5 }}>
@@ -691,31 +727,50 @@ export default function ProposalPage() {
         <h1 className="text-3xl flex justify-center font-bold">📑 Add Proposal</h1>
         <CardContent>
           <form onSubmit={handleAddOrUpdateProposal}>
-            <Stack spacing={2}>
-              <TextField
-                label="Client Name"
-                variant="filled"
-                value={proposal.clientName}
-                onChange={(e) => setProposal({ ...proposal, clientName: e.target.value })}
-                fullWidth
-              />
-              <div className="flex flex-row gap-4">
 
+            <Stack spacing={2}>
+              <div className="flex flex-row">
+                <FormControl sx={{ marginRight: 2, width: 100 }} variant="filled">
+                  <InputLabel id="client-type-label">Title</InputLabel>
+                  <Select
+                    labelId="client-type-label"
+                    value={proposal.clienttitle}
+                    onChange={(e) =>
+                      setProposal({ ...proposal, clienttitle: e.target.value as ClientPrefix })
+                    }
+                  >
+                    <MenuItem value="Mr.">Mr.</MenuItem>
+                    <MenuItem value="Mrs.">Mrs.</MenuItem>
+                    <MenuItem value="Ms.">Ms.</MenuItem>
+                  </Select>
+                </FormControl>
+                <TextField
+                  label="Client Name"
+                  variant="filled"
+                  value={proposal.clientName}
+                  onChange={(e) => setProposal({ ...proposal, clientName: e.target.value })}
+                  fullWidth
+                />
+              </div>
+
+              <div className="flex flex-row gap-4">
                 <TextField
                   label="Client Phone"
                   placeholder="0987654321"
                   variant="filled"
                   value={proposal.clientPhone}
                   onChange={(e) => setProposal({ ...proposal, clientPhone: e.target.value })}
+                  sx={{ flex: 1 }}
                 />
                 <TextField
                   label="Client Email"
-                  placeholder="coustome@gail.com"
+                  placeholder="customer@gmail.com"
                   variant="filled"
                   value={proposal.clientEmail}
                   onChange={(e) => setProposal({ ...proposal, clientEmail: e.target.value })}
+                  sx={{ flex: 1 }}
                 />
-                <FormControl fullWidth variant="filled">
+                <FormControl fullWidth variant="filled" sx={{ flex: 1 }}>
                   <InputLabel id="customer-type-label">Customer Type</InputLabel>
                   <Select
                     labelId="customer-type-label"
@@ -731,8 +786,22 @@ export default function ProposalPage() {
                     <MenuItem value="others">Others</MenuItem>
                   </Select>
                 </FormControl>
-
               </div>
+
+              {/* Conditional input for 'Others' */}
+              {proposal.customerType === "others" && (
+                <TextField
+                  label="Specify Other Customer Type"
+                  placeholder="Enter customer type"
+                  variant="filled"
+                  value={proposal.otherCustomerType || ""}
+                  onChange={(e) => setProposal({ ...proposal, otherCustomerType: e.target.value })}
+                  fullWidth
+                  sx={{ mt: 2 }}
+                />
+              )}
+
+
               <div className="flex flex-row gap-4">
 
                 <TextField
@@ -810,6 +879,24 @@ export default function ProposalPage() {
                     </Typography>
 
                     <Stack spacing={2}>
+                      <FormControl fullWidth variant="filled">
+                        <InputLabel id="panel-brand-label">Panel Brand</InputLabel>
+                        <Select
+                          labelId="panel-brand-label"
+                          value={proposal.panelBrands || ""}
+                          onChange={(e) =>
+                            setProposal({ ...proposal, panelBrands: e.target.value as string })
+                          }
+                          displayEmpty
+                        >
+                          {panelBrand.map((brand, index) => (
+                            <MenuItem key={index} value={brand}>
+                              {brand}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+
                       <TextField
                         label="Watt Peak (WP)"
                         placeholder="e.g: 590"
@@ -1074,6 +1161,10 @@ export default function ProposalPage() {
                             setProposal({ ...proposal, InvertorSize: e.target.value as InvertorSize })
                           }
                         >
+                          {/* "2kw-1ph" |"3kw-1ph" | "5kw-1ph"  */}
+                          <MenuItem value="2kw-1ph"> 2kw-1ph</MenuItem>
+                          <MenuItem value="3kw-1ph">3kw-1ph</MenuItem>
+                          <MenuItem value="5kw-1ph">5kw-1ph</MenuItem>
                           <MenuItem value="5KW- 3P">5KW- 3P</MenuItem>
                           <MenuItem value="6KW- 3P">6KW- 3P</MenuItem>
                           <MenuItem value="8KW- 3P">8KW- 3P</MenuItem>
@@ -1098,6 +1189,9 @@ export default function ProposalPage() {
                             setProposal({ ...proposal, invertortype: e.target.value as Invertortype })
                           }
                         >
+                          {/* "Off Grid Inverter" | "Hybrid Inverter" */}
+                          <MenuItem value="Off Grid Inverter">Off Grid Inverter</MenuItem>
+                          <MenuItem value="Hybrid Inverter">Hybrid Inverter</MenuItem>
                           <MenuItem value="String Invertor">String Invertor</MenuItem>
                           <MenuItem value="Micro Invertor">Micro Invertor</MenuItem>
                         </Select>
@@ -1132,6 +1226,184 @@ export default function ProposalPage() {
                 </Collapse>
               </Stack>
 
+
+              {/* Battery details  */}
+              <Stack spacing={2}>
+                {/* Button to toggle invertor section */}
+                <button
+                  type="button"
+                  className="rounded-2xl p-5 bg-blue-200"
+                  onClick={() => setOpenBattery(!openBattery)}
+                >
+                  <div className="flex text-right justify-between">
+                    <span className="font-semibold text-lg">
+                      Battery Details
+                    </span>
+                    <span className="bg-blue-600 p-2 rounded-full">
+                      {openBattery ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />}
+                    </span>
+                  </div>
+                </button>
+
+                {/* Collapsible Inverotr Section */}
+                <Collapse in={openBattery}>
+                  <Box
+                    sx={{
+                      border: "1px solid #ccc",
+                      borderRadius: 2,
+                      p: 2,
+                      bgcolor: "#f9f9f9",
+                    }}
+                  >
+                    <Stack spacing={2}>
+                      <div>
+                        {/* Multi-Select Battery Brands */}
+                        <FormControl fullWidth variant="filled">
+                          <InputLabel id="battery-brand-label">Select Battery Brand</InputLabel>
+                          <Select
+                            labelId="battery-brand-label"
+                            // ❌ remove multiple
+                            value={batteryBrand || ''} // single string
+                            onChange={(e) => setBatteryBrand(e.target.value as string)} // store string
+                            renderValue={(selected) => {
+                              // selected is a string here
+                              const brand = batteryBrandList.find((b) => b.name === selected);
+                              return (
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                  {brand?.logo && (
+                                    <Avatar
+                                      src={brand.logo}
+                                      alt={brand.name}
+                                      sx={{ width: 24, height: 24 }}
+                                    />
+                                  )}
+                                  <span>{brand?.name || selected}</span>
+                                </Stack>
+                              );
+                            }}
+                          >
+                            {batteryBrandList.map((brand, index) => (
+                              <MenuItem key={index} value={brand.name}>
+                                {brand.logo && (
+                                  <Avatar
+                                    src={brand.logo}
+                                    alt={brand.name}
+                                    sx={{ width: 24, height: 24, marginRight: 1 }}
+                                  />
+                                )}
+                                {brand.name}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+
+
+                        {/* Button to open dialog */}
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => setOpenBatteryDialog(true)}
+                          sx={{ mt: 2, width: "auto", alignSelf: "flex-start" }}
+                        >
+                          ➕ Add Battery Brand
+                        </Button>
+
+                        {/* Dialog for adding new battery brand */}
+                        <Dialog open={openBatteryDialog} onClose={() => setOpenBatteryDialog(false)}>
+                          <DialogTitle>Add Battery Brand</DialogTitle>
+                          <DialogContent>
+                            <TextField
+                              autoFocus
+                              margin="dense"
+                              label="Brand Name"
+                              fullWidth
+                              value={newBattery}
+                              onChange={(e) => setNewBattery(e.target.value)}
+                            />
+                            <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
+                              <input
+                                accept="image/*"
+                                id="upload-battery-logo"
+                                type="file"
+                                style={{ display: "none" }}
+                                onChange={handleBatteryLogoUpload}
+                              />
+                              <label htmlFor="upload-battery-logo">
+                                <Button variant="contained" component="span" startIcon={<UploadIcon />}>
+                                  Upload Logo
+                                </Button>
+                              </label>
+                              {newBatteryLogo && (
+                                <Avatar
+                                  src={newBatteryLogo}
+                                  alt="preview"
+                                  sx={{ width: 50, height: 50, border: "2px solid #1976d2" }}
+                                />
+                              )}
+                            </Stack>
+                          </DialogContent>
+                          <DialogActions>
+                            <Button onClick={() => setOpenBatteryDialog(false)}>Cancel</Button>
+                            <Button onClick={handleAddBattery} variant="contained" color="success">
+                              Add
+                            </Button>
+                          </DialogActions>
+                        </Dialog>
+                      </div>
+
+                      <Box sx={{ maxWidth: 400, mx: "auto", mt: 4 }}>
+                        <Typography variant="h6" gutterBottom>
+                          Select Battery Type
+                        </Typography>
+
+                        {/* Main Battery Type */}
+                        <FormControl fullWidth variant="filled">
+                          <InputLabel id="battery-type-label">Battery Type</InputLabel>
+                          <Select
+                            labelId="battery-type-label"
+                            value={proposal.batterytype || ""}
+                            onChange={(e) =>
+                              setProposal({
+                                ...proposal,
+                                batterytype: e.target.value as BatteryType,
+                                leadAcidSubtype: "", // reset subtype when changing main type
+                              })
+                            }
+                          >
+                            <MenuItem value="Li-Ion">Li-Ion</MenuItem>
+                            <MenuItem value="Lead-Acid">Lead-Acid</MenuItem>
+                          </Select>
+                        </FormControl>
+
+                        {/* Conditional Lead-Acid Subtype */}
+                        {proposal.batterytype === "Lead-Acid" && (
+                          <FormControl fullWidth variant="filled" sx={{ mt: 2 }}>
+                            <InputLabel id="lead-acid-subtype-label">
+                              Lead-Acid Subtype
+                            </InputLabel>
+                            <Select
+                              labelId="lead-acid-subtype-label"
+                              value={proposal.leadAcidSubtype || ""}
+                              onChange={(e) =>
+                                setProposal({
+                                  ...proposal,
+                                  leadAcidSubtype: e.target.value as LeadAcidSubtype,
+                                })
+                              }
+                            >
+                              {LeadAcidSubtype.map((subtype) => (
+                                <MenuItem key={subtype} value={subtype}>
+                                  {subtype}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        )}
+                      </Box>
+                    </Stack>
+                  </Box>
+                </Collapse>
+              </Stack>
               {/* Proposal detils here  */}
               <Stack spacing={2}>
                 {/* Button to toggle panel section */}
@@ -1191,23 +1463,16 @@ export default function ProposalPage() {
                         fullWidth
                       />
 
-                      {/* Multi Select */}
+
                       <Select
-                        multiple
-                        value={proposal.cableBrands || []}
+                        value={proposal.cableBrands || ""}
                         onChange={(e) =>
-                          setProposal({ ...proposal, cableBrands: e.target.value as string[] })
+                          setProposal({ ...proposal, cableBrands: e.target.value as string })
                         }
-                        renderValue={(selected) => (
-                          <Stack direction="row" spacing={1} flexWrap="wrap">
-                            {(selected as string[]).map((value) => (
-                              <Chip key={value} label={value} />
-                            ))}
-                          </Stack>
-                        )}
+                        displayEmpty
                       >
                         <MenuItem disabled value="">
-                          Select Cable Brands
+                          Select Cable Brand
                         </MenuItem>
                         {cableBrandList.map((brand, index) => (
                           <MenuItem key={index} value={brand}>
@@ -1215,6 +1480,7 @@ export default function ProposalPage() {
                           </MenuItem>
                         ))}
                       </Select>
+
 
 
                       {/* Button to open dialog */}
@@ -1253,40 +1519,36 @@ export default function ProposalPage() {
                       </Dialog>
                       {/* Show selected brands in separate boxes with delete */}
                       <Box sx={{ mt: 3 }}>
-                        <h3>Selected Cable Brands:</h3>
-                        <Stack direction="column" spacing={2}>
-                          {proposal.cableBrands?.map((brand) => (
-                            <Stack
-                              key={brand}
-                              direction="row"
-                              alignItems="center"
-                              justifyContent="space-between"
-                              spacing={2}
-                              sx={{
-                                p: 1.5,
-                                border: "1px solid #ddd",
-                                borderRadius: 2,
-                                bgcolor: "#fafafa",
-                              }}
-                            >
-                              {/* Brand logo + name */}
-                              <Stack direction="row" alignItems="center" spacing={1}>
-                                <img
-                                  src={`/assets/cable-logos/${brand.toLowerCase()}.png`} // put logos in public/assets/cable-logos/
-                                  alt={brand}
-                                  style={{ width: 40, height: 40, objectFit: "contain" }}
-                                />
-                                <span style={{ fontWeight: 500 }}>{brand}</span>
-                              </Stack>
-
-                              {/* Delete button */}
-                              <IconButton color="error" onClick={() => handleDeleteCableBrand(brand)}>
-                                <ClearIcon />
-                              </IconButton>
+                        <h3>Selected Cable Brand:</h3>
+                        {proposal.cableBrands ? (
+                          <Stack
+                            direction="row"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            spacing={2}
+                            sx={{
+                              p: 1.5,
+                              border: "1px solid #ddd",
+                              borderRadius: 2,
+                              bgcolor: "#fafafa",
+                            }}
+                          >
+                            {/* Brand logo + name */}
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                              <img
+                                src={`/assets/cable-logos/${proposal.cableBrands.toLowerCase()}.png`}
+                                alt={proposal.cableBrands}
+                                style={{ width: 40, height: 40, objectFit: "contain" }}
+                              />
+                              <span style={{ fontWeight: 500 }}>{proposal.cableBrands}</span>
                             </Stack>
-                          ))}
-                        </Stack>
+                          </Stack>
+                        ) : (
+                          <p style={{ color: "#777" }}>No brand selected</p>
+                        )}
                       </Box>
+
+
                       {/* structure description  */}
                       <FormControl fullWidth variant="filled">
                         <InputLabel id="structure-description-label">Structure Description</InputLabel>
@@ -1313,62 +1575,6 @@ export default function ProposalPage() {
                           setProposal({ ...proposal, systemwarranty: e.target.value })
                         }
                         fullWidth
-                      />
-                      <span>Balance of System</span>
-                      <TextareaAutosize
-                        maxRows={10}
-                        aria-label="Balance of System"
-                        value={proposal.balanceOfSystem}
-                        onChange={(e) =>
-                          setProposal({ ...proposal, balanceOfSystem: e.target.value })
-                        }
-                        style={{
-                          width: "100%",
-                          padding: "12px",
-                          fontSize: "16px",
-                          borderRadius: "8px",
-                          border: "1px solid #ccc",
-                          resize: "vertical",
-                          lineHeight: "1.5",
-                        }}
-                      />
-
-                      <span>Our Scope</span>
-                      <TextareaAutosize
-                        maxRows={10}
-                        aria-label="Our Scope"
-                        value={proposal.ourScope}
-                        onChange={(e) =>
-                          setProposal({ ...proposal, ourScope: e.target.value })
-                        }
-                        style={{
-                          width: "100%",
-                          padding: "12px",
-                          fontSize: "16px",
-                          borderRadius: "8px",
-                          border: "1px solid #ccc",
-                          resize: "vertical",
-                          lineHeight: "1.5",
-                        }}
-                      />
-
-                      <span>Customer Scope</span>
-                      <TextareaAutosize
-                        maxRows={10}
-                        aria-label="Customer Scope"
-                        value={proposal.customerScope}
-                        onChange={(e) =>
-                          setProposal({ ...proposal, customerScope: e.target.value })
-                        }
-                        style={{
-                          width: "100%",
-                          padding: "12px",
-                          fontSize: "16px",
-                          borderRadius: "8px",
-                          border: "1px solid #ccc",
-                          resize: "vertical",
-                          lineHeight: "1.5",
-                        }}
                       />
 
                       <TextField
@@ -1411,9 +1617,40 @@ export default function ProposalPage() {
               {/* graph creation  */}
 
               <Stack spacing={2}>
+                <span className="text-2xl font-semibold text-center">Graph preview: </span>
+                <Box
+                  sx={{
+                    width: "100%",
+                    height: 450,
+                    mt: 3,
+                    border: "1px solid #ccc",
+                    borderRadius: 2,
+                    p: 2,
+                    bgcolor: "#fff",
+                  }}
+                >
+                  <Typography variant="h6" gutterBottom>
+                    📊 Monthly Generation Values (per kWp)
+                  </Typography>
 
+                  <div>
+                    <div ref={graphRef} style={{ width: "100%", height: "400px" }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={graphData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" />
+                          <YAxis label={{ value: "Amount (kWh)", angle: -90, position: "insideLeft" }} />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="increment" name="Increment" fill="#1f3c88" barSize={20} />
+                          <Bar dataKey="decrement" name="Decrement" fill="#ff6b6b" barSize={20} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </Box>
                 {/* Button to toggle graph section */}
-                <button
+                {/* <button
                   type="button"
                   className="rounded-2xl p-5 bg-blue-200"
                   onClick={() => setOpenGraph(!openGraph)}
@@ -1424,10 +1661,10 @@ export default function ProposalPage() {
                       {openGraph ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />}
                     </span>
                   </div>
-                </button>
+                </button> */}
 
                 {/* Collapsible Panel Section */}
-                <Collapse in={openGraph}>
+                {/* <Collapse in={openGraph}>
                   <Box
                     sx={{
                       border: "1px solid #ccc",
@@ -1435,34 +1672,10 @@ export default function ProposalPage() {
                       p: 2,
                       bgcolor: "#f9f9f9",
                     }}
-                  >
-                    <Stack spacing={2}>
-                      <Typography variant="h6" gutterBottom>
-                        📊 Edit Graph
-                      </Typography>
+                  > */}
+                <Stack spacing={2}>
 
-                      {/* Graph type */}
-                      {/* <FormControl fullWidth variant="filled">
-                        <InputLabel id="graph-type-label">Graph Type</InputLabel>
-                        <Select
-                          labelId="graph-type-label"
-                          value={proposal.graphType}
-                          onChange={(e) =>
-                            setProposal({ ...proposal, graphType: e.target.value as GraphType })
-                          }
-                        >
-                          <MenuItem value="Mono">Mono</MenuItem>
-                          <MenuItem value="Mono-Perv">Mono-Perv</MenuItem>
-                          <MenuItem value="Poly">Poly</MenuItem>
-                          <MenuItem value="BIVP">BIVP</MenuItem>
-                          <MenuItem value="Mono-Prev Half Cut">Mono-Prev Half Cut</MenuItem>
-                          <MenuItem value="Mono BiFacial">Mono BiFacial</MenuItem>
-                          <MenuItem value="TopCon MonoFacial">TopCon MonoFacial</MenuItem>
-                          <MenuItem value="TopCon BiFacial">TopCon BiFacial</MenuItem>
-                        </Select>
-                      </FormControl> */}
-
-                      <span>Data:</span>
+                  {/* <span>Data:</span>
 
                       <TextField
                         label="Yearly consumption kWH"
@@ -1531,40 +1744,11 @@ export default function ProposalPage() {
                           <MenuItem value="Left to Right">Left to Right</MenuItem>
                           <MenuItem value="Right to Left">Right to Left</MenuItem>
                         </Select>
-                      </FormControl>
+                      </FormControl> */}
 
-                      {/* Chart */}
-                      <span>Graph preview: </span>
-                      <Box
-                        sx={{
-                          width: "100%",
-                          height: 450,
-                          mt: 3,
-                          border: "1px solid #ccc",
-                          borderRadius: 2,
-                          p: 2,
-                          bgcolor: "#fff",
-                        }}
-                      >
-                        <Typography variant="h6" gutterBottom>
-                          📊 Monthly Generation Values (per kWp)
-                        </Typography>
+                  {/* Chart */}
 
-                        <div>
-                          <div ref={chartRef} style={{ width: "100%", height: "400px" }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                              <BarChart data={graphData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="month" />
-                                <YAxis label={{ value: "Amount (kWh)", angle: -90, position: "insideLeft" }} />
-                                <Tooltip />
-                                <Legend />
-                                <Bar dataKey="increment" name="Increment" fill="#1f3c88" barSize={20} />
-                                <Bar dataKey="decrement" name="Decrement" fill="#ff6b6b" barSize={20} />
-                              </BarChart>
-                            </ResponsiveContainer>
-                          </div>
-                          <div className="flex justify-center" ref={graphRef}>
+                  {/* <div className="flex justify-center" >
                             <Button
                               type="button"
                               onClick={() => handleSaveGraph(proposal)}
@@ -1587,55 +1771,56 @@ export default function ProposalPage() {
                             </Button>
 
 
-                          </div>
+                          </div> */}
 
-                        </div>
+                  {/* </div>
 
-                      </Box>
-                      <span>Monthly Generation Value (per kWp)</span>
+                      </Box> */}
+                  <span className="text-center text-lg">Yearly Generation Value (per kWp)</span>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 1,
+                    }}
+                  >
+                    {graphData.map((m) => (
                       <Box
+                        key={m.month}
                         sx={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: 1,
+                          padding: 2,
+                          border: "1px solid #ccc",
+                          borderRadius: 2,
+                          textAlign: "center",
+                          minWidth: 50,
+                          cursor: "pointer",
+                          "&:hover": {
+                            backgroundColor: "#f0f0f0",
+                          },
                         }}
                       >
-                        {graphData.map((m) => (
-                          <Box
-                            key={m.month}
-                            sx={{
-                              padding: 2,
-                              border: "1px solid #ccc",
-                              borderRadius: 2,
-                              textAlign: "center",
-                              minWidth: 50,
-                              cursor: "pointer",
-                              "&:hover": {
-                                backgroundColor: "#f0f0f0",
-                              },
-                            }}
-                          >
-                            {m.month}
-                          </Box>
-                        ))}
+                        {m.month}
                       </Box>
-                    </Stack>
+                    ))}
                   </Box>
-                </Collapse>
+                </Stack>
+                {/* </Box>
+                </Collapse> */}
               </Stack>
 
-
+              <Divider />
               <Box sx={{ width: '100%', mt: 3 }}>
+                <div className="text-center text-2xl mt-6 ">Table </div>
                 <div>
                   <div ref={tableRef}>
                     <Table>
                       <TableHead>
                         <TableRow sx={{ backgroundColor: "#003366" }}>
+                          <TableCell sx={{ color: "white" }}></TableCell>
                           <TableCell sx={{ color: "white" }}>Description</TableCell>
-                          <TableCell sx={{ color: "white" }}>Price</TableCell>
+                          <TableCell sx={{ color: "white" }}>Price / kW</TableCell>
                           <TableCell sx={{ color: "white" }}>Quantity</TableCell>
                           <TableCell sx={{ color: "white" }}>Subtotal</TableCell>
-                          <TableCell sx={{ color: "white" }}></TableCell>
                         </TableRow>
                       </TableHead>
 
@@ -1644,167 +1829,217 @@ export default function ProposalPage() {
                           <TableRow
                             key={index}
                             sx={{
-                              backgroundColor: index % 2 === 0 ? "lightblue" : "white",
+                              backgroundColor: index % 2 === 0 ? "#f0f6ff" : "white"
                             }}
                           >
-                            {/* Description */}
+                            {/* menu button */}
+                            <TableCell width={50}>
+                              <IconButton onClick={(e) => handleMenuOpen(e, index)}>
+                                <MoreVertIcon />
+                              </IconButton>
+                            </TableCell>
+
                             <TableCell>
                               <TextField
                                 variant="standard"
                                 placeholder="Give Description"
                                 fullWidth
                                 value={row.description}
-                                onChange={(e) => handleRowChange(index, "description", e.target.value)}
+                                onChange={(e) =>
+                                  handleRowChange(index, "description", e.target.value)
+                                }
                                 InputProps={{ disableUnderline: true }}
                               />
                             </TableCell>
 
-                            {/* Price */}
                             <TableCell>
                               <TextField
                                 type="number"
                                 variant="standard"
-                                placeholder="0"
                                 fullWidth
-                                value={row.price === 0 ? "" : row.price}
+                                value={row.price || ""}
                                 onChange={(e) =>
-                                  handleRowChange(index, "price", e.target.value === "" ? 0 : Number(e.target.value))
+                                  handleRowChange(index, "price", Number(e.target.value) || 0)
                                 }
                                 InputProps={{
                                   disableUnderline: true,
-                                  startAdornment: <span style={{ marginRight: 4 }}>₹</span>,
+                                  startAdornment: <span style={{ marginRight: 4 }}>₹</span>
                                 }}
                                 sx={{
-                                  "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-                                    { WebkitAppearance: "none", margin: 0 },
-                                  "& input[type=number]": { MozAppearance: "textfield" },
+                                  "& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button": {
+                                    WebkitAppearance: "none",
+                                    margin: 0
+                                  },
+                                  "& input[type=number]": { MozAppearance: "textfield" }
                                 }}
                               />
                             </TableCell>
 
-                            {/* Quantity */}
                             <TableCell>
                               <TextField
                                 type="number"
                                 variant="standard"
-                                placeholder="0"
                                 fullWidth
-                                value={row.quantity === 0 ? "" : row.quantity}
+                                placeholder="0" // ← added placeholder
+                                value={row.quantity || ""}
                                 onChange={(e) =>
-                                  handleRowChange(index, "quantity", e.target.value === "" ? 0 : Number(e.target.value))
+                                  handleRowChange(index, "quantity", Number(e.target.value) || 0)
                                 }
                                 InputProps={{ disableUnderline: true }}
                                 sx={{
-                                  "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-                                    { WebkitAppearance: "none", margin: 0 },
+                                  "& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button": {
+                                    WebkitAppearance: "none",
+                                    margin: 0,
+                                  },
                                   "& input[type=number]": { MozAppearance: "textfield" },
                                 }}
                               />
                             </TableCell>
 
-                            {/* Subtotal */}
-                            <TableCell>
-                              {/* subtotal */}
-                              <div>₹ {(Number(row.price) * Number(row.quantity)).toLocaleString("en-IN")}</div>
 
-                              {/* small note field */}
-                              <TextField
-                                variant="standard"
-                                placeholder="Add note"
-                                fullWidth
-                                value={row.note}
-                                onChange={(e) => handleRowChange(index, "note", e.target.value)}
-                                InputProps={{ disableUnderline: true }}
-                                sx={{
-                                  fontSize: "0.8rem",
-                                  mt: 0.5,
-                                  "& input": {
+                            <TableCell>
+                              ₹ {(row.price * row.quantity).toLocaleString("en-IN")}
+
+                              {openNoteRow === index && (
+                                <TextField
+                                  variant="standard"
+                                  placeholder="Add note"
+                                  fullWidth
+                                  value={row.note}
+                                  onChange={(e) => handleRowChange(index, "note", e.target.value)}
+                                  InputProps={{ disableUnderline: true }}
+                                  sx={{
                                     fontSize: "0.8rem",
-                                    color: "gray",
-                                  },
-                                }}
-                              />
+                                    mt: 0.5,
+                                    "& input": {
+                                      fontSize: "0.8rem",
+                                      color: "gray",
+                                    },
+                                  }}
+                                />
+                              )}
                             </TableCell>
 
-
-                            {/* Delete */}
-                            <TableCell>
-                              <IconButton onClick={() => handleDeleteRow(index)}>
-                                <DeleteIcon />
-                              </IconButton>
-                            </TableCell>
                           </TableRow>
                         ))}
 
-                        {/* Add Row */}
-                        <TableRow>
-                          <TableCell colSpan={5}>
-                            <Button startIcon={<AddIcon />} onClick={handleAddRow}>
-                              Add Row
-                            </Button>
-                          </TableCell>
-                        </TableRow>
 
                         {/* Subtotal */}
-                        <TableRow
-                          sx={{
-                            backgroundColor:
-                              (rows.length + 1) % 2 === 0 ? "lightblue" : "white",
-                          }}
-                        >
-                          <TableCell colSpan={3}>Subtotal</TableCell>
-                          <TableCell colSpan={2}>₹ {subtotal.toLocaleString("en-IN")}</TableCell>
-
+                        <TableRow>
+                          <TableCell></TableCell>
+                          <TableCell>Subtotal</TableCell>
+                          <TableCell>₹ {subtotal.toLocaleString("en-IN")}</TableCell>
+                          <TableCell></TableCell>
+                          <TableCell></TableCell>
                         </TableRow>
 
                         {/* GST */}
-                        <TableRow
-                          sx={{
-                            backgroundColor:
-                              (rows.length + 2) % 2 === 0 ? "lightblue" : "white",
-                          }}
-                        >
-                          <TableCell>GST %</TableCell>
-                          <TextField
-                            type="number"
-                            variant="standard"
-                            value={gst === 0 ? "" : gst}
-                            onChange={(e) => {
-
-                              const val = e.target.value === "" ? 0 : Number(e.target.value);
-                              setGst(val);
-                            }}
-                            InputProps={{ disableUnderline: true }}
-                            sx={{
-                              "& input[type=number]::-webkit-outer-spin-button, & input[type=number]::-webkit-inner-spin-button":
-                                { WebkitAppearance: "none", margin: 0 },
-                              "& input[type=number]": { MozAppearance: "textfield" },
-                            }}
-                            placeholder="0"
-                          />
-
-                          <TableCell colSpan={3}>₹ {gstAmount.toLocaleString("en-IN")}</TableCell>
+                        <TableRow>
+                          <TableCell></TableCell> {/* menu column */}
+                          <TableCell>GST %</TableCell> {/* description column */}
+                          <TableCell>
+                            <TextField
+                              type="number"
+                              variant="standard"
+                              value={gst || ""}
+                              onChange={(e) => setGst(Number(e.target.value) || 0)}
+                              InputProps={{
+                                disableUnderline: true,
+                              }}
+                              placeholder="0"
+                              sx={{
+                                "& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button": {
+                                  WebkitAppearance: "none",
+                                  margin: 0
+                                },
+                                "& input[type=number]": { MozAppearance: "textfield" } // Firefox
+                              }}
+                            />
+                          </TableCell> {/* price column (GST %) */}
+                          <TableCell></TableCell> {/* quantity column */}
+                          <TableCell>₹ {gstAmount.toLocaleString("en-IN")}</TableCell> {/* subtotal column */}
                         </TableRow>
-
                         {/* Total */}
-                        <TableRow
-                          sx={{
-                            backgroundColor:
-                              (rows.length + 3) % 2 === 0 ? "lightblue" : "white",
-                          }}
-                        >
-                          <TableCell colSpan={3}>
-                            <strong>Total Cost</strong>
+                        <TableRow sx={{ backgroundColor: "#003366" }}>
+                          <TableCell></TableCell>
+                          <TableCell colSpan={2} align="right" sx={{ color: "white" }}>
+                            Total Cost
                           </TableCell>
-                          <TableCell colSpan={2}>
-                            <strong>₹ {total.toLocaleString("en-IN")}</strong>
+                          <TableCell></TableCell>
+                          <TableCell sx={{ color: "white" }}>
+                            ₹ {total.toLocaleString("en-IN")}
                           </TableCell>
                         </TableRow>
+                        {/* Amount in Words Row */}
+                        <TableRow sx={{ backgroundColor: "#003366" }}>
+                          <TableCell colSpan={5} sx={{ p: 2 }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                color: "#fff",
+                              }}
+                            >
+                              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                                Amount in Words:
+                              </Typography>
+                              <Typography
+                                variant="h6"
+                                sx={{ fontWeight: "semibold", fontSize: 15 }}
+                              >
+                                {numberToWords(total)}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+
+
                       </TableBody>
+
+                      {/* 3-dot menu for add/delete */}
+                      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+                        <MenuItem onClick={handleAddRowBelow}>
+                          <AddIcon fontSize="small" /> Add Row Below
+                        </MenuItem>
+
+                        <MenuItem
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            if (menuRowIndex !== null) handleDeleteRow(menuRowIndex);
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" /> Delete Row
+                        </MenuItem>
+
+                        <MenuItem
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            if (menuRowIndex !== null) {
+                              setOpenNoteRow(prev => (prev === menuRowIndex ? null : menuRowIndex));
+                            }
+                            setAnchorEl(null); // close menu after clicking
+                          }}
+                        >
+                          <EditNoteIcon fontSize="small" /> Add/View Note
+                        </MenuItem>
+                        <MenuItem
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            if (menuRowIndex !== null) {
+                              handleDeleteNote(menuRowIndex);
+                            }
+                            setAnchorEl(null); // close menu after clicking
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" /> Delete Note
+                        </MenuItem>
+
+                      </Menu>
                     </Table>
                   </div>
-                  <Button
-                    onClick={() => handleCapture(proposal)} 
+                  {/* <Button
+                    onClick={() => handleCapture(proposal)}
                     variant="contained"
                     sx={{
                       px: 4,
@@ -1821,82 +2056,92 @@ export default function ProposalPage() {
                     }}
                   >
                     Save image as table
-                  </Button>
+                  </Button> */}
 
                 </div>
 
                 {/* Amount in Words Section */}
-                <Box sx={{ mt: 2, p: 2, backgroundColor: '#003366', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                    Amount in Words:
-                  </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 'semibold', fontSize: 15 }}>
-                    {numberToWords(total)}
-                  </Typography>
-                </Box>
               </Box>
 
               <div className="flex justify-center">
-                <Button type="submit" variant="contained" color="success">
-                  Add Proposal
-                </Button>
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 rounded mt-4"
+                >
+                  {editingId ? "Update Proposal" : "Add Proposal"}
+                </button>
 
               </div>
+              <span>Balance of System</span>
+              <TextareaAutosize
+                maxRows={10}
+                aria-label="Balance of System"
+                value={proposal.balanceOfSystem}
+                onChange={(e) =>
+                  setProposal({ ...proposal, balanceOfSystem: e.target.value })
+                }
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  fontSize: "16px",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  resize: "vertical",
+                  lineHeight: "1.5",
+                }}
+              />
+
+              <span>Our Scope</span>
+              <TextareaAutosize
+                maxRows={10}
+                aria-label="Our Scope"
+                value={proposal.ourScope}
+                onChange={(e) =>
+                  setProposal({ ...proposal, ourScope: e.target.value })
+                }
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  fontSize: "16px",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  resize: "vertical",
+                  lineHeight: "1.5",
+                }}
+              />
+
+              <span>Customer Scope</span>
+              <TextareaAutosize
+                maxRows={10}
+                aria-label="Customer Scope"
+                value={proposal.customerScope}
+                onChange={(e) =>
+                  setProposal({ ...proposal, customerScope: e.target.value })
+                }
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  fontSize: "16px",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  resize: "vertical",
+                  lineHeight: "1.5",
+                }}
+              />
             </Stack>
           </form>
+          {/* {previewHtml && (
+            <div className="mt-6">
+              <h2 className="text-xl font-semibold mb-2">📄 Proposal Preview</h2>
+              <iframe
+                title="Proposal PDF Preview"
+                srcDoc={previewHtml}
+                className="w-full h-[800px] border"
+              />
+            </div>
+          )} */}
         </CardContent>
       </Card>
-
-      {/* Proposal List */}
-      <Stack spacing={2}>
-        {proposals.length === 0 && (
-          <p className="border border-slate-600 flex justify-center py-3">
-            ❌ No proposals added yet.
-          </p>
-        )}
-        {proposals.map((p) => (
-          <Card key={p._id}>
-            <CardContent>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <div className="font7">
-                  <h3 className="font-bold text-lg">{p.clientName}</h3>
-                  <p>Phone no. : <span className="text-base font-semibold">{p.clientPhone}</span></p>
-                  <p>Email : <span className="text-base font-semibold">{p.clientEmail}</span></p>
-                  <p>Address : <span className="text-base font-semibold">{p.clientAddress}</span></p>
-                  <p className="text-lg font8">✅ Proposal Created!</p>
-                </div>
-                <Stack direction="row" spacing={1}>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleDownloadPdf(p._id)}
-                    disabled={loadingPdf === p._id}
-                  >
-                    {loadingPdf === p._id ? (
-                      <CircularProgress size={24} color="inherit" />
-                    ) : (
-                      <PictureAsPdfIcon />
-                    )}
-                  </IconButton>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleEditClick(p)}
-                  >
-                    <EditIcon />
-                  </IconButton>
-                  <Button
-                    color="error"
-                    variant="contained"
-                    onClick={() => handleDelete(p._id)}
-                    disabled={loadingPdf === p._id}
-                  >
-                    <DeleteIcon />
-                  </Button>
-                </Stack>
-              </Stack>
-            </CardContent>
-          </Card>
-        ))}
-      </Stack>
     </Stack>
   );
 }

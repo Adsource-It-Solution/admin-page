@@ -5,6 +5,9 @@ import Product from "./pages/Product"
 import Employee from "./pages/Employee"
 import Proposal from "./pages/Proposal"
 import Dashboard from "./components/Dashboard.tsx"
+import ProposalList from "./components/ProposalList.tsx"
+import Client from "./components/Client.tsx"
+// import ProposalForm from "./components/ProposalForm.tsx"
 
 function App() {
   return (
@@ -16,6 +19,9 @@ function App() {
           <Route path="/product" element= {<Product/>}/>
           <Route path="/employee" element= {<Employee/>}/>
           <Route path="/proposal" element= {<Proposal/>}/>
+          <Route path="/proposallist" element = {<ProposalList/>}/>
+          <Route path="/ourclient" element = {<Client/>}/>
+          {/* <Route path="/proposal/edit/:id" element={<ProposalForm />} /> */}
         </Route>
 
       </Routes>

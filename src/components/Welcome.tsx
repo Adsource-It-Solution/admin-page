@@ -78,8 +78,8 @@ export default function Home() {
     try {
       setLoading(true);
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/admin/admin-login`,
-        // "http://localhost:5000/api/admin/admin-login",
+        // `${import.meta.env.VITE_API_URL}/api/admin/admin-login`,
+        "http://localhost:5000/api/admin/admin-login",
         form,
         {
           withCredentials: true,
@@ -132,18 +132,18 @@ export default function Home() {
               transition={{ duration: 0.4 }}
               className="flex flex-col gap-6 text-center"
             >
-              <h1 className="text-4xl sm:text-5xl font-bold text-white">
-                🙏🏻 Welcome
-              </h1>
+              <div className="text-4xl flex flex-col justify-center items-center sm:text-5xl font-bold text-white">
+                <img src="/logo.png" alt="" className="w-28 h-14 my-2" /><span> Welcome</span>
+              </div>
               <span className="text-lg sm:text-xl text-white">
-                to <span className="font-bold">ArchVid</span>
+                to <span className="font-bold"><span className="text-orange-500">Sun</span>Mayo</span>
               </span>
               <Divider />
               <button
                 onClick={() => setShowSignup(true)}
                 className="bg-blue-500/60 hover:bg-blue-600/70 transition text-xl sm:text-2xl font-semibold py-3 w-full sm:w-2/3 mx-auto text-white rounded-xl shadow-md"
               >
-                Get Started
+                <span className="text-orange-500">Get </span>Started
               </button>
             </motion.div>
           ) : (

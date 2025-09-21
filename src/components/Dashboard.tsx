@@ -4,24 +4,14 @@ import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import { Divider, ListItem, ListItemIcon } from '@mui/material';
-// import MiscellaneousServicesIcon from '@mui/icons-material/MiscellaneousServices';
-// import CategoryIcon from '@mui/icons-material/Category';
+import ChecklistIcon from '@mui/icons-material/Checklist';
+import ListAltIcon from '@mui/icons-material/ListAlt';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import AddBusinessIcon from '@mui/icons-material/AddBusiness';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const routes = [
-  // {
-  //   path: '/service',
-  //   name: 'Service',
-  //   icon: <MiscellaneousServicesIcon/>
-  // },
-  // {
-  //   path: '/product',
-  //   name: 'Products',
-  //   icon: <CategoryIcon/>
-  // },
   {
     path: '/proposal',
     name: 'Proposal',
@@ -31,6 +21,16 @@ const routes = [
     path: '/employee',
     name: 'Employee',
     icon: <ManageAccountsIcon/>
+  },
+  {
+    path: '/proposallist',
+    name: 'Proposal List',
+    icon: <ChecklistIcon/>
+  },
+  {
+    path: '/ourclient',
+    name: 'Our CLient',
+    icon: <ListAltIcon/>
   }
 ]
 
