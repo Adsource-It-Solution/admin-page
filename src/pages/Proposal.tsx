@@ -90,7 +90,7 @@ export type Proposal = {
   invertorquantitiy: string;
   invertortype: string;
   invertorPhase: string;
-  batteryBrands: string;
+  batteryBrand: string;
   batterytype: BatteryType | "";
   leadAcidSubtype?: LeadAcidSubtype | "";
   cableBrands: string;
@@ -160,7 +160,7 @@ export default function ProposalPage() {
     quantity: "",
     invertorquantitiy: "",
     invertortype: "",
-    batteryBrands: "",
+    batteryBrand: "",
     batterytype: "",
     proposalStructure: "",
     cableBrands: "",
@@ -489,7 +489,7 @@ export default function ProposalPage() {
       "warranty",
       "proposalWattpeak",
       "Invertorwarranty",
-      "batteryBrands",
+      "batteryBrand",
       "batterytype",
       "performancewarranty",
       "quantity",
@@ -502,12 +502,6 @@ export default function ProposalPage() {
       "stage2",
       "stage3",
       "stage4",
-      "yearlyconsumption",
-      "yearlysolargeneration",
-      "decrementgeneration",
-      "plotgraph",
-      "directionType",
-      "priceincrement",
     ];
 
     console.log("Current proposal:", proposal);
@@ -565,7 +559,7 @@ export default function ProposalPage() {
         quantity: "",
         invertorquantitiy: "",
         invertortype: "",
-        batteryBrands: "",
+        batteryBrand: "",
         batterytype: "",
         cableBrands: "",
         proposalStructure: "",
