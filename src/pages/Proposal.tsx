@@ -1251,14 +1251,14 @@ export default function ProposalPage() {
                   >
                     <Stack spacing={2}>
                       <div>
-                        {/* Multi-Select Battery Brands */}
+                        {/* Select Battery Brands */}
                         <FormControl fullWidth variant="filled">
                           <InputLabel id="battery-brand-label">Select Battery Brand</InputLabel>
                           <Select
                             labelId="battery-brand-label"
                             // ❌ remove multiple
-                            value={batteryBrand || ''} // single string
-                            onChange={(e) => setBatteryBrand(e.target.value as string)} // store string
+                            value={proposal.batteryBrand || ''} 
+                            onChange={(e) => setBatteryBrand(e.target.value as string)}
                             renderValue={(selected) => {
                               // selected is a string here
                               const brand = batteryBrandList.find((b) => b.name === selected);
