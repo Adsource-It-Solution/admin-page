@@ -209,7 +209,7 @@ export default function ProposalPage() {
   const [openPanel, setOpenPanel] = useState(false);
   const [openProposal, setOpenPropsal] = useState(false);
   const [openBattery, setOpenBattery] = useState(false);
-  const [batteryBrand, setBatteryBrand] = useState<string>('');
+  const [, setBatteryBrand] = useState<string>('');
   const [batteryBrandList, setBatteryBrandList] = useState<{ name: string; logo?: string }[]>([
     { name: "Luminous", logo: "/office.svg" },
     { name: "Exide", logo: "/office.svg" },
