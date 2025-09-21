@@ -489,7 +489,7 @@ export default function ProposalPage() {
       "warranty",
       "proposalWattpeak",
       "Invertorwarranty",
-      "batteryBrands",
+      // "batteryBrands",
       "batterytype",
       "performancewarranty",
       "quantity",
