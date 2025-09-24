@@ -14,13 +14,13 @@ import type { Proposal } from "../pages/Proposal"
 import communicate from "../assets/communication.png"
 import solarbackground from "../assets/solar_background.jpg"
 import logo from "../assets/logo.png"
-// import location from "../assets/location.png"
+// import panellogo from "../assets/Panel_logo.png"
 import phonecall from "../assets/phone-call.png"
 import solarproposal from "../assets/Solar_Proposal.jpg"
 import solargeneration from "../assets/solar-generation.png"
 import solarpowerplant from "../assets/solar-power-plant.png"
 import worldwide from "../assets/worldwide.png"
-// import rupee from "../assets/rupee.png"
+// import design from "../assets/Solar_text.png"
 import { toWords } from 'number-to-words';
 
 Font.register({
@@ -64,11 +64,14 @@ const styles = StyleSheet.create({
     label: { fontFamily: 'Work Sans', fontSize: 14, fontWeight: "bold", marginBottom: 2 },
     column: { flexDirection: "column" },
     footer2: { position: "absolute", bottom: 30, left: 30, right: 30, fontSize: 10, color: "#6b7280", textAlign: "center" },
-    table: { display: "flex", width: "auto", borderStyle: "solid",},
+    table: { display: "flex", width: "auto", borderStyle: "solid", },
     tableRow: { flexDirection: "row", paddingVertical: 4 },
     tableHeader: { backgroundColor: "#003366" },
     tableColHeader: { flex: 1, fontSize: 12, fontWeight: "bold", color: "#fff", padding: 2 },
-    tableCol: { flex: 1, fontSize: 12, paddingHorizontal: 2, paddingVertical: 2 },
+    tableCol: { flex: 1, fontSize: 12, paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
+    tableColprice: { flex: 1, fontSize: 12, paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
+    tableColquantity: { flex: 1, fontSize: 12, paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
+    tableColtotal: { flex: 1, fontSize: 12, paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
     totalRow: { flexDirection: "row", backgroundColor: "#003366", paddingVertical: 4 },
     totalText: { flex: 1, fontSize: 12, fontWeight: "bold", color: "#fff", paddingHorizontal: 2 },
     amountWords: { fontSize: 12, fontWeight: "bold", color: "#fff", padding: 2 },
@@ -94,28 +97,25 @@ const LineChart10Years: React.FC<BarChart10YearsProps> = ({
 
     // Generate 10-year data
     const data = Array.from({ length: 10 }, (_, i) => ({
-        year: i.toString(), // start from 0
+        year: (i + 1).toString(), // start from 1
         increment: consumption * Math.pow(1 + 0.02, i), // +2% per year
         decrement: generation * Math.pow(1 - 0.004, i), // -0.4% per year
     }));
 
     const padding = 30;
-    const chartWidth = width - padding * 2;
+    const chartWidth = width - padding;
     const chartHeight = height - padding * 2;
     const stepX = chartWidth / data.length;
 
     // Determine Y-axis max based on consumption or generation, nearest greater multiple of 1000
-    const maxValue = Math.max(...data.flatMap(d => [d.increment, d.decrement]));
+    const maxValue = Math.max(...data.flatMap((d) => [d.increment, d.decrement]));
     const yAxisMax = Math.ceil(maxValue / 1000) * 1000;
 
     const yAxisSteps = 6;
     const yStepValue = yAxisMax / yAxisSteps;
 
     const getY = (value: number) =>
-        //   padding + chartHeight - (value / yAxisMax) * chartHeight;
-        height - padding - (value / maxValue) * chartHeight;
-
-    // const barBase = getY(1);
+        height - padding - (value / yAxisMax) * chartHeight;
 
     const barBase = height - padding;
 
@@ -126,14 +126,31 @@ const LineChart10Years: React.FC<BarChart10YearsProps> = ({
                 <Rect x={padding - 1} y={padding} width={1} height={chartHeight} fill="#000" />
                 <Rect x={padding} y={height - padding} width={chartWidth} height={1} fill="#000" />
 
-                {/* Y-axis labels */}
+                {/* Y-axis labels and grid lines */}
                 {Array.from({ length: yAxisSteps + 1 }, (_, i) => {
                     const yValue = i * yStepValue;
-                    const yPos = getY(yValue);
+                    const yPos = height - padding - (yValue / yAxisMax) * chartHeight;
+
                     return (
-                        <Text key={i} x={padding - 60} y={yPos + 2} style={{ fontSize: 8 }}>
-                            {Math.round(yValue).toLocaleString("en-IN")}
-                        </Text>
+                        <React.Fragment key={i}>
+                            {i !== 0 && (
+                                <Rect
+                                    x={padding}
+                                    y={yPos}
+                                    width={chartWidth}
+                                    height={1}
+                                    fill="#ccc"
+                                    opacity={0.5}
+                                />
+                            )}
+                            <Text
+                                x={padding - 25}
+                                y={yPos + 3}
+                                style={{ fontSize: 8, fill: "#000" }}
+                            >
+                                {Math.round(yValue).toLocaleString()}
+                            </Text>
+                        </React.Fragment>
                     );
                 })}
 
@@ -149,13 +166,11 @@ const LineChart10Years: React.FC<BarChart10YearsProps> = ({
 
                 {/* Bars */}
                 {data.map((d, i) => {
-                    // const x = padding + i * stepX;
                     const barWidth = stepX / 3;
                     const x = padding + (i + 0.5) * stepX - barWidth;
 
                     return (
                         <React.Fragment key={i}>
-                            {/* Consumption bar */}
                             <Rect
                                 x={x}
                                 y={getY(d.increment)}
@@ -163,7 +178,6 @@ const LineChart10Years: React.FC<BarChart10YearsProps> = ({
                                 height={barBase - getY(d.increment)}
                                 fill="#1f3c88"
                             />
-                            {/* Generation bar */}
                             <Rect
                                 x={x + barWidth + 2}
                                 y={getY(d.decrement)}
@@ -171,7 +185,6 @@ const LineChart10Years: React.FC<BarChart10YearsProps> = ({
                                 height={barBase - getY(d.decrement)}
                                 fill="#f97316"
                             />
-                            {/* X-axis label */}
                             <Text x={x} y={height - padding + 10} style={{ fontSize: 8 }}>
                                 {d.year} Year
                             </Text>
@@ -179,15 +192,14 @@ const LineChart10Years: React.FC<BarChart10YearsProps> = ({
                     );
                 })}
 
-                {/* Increment */}
+                {/* Legend */}
                 <Rect x={padding} y={12} width={12} height={12} fill="#1f3c88" />
-                <Text x={padding + 12} y={22} style={{ fontSize: 14, color: "#1f3c88" }}>
+                <Text x={padding + 14} y={22} style={{ fontSize: 14, fill: "#1f3c88" }}>
                     Increment
                 </Text>
 
-                {/* Decrement */}
                 <Rect x={padding + 100} y={12} width={12} height={12} fill="#f97316" />
-                <Text x={padding + 118} y={22} style={{ fontSize: 14, color: "#f97316" }}>
+                <Text x={padding + 118} y={22} style={{ fontSize: 14, fill: "#f97316" }}>
                     Decrement
                 </Text>
             </Svg>
@@ -328,12 +340,12 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
         {/* PAGE 3: SPECIFICATIONS & GRAPH */}
         <Page size="A4" style={styles.page}>
-            <Text style={styles.subHeader}>{proposal.projectsize} kW</Text>
+            <Text style={styles.subHeader}>{proposal.projectsize} KW</Text>
             <Text style={styles.subHeader2}>Specifications</Text>
             <View style={styles.specRow}>
                 <View style={styles.specCol}>
                     <Text style={styles.specTitle}>Plant Capacity</Text>
-                    <Text style={{ fontFamily: 'Work Sans', fontSize: 16, marginTop: 8 }}>{proposal.projectsize} kW</Text>
+                    <Text style={{ fontFamily: 'Work Sans', fontSize: 16, marginTop: 8 }}>{proposal.projectsize} KW</Text>
                     <View style={styles.blueLine} />
                 </View>
                 <View style={styles.specCol}>
@@ -363,12 +375,12 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             </View>
 
             {/* Graph */}
-            <View style={{ marginTop: 20 }}>
+            <View style={{ marginTop: 20, marginLeft: 40 }}>
                 <LineChart10Years
                     consumption={parseFloat(proposal.consumption || "0")}
                     generation={parseFloat(proposal.generation || "0")}
-                    width={520}
-                    height={400}
+                    width={400}
+                    height={300}
                 />
             </View>
 
@@ -393,11 +405,11 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     {/* Rows */}
                     {proposal.rows.map((row: any, i: number) => (
                         <View key={i} style={styles.tableRow}>
-                            <Text style={styles.tableCol}></Text>
+                            {/* <Text style={styles.tableCol}></Text> */}
                             <Text style={styles.tableCol}>{row.description || "Give Description"}</Text>
-                            <Text style={styles.tableCol}> {row.price}</Text>
-                            <Text style={styles.tableCol}>{row.quantity}</Text>
-                            <Text style={styles.tableCol}>
+                            <Text style={styles.tableColprice}> {row.price}</Text>
+                            <Text style={styles.tableColquantity}>{row.quantity}</Text>
+                            <Text style={styles.tableColtotal}>
                                 {(row.price * row.quantity).toLocaleString("en-IN")}
                             </Text>
                         </View>
@@ -405,34 +417,34 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
                     {/* Subtotal */}
                     <View style={styles.tableRow}>
-                        <Text style={styles.tableCol}></Text>
+                        {/* <Text style={styles.tableCol}></Text> */}
                         <Text style={styles.tableCol}>Subtotal</Text>
-                        <Text style={styles.tableCol}> {proposal.subtotal?.toLocaleString("en-IN")}</Text>
-                        <Text style={styles.tableCol}></Text>
-                        <Text style={styles.tableCol}></Text>
+                        <Text style={styles.tableColprice}> {proposal.subtotal?.toLocaleString("en-IN")}</Text>
+                        <Text style={styles.tableColquantity}></Text>
+                        <Text style={styles.tableColtotal}></Text>
                     </View>
 
                     {/* GST */}
                     <View style={styles.tableRow}>
-                        <Text style={styles.tableCol}></Text>
+                        {/* <Text style={styles.tableCol}></Text> */}
                         <Text style={styles.tableCol}>GST %</Text>
-                        <Text style={styles.tableCol}>{proposal.gst}%</Text>
-                        <Text style={styles.tableCol}></Text>
-                        <Text style={styles.tableCol}> {proposal.gstAmount?.toLocaleString("en-IN")}</Text>
+                        <Text style={styles.tableColprice}>{proposal.gst}%</Text>
+                        <Text style={styles.tableColquantity}></Text>
+                        <Text style={styles.tableColtotal}> {proposal.gstAmount?.toLocaleString("en-IN")}</Text>
                     </View>
 
                     {/* Total */}
                     <View style={styles.totalRow}>
-                        <Text style={styles.totalText}></Text>
+                        {/* <Text style={styles.totalText}></Text> */}
                         <Text style={styles.totalText}>Total Cost</Text>
                         <Text style={styles.totalText}></Text>
                         <Text style={styles.totalText}></Text>
-                        <Text style={styles.totalText}>₹ {proposal.total?.toLocaleString("en-IN")}</Text>
+                        <Text style={styles.totalText}> {proposal.total?.toLocaleString("en-IN")}</Text>
                     </View>
                 </View>
 
                 {/* Amount in Words */}
-                <View style={{ flexDirection: "row", justifyContent: "space-between", padding: 5 ,backgroundColor: "#003366", }}>
+                <View style={{ flexDirection: "row", justifyContent: "space-between", padding: 5, backgroundColor: "#003366", }}>
                     <Text style={styles.amountWords}>Amount in Words:</Text>
                     <Text style={styles.amountWords}>{numberToWords(proposal.total)}</Text>
                 </View>
@@ -516,40 +528,9 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>Balance of System: {proposal.systemwarranty} Year(s)</Text>
                 </View>
             </View>
-
-            {/* Balance of System */}
-            <View style={{ marginTop: 10 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 20,color: "#2563eb"  }}>Balance of System:</Text>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 14,  }}>{proposal.balanceOfSystem}</Text>
-            </View>
-            <View style={{ marginTop: 10 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, color: "#2563eb" }}>Coustomer Scope:</Text>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>{proposal.customerScope}</Text>
-            </View>
-
-            <View style={{ marginTop: 10 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, color: "#2563eb" }}>Our Scope:</Text>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>{proposal.ourScope}</Text>
-            </View>
-
-            {/* Footer */}
-            {/* <Text style={styles.footer2}>Page 5 • Bill of Materials</Text> */}
-
-            {/* Bottom Images */}
-            {/* <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
-                <Image src={design} style={{ width: 80, height: 40 }} /> */}
-            {/* Flipped Image */}
-            {/* <Image
-                    src={flipped}
-                    style={{ width: 80, height: 40 }}
-                />
-            </View> */}
         </Page>
 
-
-        {/* PAGE 6: SCOPE & ACCEPTANCE */}
         <Page size="A4" style={styles.page}>
-            {/* Terms & Conditions */}
             <View style={{ marginBottom: 10 }}>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 20, fontWeight: "bold", marginBottom: 5 }}>Terms & Conditions</Text>
                 <View style={{ fontFamily: 'Work Sans', marginLeft: 10, fontSize: 14 }}>
@@ -569,6 +550,24 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     ))}
                 </View>
             </View>
+            <View style={{ marginTop: 10 }}>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, color: "#2563eb" }}>Balance of System:</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 14, }}>{proposal.balanceOfSystem}</Text>
+            </View>
+            <View style={{ marginTop: 10 }}>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, color: "#2563eb" }}>Coustomer Scope:</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>{proposal.customerScope}</Text>
+            </View>
+
+            <View style={{ marginTop: 10 }}>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, color: "#2563eb" }}>Our Scope:</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>{proposal.ourScope}</Text>
+            </View>
+        </Page>
+
+        {/* PAGE 6: SCOPE & ACCEPTANCE */}
+        <Page size="A4" style={styles.page}>
+            {/* Terms & Conditions */}
 
             {/* Logos */}
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginVertical: 10 }}>
@@ -577,8 +576,8 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             </View>
 
             {/* Thanks & Regards */}
-            <View style={{ marginTop: 5 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 16 }}>Thanks & Regards,</Text>
+            <View style={{ marginTop: 5, }}>
+                {/* <Text style={{ fontFamily: 'Work Sans', fontSize: 16 }}>Thanks & Regards,</Text> */}
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 16 }}>SUNMAYO PRIVATE LIMITED</Text>
                 <View>
                     {/* <Image src={location} style={styles.smallImage} /> */}
@@ -603,19 +602,8 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
             {/* Date */}
             {/* <Text style={{ fontFamily: 'Work Sans', fontSize: 10, marginTop: 5 }}>Date: ____________________</Text> */}
-            <Image src={solarbackground} style={{ width: "100%", height: 200, marginTop: 2 }} />
+            <Image src={solarbackground} style={{ width: "100%", height: "50%", marginTop: 10 }} />
 
-            {/* Bottom Design Images */}
-            {/* <View style={{ flexDirection: "row", justifyContent: "space-between", marginVertical: 10 }}>
-                <Image src={design} style={{ width: 80, height: 40 }} />
-                <Image
-                    src={flipped}
-                    style={{ width: 80, height: 40 }}
-                />
-            </View> */}
-
-            {/* Footer */}
-            {/* <Text style={styles.footer2}>Page 6 • Scope & Acceptance</Text> */}
         </Page>
     </Document>
 );

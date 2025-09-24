@@ -11,6 +11,7 @@ import {
   InputLabel,
   FormControl,
   MenuItem,
+  TextareaAutosize
 } from "@mui/material";
 import { toast } from "react-toastify";
 import SaveIcon from "@mui/icons-material/Save";
@@ -60,7 +61,9 @@ function Client() {
 
   const fetchClients = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/service/client");
+      const res = await axios.get
+      (`${import.meta.env.VITE_API_URL}/api/service/client`,)
+      // ("http://localhost:5000/api/service/client");
       setClients(res.data || []);
     } catch (err) {
       toast.error("❌ Failed to fetch clients");
@@ -70,7 +73,9 @@ function Client() {
   const handleAddClient = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/service/add-client", client);
+      await axios.post
+      (`${import.meta.env.VITE_API_URL}/api/service/add-client`, client,)
+      // ("http://localhost:5000/api/service/add-client", client);
       setClient({ nameclient: "", email: "", address: "", phoneno: "", title: "" });
       fetchClients();
       toast.success("✅ Client added successfully!");
@@ -86,7 +91,9 @@ function Client() {
 
   const handleSaveEdit = async (id: string) => {
     try {
-      await axios.put(`http://localhost:5000/api/service/clients/${id}`, editData);
+      await axios.put
+      (`${import.meta.env.VITE_API_URL}/api/service/clients/${id}`, editData)
+      // (`http://localhost:5000/api/service/clients/${id}`, editData);
       setEditingId(null);
       setEditData({});
       fetchClients();
@@ -104,7 +111,9 @@ function Client() {
   const handleDelete = async (id?: string) => {
     if (!id) return;
     try {
-      await axios.delete(`http://localhost:5000/api/service/clients/${id}`);
+      await axios.delete
+      (`${import.meta.env.VITE_API_URL}/api/service/clients/${id}`)
+      // (`http://localhost:5000/api/service/clients/${id}`);
       fetchClients();
       toast.success("🗑️ Client deleted");
     } catch (err) {
@@ -167,6 +176,16 @@ function Client() {
             variant="filled"
             value={client.address}
             onChange={(e) => setClient({ ...client, address: e.target.value })}
+          />
+          <TextField
+            label="Client Details"
+            variant="filled"
+            multiline
+            minRows={3}
+            fullWidth
+            InputProps={{
+              inputComponent: TextareaAutosize as any, 
+            }}
           />
 
           <Button type="submit" variant="contained" color="success">
