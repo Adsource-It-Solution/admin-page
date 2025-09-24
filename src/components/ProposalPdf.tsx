@@ -504,7 +504,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                         <Text style={{ fontFamily: 'Work Sans', color: "#1d4ed8", fontSize: 18 }}>Cable</Text>
                         <Text style={{ fontFamily: 'Work Sans', }}>Cable brand: {proposal.cableBrands}</Text>
                     </View>
-                    <View style={{ backgroundColor: "#696969", width: 2, height: 150, marginLeft: 100 }} />
+                    <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} />
                 </View>
 
                 {/* Warranty */}
@@ -519,8 +519,17 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
             {/* Balance of System */}
             <View style={{ marginTop: 10 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 20 }}>Balance of System:</Text>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>{proposal.balanceOfSystem}</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 20,color: "#2563eb"  }}>Balance of System:</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 14,  }}>{proposal.balanceOfSystem}</Text>
+            </View>
+            <View style={{ marginTop: 10 }}>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, color: "#2563eb" }}>Coustomer Scope:</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>{proposal.customerScope}</Text>
+            </View>
+
+            <View style={{ marginTop: 10 }}>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, color: "#2563eb" }}>Our Scope:</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>{proposal.ourScope}</Text>
             </View>
 
             {/* Footer */}
@@ -593,7 +602,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             </View>
 
             {/* Date */}
-            <Text style={{ fontFamily: 'Work Sans', fontSize: 10, marginTop: 5 }}>Date: ____________________</Text>
+            {/* <Text style={{ fontFamily: 'Work Sans', fontSize: 10, marginTop: 5 }}>Date: ____________________</Text> */}
             <Image src={solarbackground} style={{ width: "100%", height: 200, marginTop: 2 }} />
 
             {/* Bottom Design Images */}
