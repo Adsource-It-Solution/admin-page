@@ -67,6 +67,13 @@ export type Product = {
 type BatteryType = "Li-Ion" | "Lead-Acid";
 type LeadAcidSubtype = "40Ah" | "75Ah" | "100Ah" | "150Ah" | "200Ah";
 
+export type RowType = {
+  description: string;
+  price: number;
+  quantity: number;
+  note?: string;
+};
+
 export type Proposal = {
   _id?: string;
   clientName: string;
@@ -74,7 +81,6 @@ export type Proposal = {
   clientEmail: string;
   clientAddress: string;
   clienttitle: string;
-  // projectDetails: string;
   customerType: string;
   projectsize: string;
   consumption: string;
@@ -100,20 +106,28 @@ export type Proposal = {
   balanceOfSystem: string;
   ourScope: string;
   customerScope: string;
+  termandcondition: string;
   stage1: string;
   stage2: string;
   stage3: string;
   stage4: string;
-  // graphType: string;
+
+  rows: RowType[];
+  gst: number;
+  subtotal: number;
+  gstAmount: number;
+  total: number;
+
   services: string[];
   products: string[];
   employees: string[];
 
   tableImage?: string;
   graphimage?: string;
-  // Index signature for dynamically accessed fields
-  [key: string]: string | string[] | undefined;  // Allow 'undefined' for dynamically added properties
+
+  [key: string]: string | string[] | number | RowType[] | undefined;
 };
+
 
 type ClientPrefix = "Mr." | "Mrs." | "Ms.";
 type CustomerType = "Industrial" | "Commercial" | "Government" | "Residential" | "others";
@@ -125,12 +139,6 @@ type ProposalStructure = "Elevated" | "Standard" | "Metal Shed";
 type StrucrtureDes = "Hot Dip Galvanised" | "Pre Galvanised" | "Slotted Channel" | "Ms Channel & Gi Channel"
 // type DirectionType = "Left to Right" | "Right to left";
 
-type RowType = {
-  description: string;
-  price: number;
-  quantity: number;
-  note: string;
-};
 interface GraphDatum {
   month: string;
   increment: number;
@@ -171,6 +179,16 @@ export default function ProposalPage() {
     stage3: "",
     stage4: "",
     priceunitelectricity: "",
+
+    // tabledata
+    rows: [
+      { description: "", price: 0, quantity: 0, note: "" },
+      { description: "", price: 0, quantity: 0, note: "" },
+    ],
+    gst: 0,
+    subtotal: 0,
+    gstAmount: 0,
+    total: 0,
     // graphType: "",
     services: [],
     products: [],
@@ -195,6 +213,21 @@ export default function ProposalPage() {
     2. Provide space to evacuate the solar power.
     3. Design/Drawing approval within 7 days.`,
 
+    termandcondition: `Packing is included in the offer.
+  • Transportation charges are our scope.
+  • Civil and digging are at our scope.
+  • Prices quotes are firm and valid for 10 days from the date of offer. After this period a
+  reconfirmation from our office should be taken.
+  • Water supply at site will be provided by customer free of cost during installation and
+  commissioning.
+  • Closed, covered, locked stores will be provided by customer during installation and
+  commissioning.
+  • We will start the approval process as soon as we receive order confirmation. From
+  confirmation till 10 days before installation, a nominal cancellation charge of INR 25,000
+  or 5% of system cost, whichever is higher.
+  • Delivery: 2-3 weeks from the date of technically and commercially cleared order.
+  • Force Majeure clause applies.
+  • Include leasing charges.`
   });
 
   const [, setProposals] = useState<Proposal[]>([]);
@@ -252,19 +285,16 @@ export default function ProposalPage() {
   const [panelBrand,] = useState<string[]>([
     "Waaree Energies", "Tata Power Solar", "Adani Solar", "Vikram Solar", " Goldi Solar", "Rayzon Solar"
   ]);
-  // const [, setPanelBrands] = useState<string[]>([]);
-  // const [newPanel, setNewPanel] = useState<string>("")
-  // const [, setOpenPanelDialog] = useState(false)
-
-  // Dialog and other UI related states
-
-  // const [openGraph, setOpenGraph] = useState(false);
   const [newCable, setNewCable] = useState<string>(" ");
   const [openCableDialog, setOpenCableDialog] = useState(false);
 
   const [graphData, setGraphData] = useState<GraphDatum[]>([]);
-  const chartRef = useRef<HTMLDivElement>(null);
+  // const chartRef = useRef<HTMLDivElement>(null);
   const graphRef = useRef<HTMLDivElement | null>(null);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuRowIndex, setMenuRowIndex] = useState<number | null>(null);
+  const [openNoteRow, setOpenNoteRow] = useState<number | null>(null);
 
 
   useEffect(() => {
@@ -292,11 +322,6 @@ export default function ProposalPage() {
     setGraphData(newData);
   }, [proposal.consumption, proposal.generation]);
 
-
-
-
-
-
   // Function to fetch master data (services, products, employees)
   const fetchMasterData = async () => {
     try {
@@ -321,83 +346,82 @@ export default function ProposalPage() {
   useEffect(() => {
     fetchMasterData();
   }, []);
-
-  const [rows, setRows] = useState([
-    { description: "", price: 0, quantity: 0, note: "" },
-    { description: "", price: 0, quantity: 0, note: "" },
-  ]);
-
-  const [gst, setGst] = useState<number>(0);
-  const [subtotal, setSubtotal] = useState<number>(0);
-  const [gstAmount, setGstAmount] = useState<number>(0);
-  const [total, setTotal] = useState<number>(0);
   const tableRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const newSubtotal = proposal.rows.reduce(
+      (acc, row) => acc + (row.price || 0) * (row.quantity || 0),
+      0
+    );
+    const newGstAmount = (newSubtotal * (proposal.gst || 0)) / 100;
+    const newTotal = newSubtotal + newGstAmount;
+
+    setProposal(prev => ({
+      ...prev,
+      subtotal: newSubtotal,
+      gstAmount: newGstAmount,
+      total: newTotal,
+    }));
+  }, [proposal.rows, proposal.gst]);
+
+
+  // Convert number to words
+  const numberToWords = (num: number) => {
+    return toWords(num)
+      .replace(/(^|\s)([a-z])/g, (match) => match.toUpperCase()) + " Rupees";
+  };
+
+  // Row actions
   const handleRowChange = <K extends keyof RowType>(
     index: number,
     field: K,
     value: RowType[K]
   ) => {
-    const updated = [...rows];
-    updated[index][field] = value;
-    setRows(updated);
-  };
-  // State to track which row the menu is open for
-  const [openNoteRow, setOpenNoteRow] = useState<number | null>(null);
-  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [menuRowIndex, setMenuRowIndex] = useState<number | null>(null);
-
-
-  // Open menu handler
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, rowIndex: number) => {
-    setAnchorEl(event.currentTarget as HTMLElement);
-    setMenuRowIndex(rowIndex);
+    setProposal((prev) => {
+      const updatedRows = [...prev.rows];
+      updatedRows[index][field] = value;
+      return { ...prev, rows: updatedRows };
+    });
   };
 
+  const handleAddRowBelow = () => {
+    if (menuRowIndex === null) return;
+    const newRow: RowType = { description: "", price: 0, quantity: 0, note: "" };
+    setProposal((prev) => {
+      const updatedRows = [
+        ...prev.rows.slice(0, menuRowIndex + 1),
+        newRow,
+        ...prev.rows.slice(menuRowIndex + 1),
+      ];
+      return { ...prev, rows: updatedRows };
+    });
+    handleMenuClose();
+  };
 
-  // Close menu
+  const handleDeleteRow = () => {
+    if (menuRowIndex === null) return;
+    setProposal((prev) => {
+      const updatedRows = prev.rows.filter((_, i) => i !== menuRowIndex);
+      return { ...prev, rows: updatedRows };
+    });
+    handleMenuClose();
+  };
+
+  const handleDeleteNote = () => {
+    if (menuRowIndex === null) return;
+    handleRowChange(menuRowIndex, "note", "");
+    setOpenNoteRow(null);
+    handleMenuClose();
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>, index: number) => {
+    setAnchorEl(event.currentTarget);
+    setMenuRowIndex(index);
+  };
+
   const handleMenuClose = () => {
     setAnchorEl(null);
     setMenuRowIndex(null);
-  };
-
-  // Delete row
-  const handleDeleteRow = (index: number) => {
-    const updated = rows.filter((_, i) => i !== index);
-    setRows(updated);
-    handleMenuClose();
-  };
-  const handleDeleteNote = (rowIndex: number) => {
-    handleRowChange(rowIndex, "note", ""); // clear the note field
-    setOpenNoteRow(null); // hide the note input again if you want
-  }
-
-  // Add row below
-  const handleAddRowBelow = () => {
-    if (menuRowIndex === null) return;
-    const newRow = { description: "", price: 0, quantity: 0, note: "" };
-    const updated = [
-      ...rows.slice(0, menuRowIndex + 1),
-      newRow,
-      ...rows.slice(menuRowIndex + 1),
-    ];
-    setRows(updated);
-    handleMenuClose();
-  };
-
-  // Calculate subtotal, GST, and total
-  useEffect(() => {
-    const newSubtotal = rows.reduce((acc, row) => acc + row.price * row.quantity, 0);
-    setSubtotal(newSubtotal);
-    const newGstAmount = (newSubtotal * gst) / 100;
-    setGstAmount(newGstAmount);
-    setTotal(newSubtotal + newGstAmount);
-  }, [rows, gst]);
-
-  // Function to convert number to words (can be customized as needed)
-  const numberToWords = (num: number) => {
-    let words = toWords(num);
-    return words.replace(/(^|\s)([a-z])/g, (match: any) => match.toUpperCase()) + " Rupees";
   };
 
   // Fetch proposals along with master data
@@ -406,29 +430,47 @@ export default function ProposalPage() {
     fetchMasterData();
   }, []);
 
-  const handleCapture = async (proposal: Proposal) => {
-    if (!tableRef.current) return;
+  // ---------------------
+  // Save Graph Snapshot
+  // ---------------------
+  // const handleSaveGraph = async (proposal: Proposal) => {
+  //   if (!graphRef.current) {
+  //     toast.error("Graph element not found");
+  //     return;
+  //   }
 
-    const canvas = await html2canvas(tableRef.current);
-    const dataUrl = canvas.toDataURL("image/png");
+  //   try {
+  //     const canvas = await html2canvas(graphRef.current);
+  //     const dataUrl = canvas.toDataURL("image/png");
 
-    // Save image in the proposal object
-    proposal.tableImage = dataUrl;
-    toast.info("📤 Uploading image...");
+  //     proposal.graphimage = dataUrl;
 
-    // Send to backend
-    await fetch(
-      // `http://localhost:5000/api/upload-table-image`,
-      `${import.meta.env.VITE_API_URL}/api/upload-table-image`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: dataUrl }),
-      });
+  //     // toast.info("📤 Uploading graph...");
 
-    // alert("Table image sent!");
-    toast.success("✅ Image Saved")
-  };
+  //     const res = await fetch(
+  //       `http://localhost:5000/api/proposal/${proposal.id}/uploadGraph`, 
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ image: dataUrl }),
+  //       }
+  //     );
+
+  //     if (!res.ok) {
+  //       const errorText = await res.text();
+  //       throw new Error(`Upload failed: ${res.status} ${errorText}`);
+  //     }
+
+  //     const json = await res.json();
+  //     console.log("📌 Graph saved:", json);
+
+  //     toast.success("✅ Graph Image Saved");
+  //   } catch (err: any) {
+  //     console.error("❌ handleSaveGraph Error:", err);
+  //     // toast.error(`Failed to save graph: ${err.message}`);
+  //   }
+  // };
+
 
   const fetchProposals = async () => {
     try {
@@ -440,42 +482,21 @@ export default function ProposalPage() {
     }
   };
 
-
   const handleAddOrUpdateProposal = async (e: FormEvent) => {
     e.preventDefault();
 
-    // 1️⃣ Capture chart image if present
-    if (chartRef.current) {
-      const canvas = await html2canvas(chartRef.current, { scale: 2 });
-      const dataUrl = canvas.toDataURL("image/png");
-      // store base64 into the proposal state before validation
-      setProposal(prev => ({ ...prev, plotgraph: dataUrl }));
-    }
+    // Ensure rows array exists
+    const currentProposal: Proposal = {
+      ...proposal,
+      rows: proposal.rows || [],   // safe fallback
+      gst: proposal.gst || 0,
+      subtotal: proposal.subtotal || 0,
+      gstAmount: proposal.gstAmount || 0,
+      total: proposal.total || 0,
+    };
 
-    // Small delay to ensure state update above is committed
-    await new Promise(r => setTimeout(r, 0));
-    const currentProposal: Proposal = { ...proposal };
-
-    // 1️⃣ capture graph if present
-    if (graphRef.current) {
-      try {
-        await handleSaveGraph(currentProposal); // will set currentProposal.graphimage + upload
-      } catch (err) {
-        console.error("Graph capture failed", err);
-      }
-    }
-
-    // 2️⃣ capture table if present
-    if (tableRef.current) {
-      try {
-        await handleCapture(currentProposal); // will set currentProposal.tableImage + upload
-      } catch (err) {
-        console.error("Table capture failed", err);
-      }
-    }
-
-    // 2️⃣ Required fields check
-    const requiredFields = [
+    // 1️⃣ Required fields check
+    const requiredFields: (keyof Proposal)[] = [
       "clientName",
       "clientPhone",
       "clientEmail",
@@ -489,7 +510,6 @@ export default function ProposalPage() {
       "warranty",
       "proposalWattpeak",
       "Invertorwarranty",
-      // "batteryBrands",
       "batterytype",
       "performancewarranty",
       "quantity",
@@ -504,41 +524,45 @@ export default function ProposalPage() {
       "stage4",
     ];
 
-    console.log("Current proposal:", proposal);
-
-    const missingFields = requiredFields.filter(field => !proposal[field]);
+    const missingFields = requiredFields.filter((field) => !currentProposal[field]);
     if (missingFields.length > 0) {
-      console.error("❌ Missing fields:", missingFields);
-      toast.error(`❌ Please fill all required client and project fields: ${missingFields.join(", ")}`);
+      toast.error(`❌ Please fill all required fields: ${missingFields.join(", ")}`);
       return;
     }
 
-
-
-    // 3️⃣ Send to backend
     try {
-      if (editingId) {
-        // Update existing proposal
-        await axios.put(
-          // `http://localhost:5000/api/proposal/${editingId}`,
-          `${import.meta.env.VITE_API_URL}/api/proposal/${editingId}`,
-          proposal
-        );
-        toast.success("✅ Proposal updated");
-      } else {
-        // Add new proposal
-        await axios.post(
-          // `http://localhost:5000/api/proposal/add-proposal`,
-          `${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`,
-          proposal
-        );
-        toast.success("✅ Proposal added");
-      }
-      // const html = generateSolarQuoteHTML(currentProposal);
-      // setPreviewHtml(html);
+      let savedProposal: Proposal;
 
-      // 4️⃣ Reset state
-      setProposal({
+      // 2️⃣ Add new proposal
+      if (!editingId) {
+        const res = await axios.post(
+          (`${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`),
+          // `http://localhost:5000/api/proposal/add-proposal`,
+          currentProposal
+        );
+
+        savedProposal = res.data.proposal;
+        setEditingId(savedProposal._id ?? null);
+        toast.success("✅ Proposal added");
+      } else {
+        // 3️⃣ Update existing proposal
+        // const res = await axios.put(
+        //   `http://localhost:5000/api/proposal/${editingId}`,
+        //   currentProposal
+        // );
+
+        savedProposal = { ...currentProposal, _id: editingId };
+        toast.success("✅ Proposal updated");
+      }
+
+      // 4️⃣ Reset non-essential fields, **keep rows and totals**
+      setProposal((_prev) => ({
+        ...savedProposal,
+        rows: savedProposal.rows,          // keep all rows
+        gst: savedProposal.gst,
+        subtotal: savedProposal.subtotal,
+        gstAmount: savedProposal.gstAmount,
+        total: savedProposal.total,
         clientName: "",
         clientPhone: "",
         clientEmail: "",
@@ -583,68 +607,65 @@ export default function ProposalPage() {
         ourScope: `1. Preparation of Engineering Drawing, Design for Solar structure and solar power plant as per Relevant IS standard.
   2. Supply of Solar Modules, Inverter, Structure, Cables, and balance of Plant.
   3. Installation of structure, solar modules, inverter, AC-DC cable, LT panel etc for solar power plant. 
-  4. Installation of monitoring and controlling system for solar plant .
+  4. Installation of monitoring and controlling system for solar plant.
   5. Commissioning of Solar Power Plant and supply of Power to LT panel of SGD.
   6. Zero Export Device installation.`,
         customerScope: `1. Providing safe storage place for material during installation & commissioning period.
   2. Provide space to evacuate the solar power.
   3. Design/Drawing approval within 7 days.`,
-      });
+      }));
+
       setEditingId(null);
 
-      // Refresh proposal list
+      // 5️⃣ Refresh proposal list
       fetchProposals();
     } catch (err: any) {
-      toast.error("❌ " + (err.response?.data?.error || "Something went wrong"));
+      toast.error(
+        "❌ " + (err.response?.data?.error || err.message || "Something went wrong")
+      );
     }
   };
 
-  const handleSaveGraph = async (proposal: Proposal) => {
-    console.log("📌 handleSaveGraph called");
 
-    if (!graphRef.current) {
-      console.error("❌ graphRef.current is null");
-      toast.error("Graph element not found");
+
+  const handleCapture = async (proposal: Proposal) => {
+    const proposalId = proposal._id ?? proposal.id;
+    if (!proposalId) {
+      toast.error("❌ Proposal ID missing. Save the proposal first.");
       return;
     }
 
-    try {
-      console.log("📌 Taking snapshot of the graph DOM...");
-      const canvas = await html2canvas(graphRef.current);
+    if (!tableRef.current) return;
 
-      console.log("📌 Converting canvas to data URL...");
-      const dataUrl = canvas.toDataURL("image/png");
-      console.log("📌 Data URL generated:", dataUrl.slice(0, 100), "...");
+    const canvas = await html2canvas(tableRef.current);
+    const dataUrl = canvas.toDataURL("image/png");
 
-      proposal.graphimage = dataUrl;
-      console.log("📌 proposal.graphimage updated");
+    toast.info("📤 Uploading table...");
 
-      // Show loading toast or spinner
-      toast.info("📤 Uploading image...");
-
-      const res = await fetch(
-        // `http://localhost:5000/api/proposal/uploadGraph`,
-        `${import.meta.env.VITE_API_URL}/api/proposal/uploadGraph`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: dataUrl }),
-        });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Upload failed: ${res.status} ${errorText}`);
+    const res = await fetch(
+      (`${import.meta.env.VITE_API_URL}/api/proposal/${proposalId}/uploadTable`),
+      // `http://localhost:5000/api/proposal/${proposalId}/uploadTable`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl }),
       }
+    );
 
-      const json = await res.json();
-      console.log("📌 Backend response:", json);
-
-      toast.success("✅ Graph Image Saved");
-    } catch (err: any) {
-      console.error("❌ handleSaveGraph Error:", err);
-      toast.error(`Failed to save graph: ${err.message}`);
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Upload failed: ${res.status} ${errorText}`);
     }
+
+    const { file } = await res.json();
+    proposal.tableImage = 
+    (`${import.meta.env.VITE_API_URL}/uploads/${file}`),
+    // `http://localhost:5000/uploads/${file}`;
+    toast.success("✅ Table Image Saved");
   };
+
+
+
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -1256,11 +1277,12 @@ export default function ProposalPage() {
                           <InputLabel id="battery-brand-label">Select Battery Brand</InputLabel>
                           <Select
                             labelId="battery-brand-label"
-                            // ❌ remove multiple
-                            value={proposal.batteryBrands || ''} 
-                            onChange={(e) => setBatteryBrand(e.target.value as string)}
+                            value={proposal.batteryBrands || ""} // must match the selected string
+                            onChange={(e) => {
+                              const selected = e.target.value as string;
+                              setProposal({ ...proposal, batteryBrands: selected }); // update proposal state
+                            }}
                             renderValue={(selected) => {
-                              // selected is a string here
                               const brand = batteryBrandList.find((b) => b.name === selected);
                               return (
                                 <Stack direction="row" spacing={1} alignItems="center">
@@ -1276,21 +1298,16 @@ export default function ProposalPage() {
                               );
                             }}
                           >
-                            {batteryBrandList.map((brand, index) => (
-                              <MenuItem key={index} value={brand.name}>
-                                {brand.logo && (
-                                  <Avatar
-                                    src={brand.logo}
-                                    alt={brand.name}
-                                    sx={{ width: 24, height: 24, marginRight: 1 }}
-                                  />
-                                )}
-                                {brand.name}
+                            {batteryBrandList.map((brand) => (
+                              <MenuItem key={brand.name} value={brand.name}>
+                                <Stack direction="row" spacing={1} alignItems="center">
+                                  {brand.logo && <Avatar src={brand.logo} alt={brand.name} sx={{ width: 24, height: 24 }} />}
+                                  <span>{brand.name}</span>
+                                </Stack>
                               </MenuItem>
                             ))}
                           </Select>
                         </FormControl>
-
 
                         {/* Button to open dialog */}
                         <Button
@@ -1806,7 +1823,8 @@ export default function ProposalPage() {
               <Box sx={{ width: '100%', mt: 3 }}>
                 <div className="text-center text-2xl mt-6 ">Table </div>
                 <div>
-                  <div ref={tableRef}>
+                  {/* table  */}
+                  <div>
                     <Table>
                       <TableHead>
                         <TableRow sx={{ backgroundColor: "#003366" }}>
@@ -1817,142 +1835,90 @@ export default function ProposalPage() {
                           <TableCell sx={{ color: "white" }}>Subtotal</TableCell>
                         </TableRow>
                       </TableHead>
-
                       <TableBody>
-                        {rows.map((row, index) => (
-                          <TableRow
-                            key={index}
-                            sx={{
-                              backgroundColor: index % 2 === 0 ? "#f0f6ff" : "white"
-                            }}
-                          >
-                            {/* menu button */}
+                        {(proposal.rows || []).map((row, index) => (
+                          <TableRow key={index} sx={{ backgroundColor: index % 2 === 0 ? "#f0f6ff" : "white" }}>
                             <TableCell width={50}>
                               <IconButton onClick={(e) => handleMenuOpen(e, index)}>
                                 <MoreVertIcon />
                               </IconButton>
                             </TableCell>
-
                             <TableCell>
                               <TextField
                                 variant="standard"
-                                placeholder="Give Description"
                                 fullWidth
                                 value={row.description}
-                                onChange={(e) =>
-                                  handleRowChange(index, "description", e.target.value)
-                                }
+                                onChange={(e) => handleRowChange(index, "description", e.target.value)}
                                 InputProps={{ disableUnderline: true }}
+                                placeholder="Description"
                               />
                             </TableCell>
-
                             <TableCell>
                               <TextField
-                                type="number"
                                 variant="standard"
+                                type="number"
                                 fullWidth
                                 value={row.price || ""}
-                                onChange={(e) =>
-                                  handleRowChange(index, "price", Number(e.target.value) || 0)
-                                }
-                                InputProps={{
-                                  disableUnderline: true,
-                                  startAdornment: <span style={{ marginRight: 4 }}>₹</span>
-                                }}
-                                sx={{
-                                  "& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button": {
-                                    WebkitAppearance: "none",
-                                    margin: 0
-                                  },
-                                  "& input[type=number]": { MozAppearance: "textfield" }
-                                }}
+                                onChange={(e) => handleRowChange(index, "price", Number(e.target.value) || 0)}
+                                InputProps={{ disableUnderline: true, startAdornment: <span>₹</span> }}
                               />
                             </TableCell>
-
                             <TableCell>
                               <TextField
-                                type="number"
                                 variant="standard"
+                                type="number"
                                 fullWidth
-                                placeholder="0" // ← added placeholder
                                 value={row.quantity || ""}
-                                onChange={(e) =>
-                                  handleRowChange(index, "quantity", Number(e.target.value) || 0)
-                                }
+                                onChange={(e) => handleRowChange(index, "quantity", Number(e.target.value) || 0)}
                                 InputProps={{ disableUnderline: true }}
-                                sx={{
-                                  "& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button": {
-                                    WebkitAppearance: "none",
-                                    margin: 0,
-                                  },
-                                  "& input[type=number]": { MozAppearance: "textfield" },
-                                }}
                               />
                             </TableCell>
-
-
                             <TableCell>
-                              ₹ {(row.price * row.quantity).toLocaleString("en-IN")}
-
+                              ₹ {((row.price || 0) * (row.quantity || 0)).toLocaleString("en-IN")}
                               {openNoteRow === index && (
                                 <TextField
                                   variant="standard"
-                                  placeholder="Add note"
                                   fullWidth
-                                  value={row.note}
+                                  value={row.note || ""}
                                   onChange={(e) => handleRowChange(index, "note", e.target.value)}
                                   InputProps={{ disableUnderline: true }}
-                                  sx={{
-                                    fontSize: "0.8rem",
-                                    mt: 0.5,
-                                    "& input": {
-                                      fontSize: "0.8rem",
-                                      color: "gray",
-                                    },
-                                  }}
+                                  placeholder="Add note"
+                                  sx={{ fontSize: "0.8rem", mt: 0.5 }}
                                 />
                               )}
                             </TableCell>
-
                           </TableRow>
                         ))}
-
 
                         {/* Subtotal */}
                         <TableRow>
                           <TableCell></TableCell>
                           <TableCell>Subtotal</TableCell>
-                          <TableCell>₹ {subtotal.toLocaleString("en-IN")}</TableCell>
+                          <TableCell>₹ {(proposal.subtotal || 0).toLocaleString("en-IN")}</TableCell>
                           <TableCell></TableCell>
                           <TableCell></TableCell>
                         </TableRow>
 
                         {/* GST */}
                         <TableRow>
-                          <TableCell></TableCell> {/* menu column */}
-                          <TableCell>GST %</TableCell> {/* description column */}
+                          <TableCell></TableCell>
+                          <TableCell>GST %</TableCell>
                           <TableCell>
                             <TextField
-                              type="number"
                               variant="standard"
-                              value={gst || ""}
-                              onChange={(e) => setGst(Number(e.target.value) || 0)}
-                              InputProps={{
-                                disableUnderline: true,
-                              }}
+                              type="number"
+                              value={proposal.gst || ""}
+                              onChange={(e) =>
+                                setProposal((prev) => ({ ...prev, gst: Number(e.target.value) || 0 }))
+                              }
+                              InputProps={{ disableUnderline: true }}
                               placeholder="0"
-                              sx={{
-                                "& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button": {
-                                  WebkitAppearance: "none",
-                                  margin: 0
-                                },
-                                "& input[type=number]": { MozAppearance: "textfield" } // Firefox
-                              }}
                             />
-                          </TableCell> {/* price column (GST %) */}
-                          <TableCell></TableCell> {/* quantity column */}
-                          <TableCell>₹ {gstAmount.toLocaleString("en-IN")}</TableCell> {/* subtotal column */}
+                          </TableCell>
+                          <TableCell></TableCell>
+                          <TableCell>₹ {(proposal.gstAmount || 0).toLocaleString("en-IN")}</TableCell>
                         </TableRow>
+
                         {/* Total */}
                         <TableRow sx={{ backgroundColor: "#003366" }}>
                           <TableCell></TableCell>
@@ -1960,77 +1926,52 @@ export default function ProposalPage() {
                             Total Cost
                           </TableCell>
                           <TableCell></TableCell>
-                          <TableCell sx={{ color: "white" }}>
-                            ₹ {total.toLocaleString("en-IN")}
-                          </TableCell>
+                          <TableCell sx={{ color: "white" }}>₹ {(proposal.total || 0).toLocaleString("en-IN")}</TableCell>
                         </TableRow>
-                        {/* Amount in Words Row */}
+
+                        {/* Amount in Words */}
                         <TableRow sx={{ backgroundColor: "#003366" }}>
                           <TableCell colSpan={5} sx={{ p: 2 }}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                color: "#fff",
-                              }}
-                            >
+                            <Box sx={{ display: "flex", justifyContent: "space-between", color: "#fff" }}>
                               <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                                 Amount in Words:
                               </Typography>
-                              <Typography
-                                variant="h6"
-                                sx={{ fontWeight: "semibold", fontSize: 15 }}
-                              >
-                                {numberToWords(total)}
+                              <Typography variant="h6" sx={{ fontSize: 15 }}>
+                                {numberToWords(proposal.total || 0)}
                               </Typography>
                             </Box>
                           </TableCell>
                         </TableRow>
-
-
                       </TableBody>
-
-                      {/* 3-dot menu for add/delete */}
-                      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-                        <MenuItem onClick={handleAddRowBelow}>
-                          <AddIcon fontSize="small" /> Add Row Below
-                        </MenuItem>
-
-                        <MenuItem
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            if (menuRowIndex !== null) handleDeleteRow(menuRowIndex);
-                          }}
-                        >
-                          <DeleteIcon fontSize="small" /> Delete Row
-                        </MenuItem>
-
-                        <MenuItem
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            if (menuRowIndex !== null) {
-                              setOpenNoteRow(prev => (prev === menuRowIndex ? null : menuRowIndex));
-                            }
-                            setAnchorEl(null); // close menu after clicking
-                          }}
-                        >
-                          <EditNoteIcon fontSize="small" /> Add/View Note
-                        </MenuItem>
-                        <MenuItem
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            if (menuRowIndex !== null) {
-                              handleDeleteNote(menuRowIndex);
-                            }
-                            setAnchorEl(null); // close menu after clicking
-                          }}
-                        >
-                          <DeleteIcon fontSize="small" /> Delete Note
-                        </MenuItem>
-
-                      </Menu>
                     </Table>
+
+                    {/* Row Menu */}
+                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                      <MenuItem onClick={handleAddRowBelow}>
+                        <AddIcon fontSize="small" /> Add Row Below
+                      </MenuItem>
+                      <MenuItem onClick={handleDeleteRow}>
+                        <DeleteIcon fontSize="small" /> Delete Row
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => {
+                          if (menuRowIndex !== null) setOpenNoteRow((prev) => (prev === menuRowIndex ? null : menuRowIndex));
+                          handleMenuClose();
+                        }}
+                      >
+                        <EditNoteIcon fontSize="small" /> Add/View Note
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => {
+                          handleDeleteNote();
+                          handleMenuClose();
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" /> Delete Note
+                      </MenuItem>
+
+
+                    </Menu>
                   </div>
                   {/* <Button
                     onClick={() => handleCapture(proposal)}
@@ -2066,6 +2007,21 @@ export default function ProposalPage() {
                 </button>
 
               </div>
+              {(proposal._id || proposal.id) && (
+                <button
+                  type="button"
+                  onClick={() => handleCapture(proposal)}
+                  style={{
+                    padding: "8px 16px",
+                    backgroundColor: "#2563eb",
+                    color: "white",
+                    borderRadius: "6px",
+                    marginTop: "1rem",
+                  }}
+                >
+                  Save Table Image
+                </button>
+              )}
               <span>Balance of System</span>
               <TextareaAutosize
                 maxRows={10}
@@ -2111,6 +2067,24 @@ export default function ProposalPage() {
                 value={proposal.customerScope}
                 onChange={(e) =>
                   setProposal({ ...proposal, customerScope: e.target.value })
+                }
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  fontSize: "16px",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  resize: "vertical",
+                  lineHeight: "1.5",
+                }}
+              />
+              <span>Terms & Condition</span>
+              <TextareaAutosize
+                maxRows={10}
+                aria-label="termandcondition"
+                value={proposal.termandcondition}
+                onChange={(e) =>
+                  setProposal({ ...proposal, termandcondition: e.target.value })
                 }
                 style={{
                   width: "100%",
