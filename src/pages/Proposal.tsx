@@ -397,7 +397,7 @@ export default function ProposalPage() {
       ...prev,
       otherCharges: [...prev.otherCharges, { description: "", amount: 0 }],
     }));
-    handleMenuClose();
+    handleMenuCloseother();
   };
 
   const handleDeleteOtherCharge = (index: number) => {
@@ -405,13 +405,13 @@ export default function ProposalPage() {
       ...prev,
       otherCharges: prev.otherCharges.filter((_, i) => i !== index),
     }));
-    handleMenuClose();
+    handleMenuCloseother();
   };
 
   useEffect(() => {
     const subtotal = proposal.rows.reduce((acc, r) => acc + (r.price || 0) * (r.quantity || 0), 0);
     const otherChargesTotal = proposal.otherCharges.reduce((acc, oc) => acc + oc.amount, 0);
-    const gstAmount = ((subtotal + otherChargesTotal) * (proposal.gst || 0)) / 100;
+    const gstAmount = ((subtotal) * (proposal.gst || 0)) / 100;
     const total = subtotal + otherChargesTotal + gstAmount;
     setProposal((prev) => ({ ...prev, subtotal, gstAmount, total }));
   }, [proposal.rows, proposal.otherCharges, proposal.gst]);
