@@ -391,96 +391,125 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             {/* Commercial Offer & Payment */}
             <View style={styles.section}>
                 <Text style={styles.subHeader}>Commercial Offer & Payment</Text>
-                <Text style={{ fontSize: 14, marginBottom: 5 }}> Price Quote & Payment schedule for 5 KW Grid Tie Rooftop Solar System:</Text>
+                <Text style={{ fontSize: 14, marginBottom: 5 }}>
+                    Price Quote & Payment schedule for 5 KW Grid Tie Rooftop Solar System:
+                </Text>
+
                 <View style={styles.table}>
                     {/* Header */}
                     <View style={[styles.tableRow, styles.tableHeader]}>
-                        {/* <Text style={styles.tableColHeader}></Text> */}
                         <Text style={styles.tableColHeader}>Description</Text>
                         <Text style={styles.tableColHeader}>Price / kW</Text>
                         <Text style={styles.tableColHeader}>Quantity</Text>
                         <Text style={styles.tableColHeader}>Subtotal</Text>
                     </View>
 
-                    {/* Rows */}
+                    {/* Product Rows */}
                     {proposal.rows.map((row: any, i: number) => (
                         <View key={i} style={styles.tableRow}>
-                            {/* <Text style={styles.tableCol}></Text> */}
                             <Text style={styles.tableCol}>{row.description || "Give Description"}</Text>
-                            <Text style={styles.tableColprice}> {row.price}</Text>
-                            <Text style={styles.tableColquantity}>{row.quantity}</Text>
+                            <Text style={styles.tableColprice}>{row.price || ""}</Text>
+                            <Text style={styles.tableColquantity}>{row.quantity || ""}</Text>
                             <Text style={styles.tableColtotal}>
-                                {(row.price * row.quantity).toLocaleString("en-IN")}
+                                {(row.price && row.quantity) ? (row.price * row.quantity).toLocaleString("en-IN") : ""}
                             </Text>
                         </View>
                     ))}
 
                     {/* Subtotal */}
                     <View style={styles.tableRow}>
-                        {/* <Text style={styles.tableCol}></Text> */}
                         <Text style={styles.tableCol}>Subtotal</Text>
-                        <Text style={styles.tableColprice}> {proposal.subtotal?.toLocaleString("en-IN")}</Text>
+                        <Text style={styles.tableColprice}>{proposal.subtotal ? proposal.subtotal.toLocaleString("en-IN") : ""}</Text>
                         <Text style={styles.tableColquantity}></Text>
                         <Text style={styles.tableColtotal}></Text>
                     </View>
 
                     {/* GST */}
                     <View style={styles.tableRow}>
-                        {/* <Text style={styles.tableCol}></Text> */}
                         <Text style={styles.tableCol}>GST %</Text>
-                        <Text style={styles.tableColprice}>{proposal.gst}%</Text>
+                        <Text style={styles.tableColprice}>{proposal.gst > 0 ? `${proposal.gst}%` : ""}</Text>
                         <Text style={styles.tableColquantity}></Text>
-                        <Text style={styles.tableColtotal}> {proposal.gstAmount?.toLocaleString("en-IN")}</Text>
+                        <Text style={styles.tableColtotal}>
+                            {proposal.gstAmount > 0 ? proposal.gstAmount.toLocaleString("en-IN") : ""}
+                        </Text>
                     </View>
+
+                    {/* Other Charges Rows */}
+                    {proposal.otherCharges && proposal.otherCharges.length > 0 &&
+                        proposal.otherCharges.map((charge: any, idx: number) => (
+                            <View key={`oc-${idx}`} style={styles.tableRow}>
+                                <Text style={styles.tableCol}>{charge.description || "Other Charge"}</Text>
+                                <Text style={styles.tableColprice}>{charge.amount > 0 ? charge.amount.toLocaleString("en-IN") : ""}</Text>
+                                <Text style={styles.tableColquantity}></Text>
+                                <Text style={styles.tableColtotal}>{charge.amount > 0 ? charge.amount.toLocaleString("en-IN") : ""}</Text>
+                            </View>
+                        ))
+                    }
 
                     {/* Total */}
                     <View style={styles.totalRow}>
-                        {/* <Text style={styles.totalText}></Text> */}
                         <Text style={styles.totalText}>Total Cost</Text>
                         <Text style={styles.totalText}></Text>
                         <Text style={styles.totalText}></Text>
-                        <Text style={styles.totalText}> {proposal.total?.toLocaleString("en-IN")}</Text>
+                        <Text style={styles.totalText}>{proposal.total ? proposal.total.toLocaleString("en-IN") : ""}</Text>
                     </View>
                 </View>
 
                 {/* Amount in Words */}
-                <View style={{ flexDirection: "row", justifyContent: "space-between", padding: 5, backgroundColor: "#003366", }}>
+                <View
+                    style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        padding: 5,
+                        backgroundColor: "#003366",
+                    }}
+                >
                     <Text style={styles.amountWords}>Amount in Words:</Text>
-                    <Text style={styles.amountWords}>{numberToWords(proposal.total)}</Text>
+                    <Text style={styles.amountWords}>{numberToWords(proposal.total || 0)}</Text>
                 </View>
-
-
 
                 {/* Payment Schedule */}
                 <View style={{ marginTop: 10 }}>
-                    <Text style={{ fontFamily: 'Work Sans', fontWeight: "bold", marginBottom: 5, fontSize: 20 }}>Payment Schedule</Text>
+                    <Text style={{ fontFamily: "Work Sans", fontWeight: "bold", marginBottom: 5, fontSize: 20 }}>
+                        Payment Schedule
+                    </Text>
                     <Text style={styles.listItem}>• As a percentage of the Net Value of System.</Text>
                     <Text style={styles.listItem}>• 30% advance along with Purchase Order.</Text>
-                    <Text style={styles.listItem}>• 65% Before the Dispatch of material, Balance 5% after installation and commissioning.</Text>
+                    <Text style={styles.listItem}>
+                        • 65% Before the Dispatch of material, Balance 5% after installation and commissioning.
+                    </Text>
                 </View>
 
                 {/* Payment Details */}
                 <View style={{ marginTop: 10 }}>
-                    <Text style={{ fontFamily: 'Work Sans', fontWeight: "bold", marginBottom: 8, fontSize: 20 }}>Payment Details</Text>
-                    <Text style={{ fontFamily: 'Work Sans', fontSize: 14, }}>Payment can be paid via Cheque / scanner code / Netbanking</Text>
-                    <Text style={{ fontFamily: 'Work Sans', fontSize: 14, fontWeight: "bold" }}>SUNMAYO PRIVATE LIMITED</Text>
-                    <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}><Text style={{ fontWeight: "bold" }}>Bank:</Text> IDFC FIRST BANK</Text>
-                    <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}><Text style={{ fontWeight: "bold" }}>A/C:</Text>— 10223162147</Text>
-                    <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}><Text style={{ fontWeight: "bold" }}>IFSC:</Text> IDFB0021005</Text>
+                    <Text style={{ fontFamily: "Work Sans", fontWeight: "bold", marginBottom: 8, fontSize: 20 }}>
+                        Payment Details
+                    </Text>
+                    <Text style={{ fontFamily: "Work Sans", fontSize: 14 }}>
+                        Payment can be paid via Cheque / scanner code / Netbanking
+                    </Text>
+                    <Text style={{ fontFamily: "Work Sans", fontSize: 14, fontWeight: "bold" }}>
+                        SUNMAYO PRIVATE LIMITED
+                    </Text>
+                    <Text style={{ fontFamily: "Work Sans", fontSize: 14 }}>
+                        <Text style={{ fontWeight: "bold" }}>Bank:</Text> IDFC FIRST BANK
+                    </Text>
+                    <Text style={{ fontFamily: "Work Sans", fontSize: 14 }}>
+                        <Text style={{ fontWeight: "bold" }}>A/C:</Text>— 10223162147
+                    </Text>
+                    <Text style={{ fontFamily: "Work Sans", fontSize: 14 }}>
+                        <Text style={{ fontWeight: "bold" }}>IFSC:</Text> IDFB0021005
+                    </Text>
                 </View>
 
                 {/* Terms */}
                 <View style={{ marginTop: 15 }}>
-                    <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>
+                    <Text style={{ fontFamily: "Work Sans", fontSize: 14 }}>
                         Terms: Prices are firm for 10 days from offer date. Delivery 2–3 weeks. Force majeure applies.
                     </Text>
                 </View>
             </View>
-
-            {/* Footer */}
-            {/* <Text style={styles.footer2}>Page 4 • Commercial</Text> */}
         </Page>
-
 
         {/* PAGE 5: BILL OF MATERIALS */}
         <Page size="A4" style={styles.page}>

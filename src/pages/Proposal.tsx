@@ -67,11 +67,17 @@ export type Product = {
 type BatteryType = "Li-Ion" | "Lead-Acid";
 type LeadAcidSubtype = "40Ah" | "75Ah" | "100Ah" | "150Ah" | "200Ah";
 
+export type OtherCharge = {
+  description: string;
+  amount: number;
+};
+
 export type RowType = {
   description: string;
   price: number;
   quantity: number;
   note?: string;
+  otherCharges?: number;
 };
 
 export type Proposal = {
@@ -99,6 +105,8 @@ export type Proposal = {
   batteryBrands: string;
   batterytype: BatteryType | "";
   leadAcidSubtype?: LeadAcidSubtype | "";
+  batteryquantity: string;
+  batterywarranty: string;
   cableBrands: string;
   proposalStructure: string;
   structureDes: string;
@@ -111,12 +119,18 @@ export type Proposal = {
   stage2: string;
   stage3: string;
   stage4: string;
+  priceunitelectricity: string;
+  invertorBrands: string[];
+  otherCustomerType: string;
+  panelBrands: string[];
+  paneltype: string;
 
   rows: RowType[];
   gst: number;
   subtotal: number;
   gstAmount: number;
   total: number;
+  otherCharges: OtherCharge[];
 
   services: string[];
   products: string[];
@@ -125,13 +139,13 @@ export type Proposal = {
   tableImage?: string;
   graphimage?: string;
 
-  [key: string]: string | string[] | number | RowType[] | undefined;
+  // [key: string]: string | string[] | number | RowType[] | undefined;
 };
 
 
 type ClientPrefix = "Mr." | "Mrs." | "Ms.";
 type CustomerType = "Industrial" | "Commercial" | "Government" | "Residential" | "others";
-type PanelType = "Mono" | "Mono-Perv" | "Poly" | "BIVP" | "Mono-Prev Half Cut" | "Mono BiFacial" | "TopCon MonoFacial" | "TopCon BiFacial";
+type PanelType = "Mono" | "Mono-Perc" | "Poly" | "BIVP" | "Mono-Prev Half Cut" | "Mono BiFacial" | "TopCon MonoFacial" | "TopCon BiFacial";
 type InvertorSize = "2kw-1ph" | "3kw-1ph" | "5kw-1ph" | "5KW- 3P" | "6KW- 3P" | "8KW- 3P" | "10KW- 3P" | "12KW- 3P" | "15KW- 3P" | "20KW- 3P" | "25KW- 3P" | "30KW- 3P" | "50KW- 3P" | "100KW- 3P";
 type InvertorPhase = "Single Phase" | "Three Phase";
 type Invertortype = "String Invertor" | "Micro Invertor" | "Off Grid Inverter" | "Hybrid Inverter";
@@ -170,6 +184,8 @@ export default function ProposalPage() {
     invertortype: "",
     batteryBrands: "",
     batterytype: "",
+    batteryquantity: "",
+    batterywarranty: "",
     proposalStructure: "",
     cableBrands: "",
     structureDes: "",
@@ -179,16 +195,21 @@ export default function ProposalPage() {
     stage3: "",
     stage4: "",
     priceunitelectricity: "",
+    invertorBrands: [],
+    otherCustomerType: "",
+    panelBrands: [],
+    paneltype: "",
 
     // tabledata
     rows: [
-      { description: "", price: 0, quantity: 0, note: "" },
-      { description: "", price: 0, quantity: 0, note: "" },
+      { description: "", price: 0, quantity: 0, note: "", otherCharges: 0 },
+      { description: "", price: 0, quantity: 0, note: "", otherCharges: 0 },
     ],
     gst: 0,
     subtotal: 0,
     gstAmount: 0,
     total: 0,
+    otherCharges: [],
     // graphType: "",
     services: [],
     products: [],
@@ -240,10 +261,15 @@ export default function ProposalPage() {
   // Customer and proposal-related states
   // const [customerType, setCustomerType] = useState<CustomerType>();
   const [openPanel, setOpenPanel] = useState(false);
+  const [openPanelDialog, setOpenPanelDialog] = useState(false);
+  const [newPanelLogo, setNewPanelLogo] = useState<string | null>(null);
+  const [newPanelBrand, setNewPanelBrand] = useState("");
+  const [, setPanelBrands] = useState<string[]>([]);
   const [openProposal, setOpenPropsal] = useState(false);
   const [openBattery, setOpenBattery] = useState(false);
   const [, setBatteryBrand] = useState<string>('');
   const [batteryBrandList, setBatteryBrandList] = useState<{ name: string; logo?: string }[]>([
+    { name: "N/A" },
     { name: "Luminous", logo: "/office.svg" },
     { name: "Exide", logo: "/office.svg" },
     { name: "Amaron", logo: "/office.svg" },
@@ -263,6 +289,7 @@ export default function ProposalPage() {
   const [openInvertor, setOpenInvertor] = useState(false);
   const [, setInvertorBrands] = useState<string[]>([]);
   const [brands, setBrands] = useState<{ name: string; logo?: string }[]>([
+    { name: "N/A" },
     { name: "Luminous", logo: "/office.svg" },
     { name: "Tata Power Solar", logo: "/office.svg" },
     { name: "Microtek", logo: "/office.svg" },
@@ -283,7 +310,7 @@ export default function ProposalPage() {
   const [, setCableBrands] = useState<string[]>([]);
 
   const [panelBrand,] = useState<string[]>([
-    "Waaree Energies", "Tata Power Solar", "Adani Solar", "Vikram Solar", " Goldi Solar", "Rayzon Solar"
+    "N/A", "Waaree Energies", "Tata Power Solar", "Adani Solar", "Vikram Solar", " Goldi Solar", "Rayzon Solar"
   ]);
   const [newCable, setNewCable] = useState<string>(" ");
   const [openCableDialog, setOpenCableDialog] = useState(false);
@@ -295,6 +322,9 @@ export default function ProposalPage() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuRowIndex, setMenuRowIndex] = useState<number | null>(null);
   const [openNoteRow, setOpenNoteRow] = useState<number | null>(null);
+  const [selectedRow, setSelectedRow] = useState<number | null>(null);
+  const [anchorEll, setAnchorEll] = useState<null | HTMLElement>(null);
+  const menuOpen = Boolean(anchorEll);
 
 
   useEffect(() => {
@@ -342,27 +372,51 @@ export default function ProposalPage() {
     }
   };
 
+
+
+
   // Fetch data when the component mounts
   useEffect(() => {
     fetchMasterData();
   }, []);
   const tableRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const newSubtotal = proposal.rows.reduce(
-      (acc, row) => acc + (row.price || 0) * (row.quantity || 0),
-      0
-    );
-    const newGstAmount = (newSubtotal * (proposal.gst || 0)) / 100;
-    const newTotal = newSubtotal + newGstAmount;
 
-    setProposal(prev => ({
+  const handleMenuOpenother = (event: React.MouseEvent<HTMLButtonElement>, rowIndex: number) => {
+    setAnchorEll(event.currentTarget);
+    setSelectedRow(rowIndex);
+  };
+
+  const handleMenuCloseother = () => {
+    setAnchorEll(null);
+    setSelectedRow(null);
+  };
+
+  const handleAddOtherCharge = () => {
+    setProposal((prev) => ({
       ...prev,
-      subtotal: newSubtotal,
-      gstAmount: newGstAmount,
-      total: newTotal,
+      otherCharges: [...prev.otherCharges, { description: "", amount: 0 }],
     }));
-  }, [proposal.rows, proposal.gst]);
+    handleMenuClose();
+  };
+
+  const handleDeleteOtherCharge = (index: number) => {
+    setProposal((prev) => ({
+      ...prev,
+      otherCharges: prev.otherCharges.filter((_, i) => i !== index),
+    }));
+    handleMenuClose();
+  };
+
+  useEffect(() => {
+    const subtotal = proposal.rows.reduce((acc, r) => acc + (r.price || 0) * (r.quantity || 0), 0);
+    const otherChargesTotal = proposal.otherCharges.reduce((acc, oc) => acc + oc.amount, 0);
+    const gstAmount = ((subtotal + otherChargesTotal) * (proposal.gst || 0)) / 100;
+    const total = subtotal + otherChargesTotal + gstAmount;
+    setProposal((prev) => ({ ...prev, subtotal, gstAmount, total }));
+  }, [proposal.rows, proposal.otherCharges, proposal.gst]);
+
+
 
 
   // Convert number to words
@@ -386,7 +440,7 @@ export default function ProposalPage() {
 
   const handleAddRowBelow = () => {
     if (menuRowIndex === null) return;
-    const newRow: RowType = { description: "", price: 0, quantity: 0, note: "" };
+    const newRow: RowType = { description: "", price: 0, quantity: 0, note: "", otherCharges: 0 };
     setProposal((prev) => {
       const updatedRows = [
         ...prev.rows.slice(0, menuRowIndex + 1),
@@ -499,7 +553,6 @@ export default function ProposalPage() {
     const requiredFields: (keyof Proposal)[] = [
       "clientName",
       "clientPhone",
-      "clientEmail",
       "clientAddress",
       "clienttitle",
       "customerType",
@@ -508,20 +561,8 @@ export default function ProposalPage() {
       "electricity",
       "generation",
       "warranty",
-      "proposalWattpeak",
-      "Invertorwarranty",
       "batterytype",
-      "performancewarranty",
       "quantity",
-      "InvertorSize",
-      "invertorquantitiy",
-      "proposalStructure",
-      "structureDes",
-      "systemwarranty",
-      "stage1",
-      "stage2",
-      "stage3",
-      "stage4",
     ];
 
     const missingFields = requiredFields.filter((field) => !currentProposal[field]);
@@ -629,7 +670,7 @@ export default function ProposalPage() {
 
 
   const handleCapture = async (proposal: Proposal) => {
-    const proposalId = proposal._id ?? proposal.id;
+    const proposalId = proposal._id ?? proposal._id;
     if (!proposalId) {
       toast.error("❌ Proposal ID missing. Save the proposal first.");
       return;
@@ -658,13 +699,31 @@ export default function ProposalPage() {
     }
 
     const { file } = await res.json();
-    proposal.tableImage = 
-    (`${import.meta.env.VITE_API_URL}/uploads/${file}`),
-    // `http://localhost:5000/uploads/${file}`;
-    toast.success("✅ Table Image Saved");
+    proposal.tableImage =
+      (`${import.meta.env.VITE_API_URL}/uploads/${file}`),
+      // `http://localhost:5000/uploads/${file}`;
+      toast.success("✅ Table Image Saved");
   };
 
+  const handleAddPanelBrand = () => {
+    if (newPanelBrand.trim() && !brands.some((b) => b.name === newPanelBrand)) {
+      setBrands([...brands, { name: newPanelBrand, logo: newPanelLogo || undefined }]);
+      setPanelBrands((prev) => [...prev, newPanelBrand]);
+    }
+    setNewPanelBrand("");
+    setNewPanelLogo(null);
+    setOpenPanelDialog(false);
+  };
 
+  const handlePanelLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewPanelLogo(reader.result as string);
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
 
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -743,7 +802,7 @@ export default function ProposalPage() {
         <CardContent>
           <form onSubmit={handleAddOrUpdateProposal}>
 
-            <Stack spacing={2}>
+            <Stack spacing={4}>
               <div className="flex flex-row">
                 <FormControl sx={{ marginRight: 2, width: 100 }} variant="filled">
                   <InputLabel id="client-type-label">Title</InputLabel>
@@ -771,7 +830,6 @@ export default function ProposalPage() {
               <div className="flex flex-row gap-4">
                 <TextField
                   label="Client Phone"
-                  placeholder="0987654321"
                   variant="filled"
                   value={proposal.clientPhone}
                   onChange={(e) => setProposal({ ...proposal, clientPhone: e.target.value })}
@@ -835,7 +893,7 @@ export default function ProposalPage() {
                   fullWidth
                 />
               </div>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-8">
                 <TextField
                   label="Yearly consumption (Units)"
                   placeholder="e.g: 2400 KWh"
@@ -845,7 +903,7 @@ export default function ProposalPage() {
                   fullWidth
                 />
                 <TextField
-                  label="Yearly generation of 1KWh"
+                  label="Yearly generation in KWh"
                   placeholder="e.g: 1400 KWh"
                   variant="filled"
                   value={proposal.generation}
@@ -893,14 +951,14 @@ export default function ProposalPage() {
                       🔆 Panel Details
                     </Typography>
 
-                    <Stack spacing={2}>
+                    <Stack spacing={4}>
                       <FormControl fullWidth variant="filled">
                         <InputLabel id="panel-brand-label">Panel Brand</InputLabel>
                         <Select
                           labelId="panel-brand-label"
                           value={proposal.panelBrands || ""}
                           onChange={(e) =>
-                            setProposal({ ...proposal, panelBrands: e.target.value as string })
+                            setProposal({ ...proposal, panelBrands: e.target.value as string[] })
                           }
                           displayEmpty
                         >
@@ -911,6 +969,60 @@ export default function ProposalPage() {
                           ))}
                         </Select>
                       </FormControl>
+                      {/* Button to open dialog */}
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => setOpenPanelDialog(true)}
+                        sx={{
+                          mt: 2,
+                          width: "auto",
+                          alignSelf: "flex-start",
+                        }}
+                      >
+                        ➕ Add Panel Brand
+                      </Button>
+
+                      <Dialog open={openPanelDialog} onClose={() => setOpenPanelDialog(false)}>
+                        <DialogTitle>Add Panel Brand</DialogTitle>
+                        <DialogContent>
+                          <TextField
+                            autoFocus
+                            margin="dense"
+                            label="Brand Name"
+                            fullWidth
+                            value={newPanelBrand}
+                            onChange={(e) => setNewPanelBrand(e.target.value)}
+                          />
+                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
+                            <input
+                              accept="image/*"
+                              id="upload-logo"
+                              type="file"
+                              style={{ display: "none" }}
+                              onChange={handlePanelLogoUpload}
+                            />
+                            <label htmlFor="upload-logo">
+                              <Button variant="contained" component="span" startIcon={<UploadIcon />}>
+                                Upload Logo
+                              </Button>
+                            </label>
+                            {newPanelLogo && (
+                              <Avatar
+                                src={newPanelLogo}
+                                alt="preview"
+                                sx={{ width: 50, height: 50, border: "2px solid #1976d2" }}
+                              />
+                            )}
+                          </Stack>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={() => setOpenPanelDialog(false)}>Cancel</Button>
+                          <Button onClick={handleAddPanelBrand} variant="contained" color="success">
+                            Add
+                          </Button>
+                        </DialogActions>
+                      </Dialog>
 
                       <TextField
                         label="Watt Peak (WP)"
@@ -933,7 +1045,7 @@ export default function ProposalPage() {
                           }
                         >
                           <MenuItem value="Mono">Mono</MenuItem>
-                          <MenuItem value="Mono-Perv">Mono-Perv</MenuItem>
+                          <MenuItem value="Mono-Perc">Mono-Perc</MenuItem>
                           <MenuItem value="Poly">Poly</MenuItem>
                           <MenuItem value="BIVP">BIVP</MenuItem>
                           <MenuItem value="Mono-Prev Half Cut">Mono-Prev Half Cut</MenuItem>
@@ -1011,21 +1123,28 @@ export default function ProposalPage() {
                       bgcolor: "#f9f9f9",
                     }}
                   >
-                    <Stack spacing={2}>
-                      {/* Multi Select */}
+                    <Stack spacing={4}>
                       {/* ✅ Inverter Brands (multiple select) */}
                       <FormControl fullWidth variant="filled">
                         <InputLabel id="invertor-brand-label">Select Inverter Brands</InputLabel>
                         <Select
                           labelId="invertor-brand-label"
-                          multiple
-                          value={proposal.invertorBrands || []}
-                          onChange={(e) =>
-                            setProposal({ ...proposal, invertorBrands: e.target.value as string[] })
-                          }
-                          renderValue={(selected) => (
+                          multiple={false}
+                          value=""
+                          onChange={(e) => {
+                            const selectedBrand = e.target.value as string;
+                            const currentBrands = proposal.invertorBrands as string[] || [];
+
+                            if (!currentBrands.includes(selectedBrand)) {
+                              setProposal({
+                                ...proposal,
+                                invertorBrands: [...currentBrands, selectedBrand],
+                              });
+                            }
+                          }}
+                          renderValue={() => (
                             <Stack direction="row" spacing={1} flexWrap="wrap">
-                              {(selected as string[]).map((value) => {
+                              {(proposal.invertorBrands as string[] | undefined)?.map((value) => {
                                 const brand = brands.find((b) => b.name === value);
                                 return (
                                   <Chip
@@ -1052,6 +1171,8 @@ export default function ProposalPage() {
                           ))}
                         </Select>
                       </FormControl>
+
+
 
                       {/* Button to open dialog */}
                       <Button
@@ -1132,11 +1253,7 @@ export default function ProposalPage() {
                               onChange={handleLogoUpload}
                             />
                             <label htmlFor="upload-logo">
-                              <Button
-                                variant="contained"
-                                component="span"
-                                startIcon={<UploadIcon />}
-                              >
+                              <Button variant="contained" component="span" startIcon={<UploadIcon />}>
                                 Upload Logo
                               </Button>
                             </label>
@@ -1156,6 +1273,24 @@ export default function ProposalPage() {
                           </Button>
                         </DialogActions>
                       </Dialog>
+
+                      {/* ✅ Inverter Type */}
+                      <FormControl fullWidth variant="filled">
+                        <InputLabel id="invertor-type">Invertor Type</InputLabel>
+                        <Select
+                          labelId="invertor-type"
+                          value={proposal.invertortype || ""}
+                          onChange={(e) =>
+                            setProposal({ ...proposal, invertortype: e.target.value as Invertortype })
+                          }
+                        >
+                          {/* "Off Grid Inverter" | "Hybrid Inverter" */}
+                          <MenuItem value="Off Grid Inverter">Off Grid Inverter</MenuItem>
+                          <MenuItem value="Hybrid Inverter">Hybrid Inverter</MenuItem>
+                          <MenuItem value="String Invertor">String Invertor</MenuItem>
+                          <MenuItem value="Micro Invertor">Micro Invertor</MenuItem>
+                        </Select>
+                      </FormControl>
 
                       <TextField
                         label="Invertor Warranty in years"
@@ -1191,24 +1326,6 @@ export default function ProposalPage() {
                           <MenuItem value="30KW- 3P">30KW- 3P</MenuItem>
                           <MenuItem value="50KW- 3P">50KW- 3P</MenuItem>
                           <MenuItem value="100KW- 3P">100KW- 3P</MenuItem>
-                        </Select>
-                      </FormControl>
-
-                      {/* ✅ Inverter Type */}
-                      <FormControl fullWidth variant="filled">
-                        <InputLabel id="invertor-type">Invertor Type</InputLabel>
-                        <Select
-                          labelId="invertor-type"
-                          value={proposal.invertortype || ""}
-                          onChange={(e) =>
-                            setProposal({ ...proposal, invertortype: e.target.value as Invertortype })
-                          }
-                        >
-                          {/* "Off Grid Inverter" | "Hybrid Inverter" */}
-                          <MenuItem value="Off Grid Inverter">Off Grid Inverter</MenuItem>
-                          <MenuItem value="Hybrid Inverter">Hybrid Inverter</MenuItem>
-                          <MenuItem value="String Invertor">String Invertor</MenuItem>
-                          <MenuItem value="Micro Invertor">Micro Invertor</MenuItem>
                         </Select>
                       </FormControl>
 
@@ -1270,7 +1387,7 @@ export default function ProposalPage() {
                       bgcolor: "#f9f9f9",
                     }}
                   >
-                    <Stack spacing={2}>
+                    <Stack spacing={4}>
                       <div>
                         {/* Select Battery Brands */}
                         <FormControl fullWidth variant="filled">
@@ -1362,7 +1479,7 @@ export default function ProposalPage() {
                         </Dialog>
                       </div>
 
-                      <Box sx={{ maxWidth: 400, mx: "auto", mt: 4 }}>
+                      <Box sx={{ width: "100%", mx: "auto", mt: 4 }}>
                         <Typography variant="h6" gutterBottom>
                           Select Battery Type
                         </Typography>
@@ -1411,6 +1528,26 @@ export default function ProposalPage() {
                           </FormControl>
                         )}
                       </Box>
+                      <TextField
+                        label="Battery Warranty"
+                        placeholder="e.g: 12"
+                        variant="filled"
+                        value={proposal.batterywarranty || ""}
+                        onChange={(e) =>
+                          setProposal({ ...proposal, batterywarranty: e.target.value })
+                        }
+                        fullWidth
+                      />
+                      <TextField
+                        label="Battery Quantity"
+                        placeholder="e.g: 12"
+                        variant="filled"
+                        value={proposal.batteryquantity || ""}
+                        onChange={(e) =>
+                          setProposal({ ...proposal, batteryquantity: e.target.value })
+                        }
+                        fullWidth
+                      />
                     </Stack>
                   </Box>
                 </Collapse>
@@ -1447,7 +1584,7 @@ export default function ProposalPage() {
                       Proposal Details
                     </Typography>
 
-                    <Stack spacing={2}>
+                    <Stack spacing={4}>
                       <FormControl fullWidth variant="filled">
                         <InputLabel id="structure-label">Structure</InputLabel>
                         <Select
@@ -1633,7 +1770,7 @@ export default function ProposalPage() {
                   sx={{
                     width: "100%",
                     height: 450,
-                    mt: 3,
+                    mt: 5,
                     border: "1px solid #ccc",
                     borderRadius: 2,
                     p: 2,
@@ -1660,133 +1797,7 @@ export default function ProposalPage() {
                     </div>
                   </div>
                 </Box>
-                {/* Button to toggle graph section */}
-                {/* <button
-                  type="button"
-                  className="rounded-2xl p-5 bg-blue-200"
-                  onClick={() => setOpenGraph(!openGraph)}
-                >
-                  <div className="flex text-right justify-between">
-                    <span className="font-semibold text-lg">📊 Graph details</span>
-                    <span className="bg-blue-600 p-2 rounded-full text-white">
-                      {openGraph ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />}
-                    </span>
-                  </div>
-                </button> */}
-
-                {/* Collapsible Panel Section */}
-                {/* <Collapse in={openGraph}>
-                  <Box
-                    sx={{
-                      border: "1px solid #ccc",
-                      borderRadius: 2,
-                      p: 2,
-                      bgcolor: "#f9f9f9",
-                    }}
-                  > */}
                 <Stack spacing={2}>
-
-                  {/* <span>Data:</span>
-
-                      <TextField
-                        label="Yearly consumption kWH"
-                        placeholder="e.g: 15000"
-                        variant="filled"
-                        value={proposal.yearlyconsumption}
-                        onChange={(e) =>
-                          setProposal({ ...proposal, yearlyconsumption: e.target.value })
-                        }
-                        fullWidth
-                      />
-
-                      <TextField
-                        label="Yearly Solar Generation kWH"
-                        placeholder="e.g: 1460"
-                        variant="filled"
-                        value={proposal.yearlysolargeneration}
-                        onChange={(e) =>
-                          setProposal({ ...proposal, yearlysolargeneration: e.target.value })
-                        }
-                        fullWidth
-                      />
-
-                      <TextField
-                        label="Yearly % increment in price"
-                        placeholder="e.g: 2"
-                        variant="filled"
-                        value={proposal.priceincrement}
-                        onChange={(e) =>
-                          setProposal({ ...proposal, priceincrement: e.target.value })
-                        }
-                        fullWidth
-                      />
-
-                      <TextField
-                        label="Yearly % decrement in generation "
-                        placeholder="e.g: 0.4"
-                        variant="filled"
-                        value={proposal.decrementgeneration}
-                        onChange={(e) =>
-                          setProposal({ ...proposal, decrementgeneration: e.target.value })
-                        }
-                        fullWidth
-                      />
-
-                      <TextField
-                        label="Years for which to plot the graph"
-                        placeholder="e.g: 8"
-                        variant="filled"
-                        value={proposal.plotgraph}
-                        onChange={(e) =>
-                          setProposal({ ...proposal, plotgraph: e.target.value })
-                        }
-                        fullWidth
-                      />
-
-                      <FormControl fullWidth variant="filled">
-                        <InputLabel id="direction-type-label">Direction</InputLabel>
-                        <Select
-                          labelId="direction-type-label"
-                          value={proposal.directionType}
-                          onChange={(e) =>
-                            setProposal({ ...proposal, directionType: e.target.value as DirectionType })
-                          }
-                        >
-                          <MenuItem value="Left to Right">Left to Right</MenuItem>
-                          <MenuItem value="Right to Left">Right to Left</MenuItem>
-                        </Select>
-                      </FormControl> */}
-
-                  {/* Chart */}
-
-                  {/* <div className="flex justify-center" >
-                            <Button
-                              type="button"
-                              onClick={() => handleSaveGraph(proposal)}
-                              variant="contained"
-                              sx={{
-                                px: 4,
-                                py: 1.5,
-                                borderRadius: "9999px",
-                                boxShadow: "inset 5px 1px 17px 9px rgba(0,0,0,0.35)",
-                                textTransform: "none",
-                                fontWeight: "600",
-                                marginBottom: 6,
-                                backgroundColor: "#1f3c88",
-                                "&:hover": {
-                                  backgroundColor: "#162b63",
-                                },
-                              }}
-                            >
-                              Click to Save Graph
-                            </Button>
-
-
-                          </div> */}
-
-                  {/* </div>
-
-                      </Box> */}
                   <span className="text-center text-lg">Yearly Generation Value (per kWp)</span>
                   <Box
                     sx={{
@@ -1836,7 +1847,8 @@ export default function ProposalPage() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {(proposal.rows || []).map((row, index) => (
+                        {/* Product Rows */}
+                        {proposal.rows.map((row, index) => (
                           <TableRow key={index} sx={{ backgroundColor: index % 2 === 0 ? "#f0f6ff" : "white" }}>
                             <TableCell width={50}>
                               <IconButton onClick={(e) => handleMenuOpen(e, index)}>
@@ -1899,9 +1911,13 @@ export default function ProposalPage() {
                           <TableCell></TableCell>
                         </TableRow>
 
-                        {/* GST */}
+                        {/* GST Row */}
                         <TableRow>
-                          <TableCell></TableCell>
+                          <TableCell width={50}>
+                            <IconButton onClick={(e) => handleMenuOpenother(e, -1)}>
+                              <MoreVertIcon />
+                            </IconButton>
+                          </TableCell>
                           <TableCell>GST %</TableCell>
                           <TableCell>
                             <TextField
@@ -1916,8 +1932,56 @@ export default function ProposalPage() {
                             />
                           </TableCell>
                           <TableCell></TableCell>
-                          <TableCell>₹ {(proposal.gstAmount || 0).toLocaleString("en-IN")}</TableCell>
+                          <TableCell>
+                            {proposal.gstAmount > 0 ? `₹ ${proposal.gstAmount.toLocaleString("en-IN")}` : ""}
+                          </TableCell>
                         </TableRow>
+
+
+                        {/* Other Charges */}
+                        {proposal.otherCharges.map((charge, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell width={50}>
+                              <IconButton onClick={(e) => handleMenuOpenother(e, idx)}>
+                                <MoreVertIcon />
+                              </IconButton>
+                            </TableCell>
+                            <TableCell>
+                              <TextField
+                                variant="standard"
+                                fullWidth
+                                value={charge.description}
+                                placeholder="Other Charge Description"
+                                onChange={(e) => {
+                                  const updated = [...proposal.otherCharges];
+                                  updated[idx].description = e.target.value;
+                                  setProposal((prev) => ({ ...prev, otherCharges: updated }));
+                                }}
+                                InputProps={{ disableUnderline: true }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <TextField
+                                variant="standard"
+                                type="number"
+                                value={charge.amount || ""}
+                                onChange={(e) => {
+                                  const updated = [...proposal.otherCharges];
+                                  updated[idx].amount = Number(e.target.value) || 0;
+                                  setProposal((prev) => ({ ...prev, otherCharges: updated }));
+                                }}
+                                InputProps={{ disableUnderline: true, startAdornment: <span>₹</span> }}
+                              />
+                            </TableCell>
+                            <TableCell></TableCell>
+                            <TableCell>
+                              {charge.amount && charge.amount > 0
+                                ? `₹ ${charge.amount.toLocaleString("en-IN")}`
+                                : ""}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+
 
                         {/* Total */}
                         <TableRow sx={{ backgroundColor: "#003366" }}>
@@ -1945,7 +2009,7 @@ export default function ProposalPage() {
                       </TableBody>
                     </Table>
 
-                    {/* Row Menu */}
+                    {/* Product Row Menu */}
                     <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
                       <MenuItem onClick={handleAddRowBelow}>
                         <AddIcon fontSize="small" /> Add Row Below
@@ -1955,7 +2019,8 @@ export default function ProposalPage() {
                       </MenuItem>
                       <MenuItem
                         onClick={() => {
-                          if (menuRowIndex !== null) setOpenNoteRow((prev) => (prev === menuRowIndex ? null : menuRowIndex));
+                          if (menuRowIndex !== null)
+                            setOpenNoteRow((prev) => (prev === menuRowIndex ? null : menuRowIndex));
                           handleMenuClose();
                         }}
                       >
@@ -1969,8 +2034,14 @@ export default function ProposalPage() {
                       >
                         <DeleteIcon fontSize="small" /> Delete Note
                       </MenuItem>
+                    </Menu>
 
-
+                    {/* Other Charges Menu */}
+                    <Menu anchorEl={anchorEll} open={menuOpen} onClose={handleMenuCloseother}>
+                      <MenuItem onClick={handleAddOtherCharge}>Add Other Charge</MenuItem>
+                      {selectedRow !== null && selectedRow >= 0 && (
+                        <MenuItem onClick={() => handleDeleteOtherCharge(selectedRow)}>Delete Row</MenuItem>
+                      )}
                     </Menu>
                   </div>
                   {/* <Button
@@ -2007,7 +2078,7 @@ export default function ProposalPage() {
                 </button>
 
               </div>
-              {(proposal._id || proposal.id) && (
+              {(proposal._id || proposal._id) && (
                 <button
                   type="button"
                   onClick={() => handleCapture(proposal)}
