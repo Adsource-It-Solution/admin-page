@@ -10,7 +10,7 @@ import {
     Rect,
     Font
 } from "@react-pdf/renderer";
-import type { Proposal } from "../pages/Proposal"
+import type { OtherCharge, Proposal } from "../pages/Proposal"
 import communicate from "../assets/communication.png"
 import solarbackground from "../assets/solar_background.jpg"
 import logo from "../assets/logo.png"
@@ -435,16 +435,17 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     </View>
 
                     {/* Other Charges Rows */}
-                    {proposal.otherCharges && proposal.otherCharges.length > 0 &&
-                        proposal.otherCharges.map((charge: any, idx: number) => (
-                            <View key={`oc-${idx}`} style={styles.tableRow}>
-                                <Text style={styles.tableCol}>{charge.description || "Other Charge"}</Text>
-                                <Text style={styles.tableColprice}>{charge.amount > 0 ? charge.amount.toLocaleString("en-IN") : ""}</Text>
-                                <Text style={styles.tableColquantity}></Text>
-                                <Text style={styles.tableColtotal}>{charge.amount > 0 ? charge.amount.toLocaleString("en-IN") : ""}</Text>
-                            </View>
-                        ))
-                    }
+                    {(proposal.otherCharges ?? []).map((charge: OtherCharge, idx: number) => (
+                        <View key={`oc-${idx}`} style={styles.tableRow}>
+                            <Text style={styles.tableCol}>{charge.description || "Other Charge"}</Text>
+                            <Text style={styles.tableColprice}>{charge.price > 0 ? charge.price.toLocaleString("en-IN") : ""}</Text>
+                            <Text style={styles.tableColquantity}>{charge.quantity || ""}</Text>
+                            <Text style={styles.tableColtotal}>
+                                {charge.price && charge.quantity ? (charge.price * charge.quantity).toLocaleString("en-IN") : ""}
+                            </Text>
+                        </View>
+                    ))}
+
 
                     {/* Total */}
                     <View style={styles.totalRow}>
@@ -521,7 +522,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 20 }}>Watt Peak: {proposal.Wattpeak} Wp</Text>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 20 }}>Panel Qty: {proposal.quantity} Nos</Text>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 20 }}>
-                    Panel type: {Array.isArray(proposal.paneltype) ? proposal.paneltype.join(", ") : proposal.paneltype || ""}
+                    Panel type: {proposal.paneltype}
                 </Text>
 
             </View>

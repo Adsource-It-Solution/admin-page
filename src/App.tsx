@@ -8,7 +8,7 @@ import Dashboard from "./components/Dashboard"
 import ProposalList from "./components/ProposalList"
 import Client from "./components/Client"
 import Login from "./pages/Login"
-// import EmployeePage from "./employeedashboard/EmployeePage.tsx"
+import EmployeePage from "./employeedashboard/employeePage"
 
 function App() {
   return (
@@ -16,7 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element= {<Welcome/>}/>
         <Route path="/login" element= {<Login/>}/>
-        {/* <Route path="/employeepage" element={<EmployeePage/>}/> */}
+        <Route path="/employeepage" element={<EmployeePage/>}/>
         <Route element={<Dashboard/>}>
           <Route path="/service" element={<Service/>}/>
           <Route path="/product" element= {<Product/>}/>

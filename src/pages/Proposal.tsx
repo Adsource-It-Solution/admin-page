@@ -69,7 +69,9 @@ type LeadAcidSubtype = "40Ah" | "75Ah" | "100Ah" | "150Ah" | "200Ah";
 
 export type OtherCharge = {
   description: string;
-  amount: number;
+  price: number;
+  quantity: number;
+  note?:string;
 };
 
 export type RowType = {
@@ -209,7 +211,7 @@ export default function ProposalPage() {
     subtotal: 0,
     gstAmount: 0,
     total: 0,
-    otherCharges: [],
+    otherCharges: [{ description: "", price: 0, quantity: 0, note: "" }],
     // graphType: "",
     services: [],
     products: [],
@@ -395,7 +397,7 @@ export default function ProposalPage() {
   const handleAddOtherCharge = () => {
     setProposal((prev) => ({
       ...prev,
-      otherCharges: [...prev.otherCharges, { description: "", amount: 0 }],
+      otherCharges: [...prev.otherCharges, { description: "", price: 0, quantity: 0 }],
     }));
     handleMenuCloseother();
   };
@@ -408,17 +410,30 @@ export default function ProposalPage() {
     handleMenuCloseother();
   };
 
+  const handleOtherChargeChange = <K extends keyof OtherCharge>(
+    index: number,
+    field: K,
+    value: OtherCharge[K]
+  ) => {
+    setProposal((prev) => {
+      const updatedOtherCharges = [...prev.otherCharges];
+      updatedOtherCharges[index] = { ...updatedOtherCharges[index], [field]: value };
+      return { ...prev, otherCharges: updatedOtherCharges };
+    });
+  };
+  
+
   useEffect(() => {
-    const subtotal = proposal.rows.reduce((acc, r) => acc + (r.price || 0) * (r.quantity || 0), 0);
-    const otherChargesTotal = proposal.otherCharges.reduce((acc, oc) => acc + oc.amount, 0);
-    const gstAmount = ((subtotal) * (proposal.gst || 0)) / 100;
+    const { rows = [], otherCharges = [], gst = 0 } = proposal;
+  
+    const subtotal = rows.reduce((acc, r) => acc + (r.price || 0) * (r.quantity || 0), 0);
+    const otherChargesTotal = otherCharges.reduce((acc, oc) => acc + (oc.price || 0) * (oc.quantity || 0), 0);
+    const gstAmount = (subtotal * gst) / 100;
     const total = subtotal + otherChargesTotal + gstAmount;
+  
     setProposal((prev) => ({ ...prev, subtotal, gstAmount, total }));
   }, [proposal.rows, proposal.otherCharges, proposal.gst]);
-
-
-
-
+  
   // Convert number to words
   const numberToWords = (num: number) => {
     return toWords(num)
@@ -547,6 +562,7 @@ export default function ProposalPage() {
       subtotal: proposal.subtotal || 0,
       gstAmount: proposal.gstAmount || 0,
       total: proposal.total || 0,
+      otherCharges: proposal.otherCharges || [],
     };
 
     // 1️⃣ Required fields check
@@ -604,6 +620,7 @@ export default function ProposalPage() {
         subtotal: savedProposal.subtotal,
         gstAmount: savedProposal.gstAmount,
         total: savedProposal.total,
+        otherCharges: savedProposal.otherCharges,
         clientName: "",
         clientPhone: "",
         clientEmail: "",
@@ -1939,10 +1956,10 @@ export default function ProposalPage() {
 
 
                         {/* Other Charges */}
-                        {proposal.otherCharges.map((charge, idx) => (
-                          <TableRow key={idx}>
+                        {(proposal.otherCharges ?? []).map((otherCharges, index) => (
+                          <TableRow key={index} sx={{ backgroundColor: index % 2 === 0 ? "#f0f6ff" : "white" }}>
                             <TableCell width={50}>
-                              <IconButton onClick={(e) => handleMenuOpenother(e, idx)}>
+                              <IconButton onClick={(e) => handleMenuOpenother(e, index)}>
                                 <MoreVertIcon />
                               </IconButton>
                             </TableCell>
@@ -1950,34 +1967,45 @@ export default function ProposalPage() {
                               <TextField
                                 variant="standard"
                                 fullWidth
-                                value={charge.description}
-                                placeholder="Other Charge Description"
-                                onChange={(e) => {
-                                  const updated = [...proposal.otherCharges];
-                                  updated[idx].description = e.target.value;
-                                  setProposal((prev) => ({ ...prev, otherCharges: updated }));
-                                }}
+                                value={otherCharges.description}
+                                onChange={(e) => handleOtherChargeChange(index, "description", e.target.value)}
                                 InputProps={{ disableUnderline: true }}
+                                placeholder="Description"
                               />
                             </TableCell>
                             <TableCell>
                               <TextField
                                 variant="standard"
                                 type="number"
-                                value={charge.amount || ""}
-                                onChange={(e) => {
-                                  const updated = [...proposal.otherCharges];
-                                  updated[idx].amount = Number(e.target.value) || 0;
-                                  setProposal((prev) => ({ ...prev, otherCharges: updated }));
-                                }}
+                                fullWidth
+                                value={otherCharges.price || ""}
+                                onChange={(e) => handleOtherChargeChange(index, "price", Number(e.target.value) || 0)}
                                 InputProps={{ disableUnderline: true, startAdornment: <span>₹</span> }}
                               />
                             </TableCell>
-                            <TableCell></TableCell>
                             <TableCell>
-                              {charge.amount && charge.amount > 0
-                                ? `₹ ${charge.amount.toLocaleString("en-IN")}`
-                                : ""}
+                              <TextField
+                                variant="standard"
+                                type="number"
+                                fullWidth
+                                value={otherCharges.quantity || ""}
+                                onChange={(e) => handleOtherChargeChange(index, "quantity", Number(e.target.value) || 0)}
+                                InputProps={{ disableUnderline: true }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              ₹ {((otherCharges.price || 0) * (otherCharges.quantity || 0)).toLocaleString("en-IN")}
+                              {openNoteRow === index && (
+                                <TextField
+                                  variant="standard"
+                                  fullWidth
+                                  value={otherCharges.note || ""}
+                                  onChange={(e) => handleOtherChargeChange(index, "note", e.target.value)}
+                                  InputProps={{ disableUnderline: true }}
+                                  placeholder="Add note"
+                                  sx={{ fontSize: "0.8rem", mt: 0.5 }}
+                                />
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
