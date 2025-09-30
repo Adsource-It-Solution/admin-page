@@ -123,7 +123,9 @@ function Client() {
 
   const searchClients = async (query: string) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/service/search?query=${query}`);
+      const res = await axios.get
+      (`${import.meta.env.VITE_API_URL}/api/service/search?query=${query}`)
+      // (`http://localhost:5000/api/service/search?query=${query}`);
       setClients(res.data.results || []);
     } catch (err) {
       console.error(err);

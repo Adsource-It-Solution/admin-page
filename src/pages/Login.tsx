@@ -40,7 +40,10 @@ function Login() {
     try {
       setLoading(true);
 
-      const res = await fetch("http://localhost:5000/api/service/employee-login", {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/service/employee-login`,
+        // "http://localhost:5000/api/service/employee-login",
+         {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email.trim(), password: form.password }),

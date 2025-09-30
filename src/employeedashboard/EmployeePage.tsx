@@ -65,7 +65,9 @@ function EmployeePage() {
     const fetchEmployeeClients = async () => {
         try {
             setLoading(true);
-            const res = await axios.get("http://localhost:5000/api/service/employee-client");
+            const res = await axios.get
+            (`${import.meta.env.VITE_API_URL}/api/service/employee-client`)
+            // ("http://localhost:5000/api/service/employee-client");
             setEmployeeClients(res.data || []);
         } catch (err) {
             toast.error("❌ Failed to fetch clients");
@@ -82,8 +84,8 @@ function EmployeePage() {
         e.preventDefault();
         try {
             await axios.post
-                //   (`${import.meta.env.VITE_API_URL}/api/service/add-employee-client`, employeeClient,)
-                ("http://localhost:5000/api/service/add-employee-client", employeeClient);
+                  (`${import.meta.env.VITE_API_URL}/api/service/add-employee-client`, employeeClient,)
+                // ("http://localhost:5000/api/service/add-employee-client", employeeClient);
             setEmployeeClient({ nameemployeeclient: "", email: "", address: "", phoneno: "", title: "", clienttype: "", aboutclient: "" });
             fetchEmployeeClients();
             toast.success("✅ Client added successfully!");
@@ -99,7 +101,9 @@ function EmployeePage() {
 
     const handleSaveEdit = async (id: string) => {
         try {
-            await axios.put(`http://localhost:5000/api/service/employee-clients-edit/${id}`, editData);
+            await axios.put
+            (`${import.meta.env.VITE_API_URL}/api/service/employee-clients-edit/${id}`, editData)
+            // (`http://localhost:5000/api/service/employee-clients-edit/${id}`, editData);
             toast.success("✅ Client updated");
             fetchEmployeeClients();
             handleCancelEdit();
@@ -112,19 +116,11 @@ function EmployeePage() {
         setEditingId(null);
         setEditData({});
     };
-
-    // const handleDelete = async (id: string) => {
-    //     try {
-    //         await axios.delete(`http://localhost:5000/api/service/employee-clients/${id}`);
-    //         toast.success("🗑️ Client deleted");
-    //         setEmployeeClients((prev) => prev.filter((cl) => cl._id !== id));
-    //     } catch (err) {
-    //         toast.error("❌ Failed to delete client");
-    //     }
-    // };
     const handleDelete = async (id: string) => {
         try {
-          await axios.delete(`http://localhost:5000/api/service/employee-clients/${id}`);
+          await axios.delete
+          (`${import.meta.env.VITE_API_URL}/api/service/employee-clients/${id}`)
+        //   (`http://localhost:5000/api/service/employee-clients/${id}`);
           toast.success("🗑️ Client deleted");
           setEmployeeClients((prev) => prev.filter((cl) => cl._id !== id));
         } catch (err) {
@@ -135,8 +131,8 @@ function EmployeePage() {
     const searchClients = async (query: string) => {
         try {
             const res = await axios.get
-                //   (`${import.meta.env.VITE_API_URL}/api/service/search-employee-client?query=${query}`)
-                (`http://localhost:5000/api/service/search-employee-client?query=${query}`);
+                  (`${import.meta.env.VITE_API_URL}/api/service/search-employee-client?query=${query}`)
+                // (`http://localhost:5000/api/service/search-employee-client?query=${query}`);
             setEmployeeClients(res.data.results || []);
         } catch (err) {
             console.error(err);

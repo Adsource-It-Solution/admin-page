@@ -55,8 +55,8 @@ function Employee() {
   const fetchEmployees = async () => {
     try {
       const res = await axios.get(
-        // `${import.meta.env.VITE_API_URL}/api/service/employees`,
-        "http://localhost:5000/api/service/employees"
+        `${import.meta.env.VITE_API_URL}/api/service/employees`,
+        // "http://localhost:5000/api/service/employees"
       );
       setEmployees(res.data || []);
     } catch (err) {
@@ -78,8 +78,8 @@ function Employee() {
       };
   
       const res = await axios.post(
-        // `${import.meta.env.VITE_API_URL}/api/service/add-employee`,)
-        "http://localhost:5000/api/service/add-employee",
+        `${import.meta.env.VITE_API_URL}/api/service/add-employee`,
+        // "http://localhost:5000/api/service/add-employee",
         payload
       );
   
@@ -103,8 +103,8 @@ function Employee() {
   const handleSaveEdit = async (id: string) => {
     try {
       await axios.put
-      // (`${import.meta.env.VITE_API_URL}/api/service/employees/${id}`, editData)
-      (`http://localhost:5000/api/service/employees/${id}`, editData);
+      (`${import.meta.env.VITE_API_URL}/api/service/employees/${id}`, editData)
+      // (`http://localhost:5000/api/service/employees/${id}`, editData);
       setEditingId(null);
       setEditData({});
       fetchEmployees();
@@ -123,8 +123,8 @@ function Employee() {
     if (!id) return;
     try {
       await axios.delete
-      // (`${import.meta.env.VITE_API_URL}/api/service/employees/${id}`)
-      (`http://localhost:5000/api/service/employees/${id}`);
+      (`${import.meta.env.VITE_API_URL}/api/service/employees/${id}`)
+      // (`http://localhost:5000/api/service/employees/${id}`);
       fetchEmployees();
       toast.success("🗑️ Employee deleted");
     } catch (err) {
@@ -135,8 +135,8 @@ function Employee() {
   const searchEmployees = async (query: string) => {
     try {
       const res = await axios.get
-      // (`${import.meta.env.VITE_API_URL}/api/service/search-employee?query=${query}`)
-      (`http://localhost:5000/api/service/search-employee?query=${query}`);
+      (`${import.meta.env.VITE_API_URL}/api/service/search-employee?query=${query}`)
+      // (`http://localhost:5000/api/service/search-employee?query=${query}`);
       setEmployees(res.data.results || []);
     } catch (err) {
       console.error(err);
