@@ -211,7 +211,7 @@ export default function ProposalPage() {
     subtotal: 0,
     gstAmount: 0,
     total: 0,
-    otherCharges: [{ description: "", price: 0, quantity: 0, note: "" }],
+    otherCharges: [{ description: "", price: 0, quantity: 0, note: ""}],
     // graphType: "",
     services: [],
     products: [],
@@ -410,17 +410,19 @@ export default function ProposalPage() {
     handleMenuCloseother();
   };
 
-  const handleOtherChargeChange = <K extends keyof OtherCharge>(
-    index: number,
-    field: K,
-    value: OtherCharge[K]
-  ) => {
-    setProposal((prev) => {
-      const updatedOtherCharges = [...prev.otherCharges];
-      updatedOtherCharges[index] = { ...updatedOtherCharges[index], [field]: value };
-      return { ...prev, otherCharges: updatedOtherCharges };
-    });
-  };
+// Handler for updating otherCharges
+const handleOtherChargeChange = <K extends keyof OtherCharge>(
+  index: number,
+  field: K,
+  value: OtherCharge[K]
+) => {
+  setProposal((prev) => {
+    const updated = [...prev.otherCharges]; // copy array
+    updated[index] = { ...updated[index], [field]: value }; // update field
+    return { ...prev, otherCharges: updated };
+  });
+};
+
   
 
   useEffect(() => {
@@ -543,8 +545,8 @@ export default function ProposalPage() {
 
   const fetchProposals = async () => {
     try {
-      // const res = await axios.get("http://localhost:5000/api/proposal/proposals");
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`);
+      const res = await axios.get("http://localhost:5000/api/proposal/proposals");
+      // const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`);
       setProposals(res.data);
     } catch {
       toast.error("❌ Failed to fetch proposals");
@@ -557,7 +559,7 @@ export default function ProposalPage() {
     // Ensure rows array exists
     const currentProposal: Proposal = {
       ...proposal,
-      rows: proposal.rows || [],   // safe fallback
+      rows: proposal.rows || [],  
       gst: proposal.gst || 0,
       subtotal: proposal.subtotal || 0,
       gstAmount: proposal.gstAmount || 0,
@@ -593,8 +595,8 @@ export default function ProposalPage() {
       // 2️⃣ Add new proposal
       if (!editingId) {
         const res = await axios.post(
-          (`${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`),
-          // `http://localhost:5000/api/proposal/add-proposal`,
+          // (`${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`),
+          `http://localhost:5000/api/proposal/add-proposal`,
           currentProposal
         );
 
@@ -701,8 +703,8 @@ export default function ProposalPage() {
     toast.info("📤 Uploading table...");
 
     const res = await fetch(
-      (`${import.meta.env.VITE_API_URL}/api/proposal/${proposalId}/uploadTable`),
-      // `http://localhost:5000/api/proposal/${proposalId}/uploadTable`,
+      // (`${import.meta.env.VITE_API_URL}/api/proposal/${proposalId}/uploadTable`),
+      `http://localhost:5000/api/proposal/${proposalId}/uploadTable`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -717,8 +719,8 @@ export default function ProposalPage() {
 
     const { file } = await res.json();
     proposal.tableImage =
-      (`${import.meta.env.VITE_API_URL}/uploads/${file}`),
-      // `http://localhost:5000/uploads/${file}`;
+      // (`${import.meta.env.VITE_API_URL}/uploads/${file}`),
+      `http://localhost:5000/uploads/${file}`;
       toast.success("✅ Table Image Saved");
   };
 
