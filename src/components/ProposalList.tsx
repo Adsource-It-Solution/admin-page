@@ -31,8 +31,8 @@ function ProposalList() {
   const fetchProposals = async () => {
     try {
       const res = await axios.get(
-        // `${import.meta.env.VITE_API_URL}/api/proposal/proposals`,
-        "http://localhost:5000/api/proposal/proposals"
+        `${import.meta.env.VITE_API_URL}/api/proposal/proposals`,
+        // "http://localhost:5000/api/proposal/proposals"
       );
       setProposals(res.data);
     } catch {

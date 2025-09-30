@@ -545,8 +545,8 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
 
   const fetchProposals = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/proposal/proposals");
-      // const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`);
+      // const res = await axios.get("http://localhost:5000/api/proposal/proposals");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`);
       setProposals(res.data);
     } catch {
       toast.error("❌ Failed to fetch proposals");
@@ -595,8 +595,8 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
       // 2️⃣ Add new proposal
       if (!editingId) {
         const res = await axios.post(
-          // (`${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`),
-          `http://localhost:5000/api/proposal/add-proposal`,
+          (`${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`),
+          // `http://localhost:5000/api/proposal/add-proposal`,
           currentProposal
         );
 
@@ -703,8 +703,8 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
     toast.info("📤 Uploading table...");
 
     const res = await fetch(
-      // (`${import.meta.env.VITE_API_URL}/api/proposal/${proposalId}/uploadTable`),
-      `http://localhost:5000/api/proposal/${proposalId}/uploadTable`,
+      (`${import.meta.env.VITE_API_URL}/api/proposal/${proposalId}/uploadTable`),
+      // `http://localhost:5000/api/proposal/${proposalId}/uploadTable`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -719,8 +719,8 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
 
     const { file } = await res.json();
     proposal.tableImage =
-      // (`${import.meta.env.VITE_API_URL}/uploads/${file}`),
-      `http://localhost:5000/uploads/${file}`;
+      (`${import.meta.env.VITE_API_URL}/uploads/${file}`),
+      // `http://localhost:5000/uploads/${file}`;
       toast.success("✅ Table Image Saved");
   };
 
