@@ -10,7 +10,7 @@ import {
     Rect,
     Font
 } from "@react-pdf/renderer";
-import type { OtherCharge, Proposal } from "../pages/Proposal"
+import type { Proposal } from "../pages/Proposal"
 import communicate from "../assets/communication.png"
 import solarbackground from "../assets/solar_background.jpg"
 import logo from "../assets/logo.png"
