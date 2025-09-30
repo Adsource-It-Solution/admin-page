@@ -1,14 +1,14 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom"
-import Welcome from "./components/Welcome.tsx"
+import Welcome from "./components/Welcome"
 import Service from "./pages/Service"
 import Product from "./pages/Product"
 import Employee from "./pages/Employee"
 import Proposal from "./pages/Proposal"
-import Dashboard from "./components/Dashboard.tsx"
-import ProposalList from "./components/ProposalList.tsx"
-import Client from "./components/Client.tsx"
-import Login from "./pages/Login.tsx"
-import EmployeePage from "./employeedashboard/employeePage.tsx"
+import Dashboard from "./components/Dashboard"
+import ProposalList from "./components/ProposalList"
+import Client from "./components/Client"
+import Login from "./pages/Login"
+import EmployeePage from "./employeedashboard/employeePage"
 
 function App() {
   return (

@@ -307,4 +307,4 @@ function EmployeePage() {
     )
 }
 
-export default EmployeePage
+export default EmployeePage;
