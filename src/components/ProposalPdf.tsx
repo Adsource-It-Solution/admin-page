@@ -435,13 +435,13 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     </View>
 
                     {/* Other Charges Rows */}
-                    {(proposal.otherCharges ?? []).map((charge: OtherCharge, idx: number) => (
-                        <View key={`oc-${idx}`} style={styles.tableRow}>
-                            <Text style={styles.tableCol}>{charge.description || "Other Charge"}</Text>
-                            <Text style={styles.tableColprice}>{charge.price > 0 ? charge.price.toLocaleString("en-IN") : ""}</Text>
-                            <Text style={styles.tableColquantity}>{charge.quantity || ""}</Text>
+                    {proposal.otherCharges.map((charges: any, i: number) => (
+                        <View key={i} style={styles.tableRow}>
+                            <Text style={styles.tableCol}>{charges.description || "Give Description"}</Text>
+                            <Text style={styles.tableColprice}>{charges.price || ""}</Text>
+                            <Text style={styles.tableColquantity}>{charges.quantity || ""}</Text>
                             <Text style={styles.tableColtotal}>
-                                {charge.price && charge.quantity ? (charge.price * charge.quantity).toLocaleString("en-IN") : ""}
+                                {(charges.price && charges.quantity) ? (charges.price * charges.quantity).toLocaleString("en-IN") : ""}
                             </Text>
                         </View>
                     ))}
