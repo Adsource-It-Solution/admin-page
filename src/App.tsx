@@ -8,7 +8,7 @@ import Dashboard from "./components/Dashboard"
 import ProposalList from "./components/ProposalList"
 import Client from "./components/Client"
 import Login from "./pages/Login"
-import EmployeePage from "./employeedashboard/employeePage"
+import EmployeePage from "./components/EmployeePage"
 
 function App() {
   return (
