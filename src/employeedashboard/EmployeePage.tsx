@@ -31,7 +31,7 @@ type employeeClient = {
     aboutclient: string;
 }
 
-function EmployeePage() {
+function employeePage() {
     const [employeeClient, setEmployeeClient] = useState<employeeClient>({
         nameemployeeclient: "",
         email: "",
@@ -307,4 +307,4 @@ function EmployeePage() {
     )
 }
 
-export default EmployeePage;
+export default employeePage;
