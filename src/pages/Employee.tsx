@@ -14,10 +14,11 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-type Employee = {
+export type Employee = {
   _id?: string;
   name: string;
   email: string;
+  password: string;
   phone?: string;
   designation?: string;
 };
@@ -27,6 +28,7 @@ function Employee() {
     name: "",
     email: "",
     phone: "",
+    password: "",
     designation: "",
   });
 
@@ -53,8 +55,8 @@ function Employee() {
   const fetchEmployees = async () => {
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/service/employees`,
-//         // "http://localhost:5000/api/service/employees"
+        // `${import.meta.env.VITE_API_URL}/api/service/employees`,
+        "http://localhost:5000/api/service/employees"
       );
       setEmployees(res.data || []);
     } catch (err) {
@@ -65,16 +67,33 @@ function Employee() {
   const handleAddEmployee = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/service/add-employee`,)
-//         // "http://localhost:5000/api/service/add-employee",)
-      setEmployee({ name: "", email: "", phone: "", designation: "" });
+      // console.log("Sending employee:", employee); // ✅ Debugging
+  
+      const payload = {
+        name: employee.name,
+        email: employee.email,
+        password: employee.password,
+        phoneno: employee.phone,      
+        designation: employee.designation || "",
+      };
+  
+      const res = await axios.post(
+        // `${import.meta.env.VITE_API_URL}/api/service/add-employee`,)
+        "http://localhost:5000/api/service/add-employee",
+        payload
+      );
+  
+      console.log("Response from backend:", res.data); // ✅ Debugging
+  
+      setEmployee({ name: "", email: "", phone: "", designation: "", password: "" });
       fetchEmployees();
       toast.success("✅ Employee added successfully!");
     } catch (err: any) {
+      console.error("Error adding employee:", err);
       toast.error("❌ " + (err.response?.data?.error || "Something went wrong"));
     }
   };
+  
 
   const handleEditClick = (emp: Employee) => {
     setEditingId(emp._id || null);
@@ -84,8 +103,8 @@ function Employee() {
   const handleSaveEdit = async (id: string) => {
     try {
       await axios.put
-      (`${import.meta.env.VITE_API_URL}/api/service/employees/${id}`, editData)
-      // (`http://localhost:5000/api/service/employees/${id}`, editData);
+      // (`${import.meta.env.VITE_API_URL}/api/service/employees/${id}`, editData)
+      (`http://localhost:5000/api/service/employees/${id}`, editData);
       setEditingId(null);
       setEditData({});
       fetchEmployees();
@@ -104,8 +123,8 @@ function Employee() {
     if (!id) return;
     try {
       await axios.delete
-      (`${import.meta.env.VITE_API_URL}/api/service/employees/${id}`)
-      // (`http://localhost:5000/api/service/employees/${id}`);
+      // (`${import.meta.env.VITE_API_URL}/api/service/employees/${id}`)
+      (`http://localhost:5000/api/service/employees/${id}`);
       fetchEmployees();
       toast.success("🗑️ Employee deleted");
     } catch (err) {
@@ -116,8 +135,8 @@ function Employee() {
   const searchEmployees = async (query: string) => {
     try {
       const res = await axios.get
-      (`${import.meta.env.VITE_API_URL}/api/service/search-employee?query=${query}`)
-      // (`http://localhost:5000/api/service/search-employee?query=${query}`);
+      // (`${import.meta.env.VITE_API_URL}/api/service/search-employee?query=${query}`)
+      (`http://localhost:5000/api/service/search-employee?query=${query}`);
       setEmployees(res.data.results || []);
     } catch (err) {
       console.error(err);
@@ -150,6 +169,13 @@ function Employee() {
             variant="filled"
             value={employee.phone}
             onChange={(e) => setEmployee({ ...employee, phone: e.target.value })}
+            fullWidth
+          />
+          <TextField
+            label="Password"
+            variant="filled"
+            value={employee.password}
+            onChange={(e) => setEmployee({ ...employee, password: e.target.value })}
             fullWidth
           />
           <TextField
@@ -201,6 +227,14 @@ function Employee() {
                       value={editData.email || ""}
                       onChange={(e) =>
                         setEditData({ ...editData, email: e.target.value })
+                      }
+                    />
+                    <TextField
+                      label="Password"
+                      variant="filled"
+                      value={editData.password || ""}
+                      onChange={(e) =>
+                        setEditData({ ...editData, password: e.target.value })
                       }
                     />
                     <TextField

@@ -7,13 +7,16 @@ import Proposal from "./pages/Proposal"
 import Dashboard from "./components/Dashboard.tsx"
 import ProposalList from "./components/ProposalList.tsx"
 import Client from "./components/Client.tsx"
-// import ProposalForm from "./components/ProposalForm.tsx"
+import Login from "./pages/Login.tsx"
+import EmployeePage from "./employeedashboard/employeePage.tsx"
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element= {<Welcome/>}/>
+        <Route path="/login" element= {<Login/>}/>
+        <Route path="/employeepage" element={<EmployeePage/>}/>
         <Route element={<Dashboard/>}>
           <Route path="/service" element={<Service/>}/>
           <Route path="/product" element= {<Product/>}/>
@@ -21,6 +24,7 @@ function App() {
           <Route path="/proposal" element= {<Proposal/>}/>
           <Route path="/proposallist" element = {<ProposalList/>}/>
           <Route path="/ourclient" element = {<Client/>}/>
+          
           {/* <Route path="/proposal/edit/:id" element={<ProposalForm />} /> */}
         </Route>
 

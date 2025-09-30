@@ -13,7 +13,7 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface FormData {
@@ -78,8 +78,8 @@ export default function Home() {
     try {
       setLoading(true);
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/admin/admin-login`,
-        // "http://localhost:5000/api/admin/admin-login",
+        // `${import.meta.env.VITE_API_URL}/api/admin/admin-login`,
+        "http://localhost:5000/api/admin/admin-login",
         form,
         {
           withCredentials: true,
@@ -203,6 +203,8 @@ export default function Home() {
         >
           Login
         </button>
+
+        <Link to="/login">Employee Login here || <span className="text-blue-700 font-medium">Login</span></Link>
 
               <button
                 type="button"
