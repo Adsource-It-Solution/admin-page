@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 // import { useNavigate } from "react-router-dom";
 import {
   Stack,
@@ -16,40 +16,39 @@ import { toast } from "react-toastify";
 import { pdf } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 
-// Import your Proposal type
-import type { Proposal } from "../pages/Proposal"; // adjust path
 
+import type { Proposal } from "../pages/Proposal"; 
 // Import your PDF template
-import { SolarProposalPDF } from "./ProposalPdf"; // adjust path
+import { SolarProposalPDF } from "./ProposalPdf"; 
 
 function ProposalList() {
   // const navigate = useNavigate();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
 
-  // Fetch proposals from backend
   const fetchProposals = async () => {
     try {
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/proposal/proposals`,
         // "http://localhost:5000/api/proposal/proposals"
       );
-      setProposals(res.data);
+      // Sort by createdAt descending
+      const sorted = res.data.sort(
+        (a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setProposals(sorted);
     } catch {
       toast.error("❌ Failed to fetch proposals");
     }
   };
-
-  useEffect(() => {
-    fetchProposals();
-  }, []);
+  
 
   // Delete a proposal
   const handleDelete = async (id?: string) => {
     if (!id) return;
     try {
-      // await axios.delete(`${import.meta.env.VITE_API_URL}/api/proposal/${id}`);
-       await axios.delete(`http://localhost:5000/api/proposal/${id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/proposal/${id}`);
+      //  await axios.delete(`http://localhost:5000/api/proposal/${id}`);
   
       fetchProposals();
       toast.success("🗑️ Proposal deleted");

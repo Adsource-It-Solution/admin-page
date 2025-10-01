@@ -21,7 +21,9 @@ import solargeneration from "../assets/solar-generation.png"
 import solarpowerplant from "../assets/solar-power-plant.png"
 import worldwide from "../assets/worldwide.png"
 // import design from "../assets/Solar_text.png"
-import { toWords } from 'number-to-words';
+import { ToWords } from 'to-words';
+
+const toWords = new ToWords({ localeCode: "en-IN" });
 
 Font.register({
     family: 'Work Sans',
@@ -209,10 +211,10 @@ const LineChart10Years: React.FC<BarChart10YearsProps> = ({
 
 const numberToWords = (num: number): string => {
     if (!num) return "Zero Rupees";
-    // Capitalize first letter
-    const words = toWords(num)
-        .replace(/(^|\s)([a-z])/g, (match) => match.toUpperCase());
-    return words + " Rupees Only";
+    const words = toWords
+    .convert(num)
+    .replace(/\b[a-z]/g, (char) => char.toUpperCase()); 
+  return words + " Rupees Only";
 };
 
 
@@ -435,13 +437,15 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     </View>
 
                     {/* Other Charges Rows */}
-                    {proposal.otherCharges.map((charges: any, i: number) => (
+                    {proposal.otherCharge?.map((charges: any, i: number) => (
                         <View key={i} style={styles.tableRow}>
                             <Text style={styles.tableCol}>{charges.description || "Give Description"}</Text>
                             <Text style={styles.tableColprice}>{charges.price || ""}</Text>
                             <Text style={styles.tableColquantity}>{charges.quantity || ""}</Text>
                             <Text style={styles.tableColtotal}>
-                                {(charges.price && charges.quantity) ? (charges.price * charges.quantity).toLocaleString("en-IN") : ""}
+                                {charges.price && charges.quantity
+                                    ? (charges.price * charges.quantity).toLocaleString("en-IN")
+                                    : ""}
                             </Text>
                         </View>
                     ))}
@@ -490,16 +494,16 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                         Payment can be paid via Cheque / scanner code / Netbanking
                     </Text>
                     <Text style={{ fontFamily: "Work Sans", fontSize: 14, fontWeight: "bold" }}>
-                        SUNMAYO PRIVATE LIMITED
+                        {proposal.holder}
                     </Text>
                     <Text style={{ fontFamily: "Work Sans", fontSize: 14 }}>
-                        <Text style={{ fontWeight: "bold" }}>Bank:</Text> IDFC FIRST BANK
+                        <Text style={{ fontWeight: "bold" }}>Bank:</Text> {proposal.bankname}
                     </Text>
                     <Text style={{ fontFamily: "Work Sans", fontSize: 14 }}>
-                        <Text style={{ fontWeight: "bold" }}>A/C:</Text>— 10223162147
+                        <Text style={{ fontWeight: "bold" }}>A/C:</Text>— {proposal.accountnumber}
                     </Text>
                     <Text style={{ fontFamily: "Work Sans", fontSize: 14 }}>
-                        <Text style={{ fontWeight: "bold" }}>IFSC:</Text> IDFB0021005
+                        <Text style={{ fontWeight: "bold" }}>IFSC:</Text> {proposal.ifsc}
                     </Text>
                 </View>
 
@@ -563,22 +567,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
         <Page size="A4" style={styles.page}>
             <View style={{ marginBottom: 10 }}>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 20, fontWeight: "bold", marginBottom: 5 }}>Terms & Conditions</Text>
-                <View style={{ fontFamily: 'Work Sans', marginLeft: 10, fontSize: 14 }}>
-                    {[
-                        "Packing is included in the offer.",
-                        "Transportation charges are our scope.",
-                        "Civil and digging are at our scope.",
-                        "Prices quotes are firm and valid for 10 days from the date of offer. After this period a reconfirmation from our office should be taken.",
-                        "Water supply at site will be provided by customer free of cost during installation and commissioning.",
-                        "Closed, covered, locked stores will be provided by customer during installation and commissioning.",
-                        "We will start the approval process as soon as we receive order confirmation. From confirmation till 10 days before installation, a nominal cancellation charge of INR 25,000 or 5% of system cost, whichever is higher.",
-                        "Delivery: 2-3 weeks from the date of technically and commercially cleared order.",
-                        "Force Majeure clause applies.",
-                        "Include leasing charges."
-                    ].map((item, index) => (
-                        <Text key={index} style={{ fontSize: 12, marginBottom: 2 }}>• {item}</Text>
-                    ))}
-                </View>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 14, }}>{proposal.termandcondition}</Text>
             </View>
             <View style={{ marginTop: 10 }}>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 20, color: "#2563eb" }}>Balance of System:</Text>

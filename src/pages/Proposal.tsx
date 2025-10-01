@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, type FormEvent } from "react";
-import html2canvas from "html2canvas";
 import axios from "axios";
 import {
   Stack,
@@ -40,7 +39,7 @@ import {
   Tooltip,
   Legend
 } from "recharts";
-import { toWords } from 'number-to-words';
+import { ToWords } from 'to-words';
 import { toast } from "react-toastify";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditNoteIcon from '@mui/icons-material/EditNote';
@@ -70,8 +69,7 @@ type LeadAcidSubtype = "40Ah" | "75Ah" | "100Ah" | "150Ah" | "200Ah";
 export type OtherCharge = {
   description: string;
   price: number;
-  quantity: number;
-  note?:string;
+  note?: string;
 };
 
 export type RowType = {
@@ -126,13 +124,17 @@ export type Proposal = {
   otherCustomerType: string;
   panelBrands: string[];
   paneltype: string;
+  holder: string;
+  accountnumber: string;
+  ifsc: string;
+  bankname: string;
 
   rows: RowType[];
   gst: number;
   subtotal: number;
   gstAmount: number;
   total: number;
-  otherCharges: OtherCharge[];
+  otherCharge: OtherCharge[];
 
   services: string[];
   products: string[];
@@ -201,6 +203,10 @@ export default function ProposalPage() {
     otherCustomerType: "",
     panelBrands: [],
     paneltype: "",
+    holder: `SUNMAYO PRIVATE LIMITED`,
+    accountnumber: `IDFC FIRST BANK`,
+    ifsc: `10223162147`,
+    bankname: `IDFB0021005`,
 
     // tabledata
     rows: [
@@ -211,7 +217,7 @@ export default function ProposalPage() {
     subtotal: 0,
     gstAmount: 0,
     total: 0,
-    otherCharges: [{ description: "", price: 0, quantity: 0, note: ""}],
+    otherCharge: [{ description: "", price: 0, note: "" }],
     // graphType: "",
     services: [],
     products: [],
@@ -266,7 +272,6 @@ export default function ProposalPage() {
   const [openPanelDialog, setOpenPanelDialog] = useState(false);
   const [newPanelLogo, setNewPanelLogo] = useState<string | null>(null);
   const [newPanelBrand, setNewPanelBrand] = useState("");
-  const [, setPanelBrands] = useState<string[]>([]);
   const [openProposal, setOpenPropsal] = useState(false);
   const [openBattery, setOpenBattery] = useState(false);
   const [, setBatteryBrand] = useState<string>('');
@@ -311,8 +316,14 @@ export default function ProposalPage() {
   ]);
   const [, setCableBrands] = useState<string[]>([]);
 
-  const [panelBrand,] = useState<string[]>([
-    "N/A", "Waaree Energies", "Tata Power Solar", "Adani Solar", "Vikram Solar", " Goldi Solar", "Rayzon Solar"
+  const [panelBrand, setPanelBrand] = useState<{ name: string; logo?: string }[]>([
+    { name: "N/A" },
+    { name: "Waaree Energies" },
+    { name: "Tata Power Solar" },
+    { name: "Adani Solar" },
+    { name: "Vikram Solar" },
+    { name: "Goldi Solar" },
+    { name: "Rayzon Solar" }
   ]);
   const [newCable, setNewCable] = useState<string>(" ");
   const [openCableDialog, setOpenCableDialog] = useState(false);
@@ -373,15 +384,10 @@ export default function ProposalPage() {
       toast.error("❌ Failed to fetch services/products/employees");
     }
   };
-
-
-
-
   // Fetch data when the component mounts
   useEffect(() => {
     fetchMasterData();
   }, []);
-  const tableRef = useRef<HTMLDivElement>(null);
 
 
   const handleMenuOpenother = (event: React.MouseEvent<HTMLButtonElement>, rowIndex: number) => {
@@ -397,7 +403,7 @@ export default function ProposalPage() {
   const handleAddOtherCharge = () => {
     setProposal((prev) => ({
       ...prev,
-      otherCharges: [...prev.otherCharges, { description: "", price: 0, quantity: 0 }],
+      otherCharge: [...prev.otherCharge, { description: "", price: 0, quantity: 0 }],
     }));
     handleMenuCloseother();
   };
@@ -405,41 +411,47 @@ export default function ProposalPage() {
   const handleDeleteOtherCharge = (index: number) => {
     setProposal((prev) => ({
       ...prev,
-      otherCharges: prev.otherCharges.filter((_, i) => i !== index),
+      otherCharge: prev.otherCharge.filter((_, i) => i !== index),
     }));
     handleMenuCloseother();
   };
 
-// Handler for updating otherCharges
-const handleOtherChargeChange = <K extends keyof OtherCharge>(
-  index: number,
-  field: K,
-  value: OtherCharge[K]
-) => {
-  setProposal((prev) => {
-    const updated = [...prev.otherCharges]; // copy array
-    updated[index] = { ...updated[index], [field]: value }; // update field
-    return { ...prev, otherCharges: updated };
-  });
-};
+  // Handler for updating otherCharges
+  const handleOtherChargeChange = <K extends keyof OtherCharge>(
+    index: number,
+    field: K,
+    value: OtherCharge[K]
+  ) => {
+    setProposal((prev) => {
+      const updated = [...prev.otherCharge];
+      updated[index] = { ...updated[index], [field]: value };
+      return { ...prev, otherCharge: updated };
+    });
+  };
 
-  
+
 
   useEffect(() => {
-    const { rows = [], otherCharges = [], gst = 0 } = proposal;
-  
+    const { rows = [], otherCharge = [], gst = 0 } = proposal;
+
     const subtotal = rows.reduce((acc, r) => acc + (r.price || 0) * (r.quantity || 0), 0);
-    const otherChargesTotal = otherCharges.reduce((acc, oc) => acc + (oc.price || 0) * (oc.quantity || 0), 0);
+    const otherChargesTotal = otherCharge.reduce((acc, oc) => acc + oc.price, 0);
     const gstAmount = (subtotal * gst) / 100;
     const total = subtotal + otherChargesTotal + gstAmount;
-  
+
     setProposal((prev) => ({ ...prev, subtotal, gstAmount, total }));
-  }, [proposal.rows, proposal.otherCharges, proposal.gst]);
-  
+  }, [proposal.rows, proposal.otherCharge, proposal.gst]);
+
+  const toWords = new ToWords({ localeCode: 'en-IN' });
+
+
   // Convert number to words
   const numberToWords = (num: number) => {
-    return toWords(num)
-      .replace(/(^|\s)([a-z])/g, (match) => match.toUpperCase()) + " Rupees";
+    return (
+      toWords
+        .convert(num)
+        .replace(/\b[a-z]/g, (char) => char.toUpperCase()) + " Rupees"
+    );
   };
 
   // Row actions
@@ -500,49 +512,6 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
     fetchProposals();
     fetchMasterData();
   }, []);
-
-  // ---------------------
-  // Save Graph Snapshot
-  // ---------------------
-  // const handleSaveGraph = async (proposal: Proposal) => {
-  //   if (!graphRef.current) {
-  //     toast.error("Graph element not found");
-  //     return;
-  //   }
-
-  //   try {
-  //     const canvas = await html2canvas(graphRef.current);
-  //     const dataUrl = canvas.toDataURL("image/png");
-
-  //     proposal.graphimage = dataUrl;
-
-  //     // toast.info("📤 Uploading graph...");
-
-  //     const res = await fetch(
-  //       `http://localhost:5000/api/proposal/${proposal.id}/uploadGraph`, 
-  //       {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ image: dataUrl }),
-  //       }
-  //     );
-
-  //     if (!res.ok) {
-  //       const errorText = await res.text();
-  //       throw new Error(`Upload failed: ${res.status} ${errorText}`);
-  //     }
-
-  //     const json = await res.json();
-  //     console.log("📌 Graph saved:", json);
-
-  //     toast.success("✅ Graph Image Saved");
-  //   } catch (err: any) {
-  //     console.error("❌ handleSaveGraph Error:", err);
-  //     // toast.error(`Failed to save graph: ${err.message}`);
-  //   }
-  // };
-
-
   const fetchProposals = async () => {
     try {
       // const res = await axios.get("http://localhost:5000/api/proposal/proposals");
@@ -556,179 +525,80 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
   const handleAddOrUpdateProposal = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Ensure rows array exists
-    const currentProposal: Proposal = {
-      ...proposal,
-      rows: proposal.rows || [],  
-      gst: proposal.gst || 0,
-      subtotal: proposal.subtotal || 0,
-      gstAmount: proposal.gstAmount || 0,
-      total: proposal.total || 0,
-      otherCharges: proposal.otherCharges || [],
-    };
-
-    // 1️⃣ Required fields check
-    const requiredFields: (keyof Proposal)[] = [
-      "clientName",
-      "clientPhone",
-      "clientAddress",
-      "clienttitle",
-      "customerType",
-      "projectsize",
-      "consumption",
-      "electricity",
-      "generation",
-      "warranty",
-      "batterytype",
-      "quantity",
-    ];
-
-    const missingFields = requiredFields.filter((field) => !currentProposal[field]);
-    if (missingFields.length > 0) {
-      toast.error(`❌ Please fill all required fields: ${missingFields.join(", ")}`);
-      return;
-    }
-
     try {
+      // Prepare proposal data to send
+      const currentProposal = {
+        ...proposal,
+        rows: proposal.rows || [],
+        otherCharge: proposal.otherCharge || [],
+        gst: proposal.gst || 0,
+        subtotal: proposal.subtotal || 0,
+        gstAmount: proposal.gstAmount || 0,
+        total: proposal.total || 0,
+      };
+
       let savedProposal: Proposal;
 
-      // 2️⃣ Add new proposal
       if (!editingId) {
+        // Add new proposal
         const res = await axios.post(
-          (`${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`),
-          // `http://localhost:5000/api/proposal/add-proposal`,
+          `${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`,
+           //("http://localhost:5000/api/proposal/add-proposal");
           currentProposal
         );
-
         savedProposal = res.data.proposal;
-        setEditingId(savedProposal._id ?? null);
         toast.success("✅ Proposal added");
+        setEditingId(savedProposal._id ?? null);
       } else {
-        // 3️⃣ Update existing proposal
-        // const res = await axios.put(
-        //   `http://localhost:5000/api/proposal/${editingId}`,
-        //   currentProposal
-        // );
-
-        savedProposal = { ...currentProposal, _id: editingId };
+        // Update existing proposal
+        const res = await axios.put(
+          `${import.meta.env.VITE_API_URL}/api/proposal/${editingId}`,
+          //("http://localhost:5000/api/proposal/${editingId}");
+          currentProposal
+        );
+        savedProposal = res.data.proposal || { ...currentProposal, _id: editingId };
         toast.success("✅ Proposal updated");
       }
 
-      // 4️⃣ Reset non-essential fields, **keep rows and totals**
-      setProposal((_prev) => ({
-        ...savedProposal,
-        rows: savedProposal.rows,          // keep all rows
-        gst: savedProposal.gst,
-        subtotal: savedProposal.subtotal,
-        gstAmount: savedProposal.gstAmount,
-        total: savedProposal.total,
-        otherCharges: savedProposal.otherCharges,
-        clientName: "",
-        clientPhone: "",
-        clientEmail: "",
-        clientAddress: "",
-        clienttitle: "",
-        customerType: "",
-        projectsize: "",
-        consumption: "",
-        electricity: "",
-        generation: "",
-        Wattpeak: "",
-        proposalWattpeak: "",
-        warranty: "",
-        performancewarranty: "",
-        Invertorwarranty: "",
-        InvertorSize: "",
-        invertorPhase: "",
-        quantity: "",
-        invertorquantitiy: "",
-        invertortype: "",
-        batteryBrands: "",
-        batterytype: "",
-        cableBrands: "",
-        proposalStructure: "",
-        structureDes: "",
-        systemwarranty: "",
-        stage1: "",
-        stage2: "",
-        stage3: "",
-        stage4: "",
-        services: [],
-        products: [],
-        employees: [],
-        balanceOfSystem: `Net & Solar Meter: Genus / Secure
-  DC Cables & Conduits: Reputed Make
-  AC Cables: Reputed Make
-  DCDB: Reputed Make
-  ACDB: Reputed Make
-  Termination Accessories: Reputed Make
-  Earthing (Pits, Strips and Cables): Reputed Make - 3 Nos.
-  Lightning Arrestor: Reputed Make - 1 Nos.`,
-        ourScope: `1. Preparation of Engineering Drawing, Design for Solar structure and solar power plant as per Relevant IS standard.
-  2. Supply of Solar Modules, Inverter, Structure, Cables, and balance of Plant.
-  3. Installation of structure, solar modules, inverter, AC-DC cable, LT panel etc for solar power plant. 
-  4. Installation of monitoring and controlling system for solar plant.
-  5. Commissioning of Solar Power Plant and supply of Power to LT panel of SGD.
-  6. Zero Export Device installation.`,
-        customerScope: `1. Providing safe storage place for material during installation & commissioning period.
-  2. Provide space to evacuate the solar power.
-  3. Design/Drawing approval within 7 days.`,
+      // Update frontend state with saved proposal
+      setProposal((prev) => ({
+        ...prev,
+        ...savedProposal, // overwrite only what's returned from backend
+        rows: savedProposal.rows || prev.rows,
+        otherCharge: savedProposal.otherCharge || prev.otherCharge,
+        gst: savedProposal.gst ?? prev.gst,
+        subtotal: savedProposal.subtotal ?? prev.subtotal,
+        gstAmount: savedProposal.gstAmount ?? prev.gstAmount,
+        total: savedProposal.total ?? prev.total,
       }));
 
+      // Reset editing state
       setEditingId(null);
 
-      // 5️⃣ Refresh proposal list
+      // Refresh proposal list if needed
       fetchProposals();
     } catch (err: any) {
-      toast.error(
-        "❌ " + (err.response?.data?.error || err.message || "Something went wrong")
-      );
+      toast.error("❌ " + (err.response?.data?.error || err.message || "Something went wrong"));
+      console.log(err)
     }
-  };
-
-
-
-  const handleCapture = async (proposal: Proposal) => {
-    const proposalId = proposal._id ?? proposal._id;
-    if (!proposalId) {
-      toast.error("❌ Proposal ID missing. Save the proposal first.");
-      return;
-    }
-
-    if (!tableRef.current) return;
-
-    const canvas = await html2canvas(tableRef.current);
-    const dataUrl = canvas.toDataURL("image/png");
-
-    toast.info("📤 Uploading table...");
-
-    const res = await fetch(
-      (`${import.meta.env.VITE_API_URL}/api/proposal/${proposalId}/uploadTable`),
-      // `http://localhost:5000/api/proposal/${proposalId}/uploadTable`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: dataUrl }),
-      }
-    );
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Upload failed: ${res.status} ${errorText}`);
-    }
-
-    const { file } = await res.json();
-    proposal.tableImage =
-      (`${import.meta.env.VITE_API_URL}/uploads/${file}`),
-      // `http://localhost:5000/uploads/${file}`;
-      toast.success("✅ Table Image Saved");
   };
 
   const handleAddPanelBrand = () => {
-    if (newPanelBrand.trim() && !brands.some((b) => b.name === newPanelBrand)) {
-      setBrands([...brands, { name: newPanelBrand, logo: newPanelLogo || undefined }]);
-      setPanelBrands((prev) => [...prev, newPanelBrand]);
+    if (
+      newPanelBrand.trim() &&
+      !panelBrand.some((b) => b.name.toLowerCase() === newPanelBrand.toLowerCase())
+    ) {
+      const newBrand = { name: newPanelBrand, logo: newPanelLogo || undefined };
+      setPanelBrand((prev) => [...prev, newBrand]);
+
+      // Automatically select the newly added brand
+      setProposal((prev) => ({
+        ...prev,
+        panelBrands: [newBrand.name]
+      }));
+
     }
+
     setNewPanelBrand("");
     setNewPanelLogo(null);
     setOpenPanelDialog(false);
@@ -975,29 +845,29 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
                         <InputLabel id="panel-brand-label">Panel Brand</InputLabel>
                         <Select
                           labelId="panel-brand-label"
-                          value={proposal.panelBrands || ""}
+                          value={proposal.panelBrands?.[0] || ""} // first element
                           onChange={(e) =>
-                            setProposal({ ...proposal, panelBrands: e.target.value as string[] })
+                            setProposal({ ...proposal, panelBrands: [e.target.value as string] }) // wrap in array
                           }
                           displayEmpty
                         >
                           {panelBrand.map((brand, index) => (
-                            <MenuItem key={index} value={brand}>
-                              {brand}
+                            <MenuItem key={index} value={brand.name}>
+                              <Stack direction="row" spacing={1} alignItems="center">
+                                {brand.logo && (
+                                  <Avatar src={brand.logo} alt={brand.name} sx={{ width: 24, height: 24 }} />
+                                )}
+                                <span>{brand.name}</span>
+                              </Stack>
                             </MenuItem>
                           ))}
                         </Select>
                       </FormControl>
-                      {/* Button to open dialog */}
                       <Button
                         variant="contained"
                         color="primary"
                         onClick={() => setOpenPanelDialog(true)}
-                        sx={{
-                          mt: 2,
-                          width: "auto",
-                          alignSelf: "flex-start",
-                        }}
+                        sx={{ mt: 2, width: "auto", alignSelf: "flex-start" }}
                       >
                         ➕ Add Panel Brand
                       </Button>
@@ -1043,6 +913,7 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
                         </DialogActions>
                       </Dialog>
 
+
                       <TextField
                         label="Watt Peak (WP)"
                         placeholder="e.g: 590"
@@ -1067,7 +938,7 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
                           <MenuItem value="Mono-Perc">Mono-Perc</MenuItem>
                           <MenuItem value="Poly">Poly</MenuItem>
                           <MenuItem value="BIVP">BIVP</MenuItem>
-                          <MenuItem value="Mono-Prev Half Cut">Mono-Prev Half Cut</MenuItem>
+                          <MenuItem value="Mono-Prev Half Cut">Mono-Prec Half Cut</MenuItem>
                           <MenuItem value="Mono BiFacial">Mono BiFacial</MenuItem>
                           <MenuItem value="TopCon MonoFacial">TopCon MonoFacial</MenuItem>
                           <MenuItem value="TopCon BiFacial">TopCon BiFacial</MenuItem>
@@ -1702,11 +1573,6 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
                           >
                             {/* Brand logo + name */}
                             <Stack direction="row" alignItems="center" spacing={1}>
-                              <img
-                                src={`/assets/cable-logos/${proposal.cableBrands.toLowerCase()}.png`}
-                                alt={proposal.cableBrands}
-                                style={{ width: 40, height: 40, objectFit: "contain" }}
-                              />
                               <span style={{ fontWeight: 500 }}>{proposal.cableBrands}</span>
                             </Stack>
                           </Stack>
@@ -1925,9 +1791,9 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
                         <TableRow>
                           <TableCell></TableCell>
                           <TableCell>Subtotal</TableCell>
+                          <TableCell></TableCell>
+                          <TableCell></TableCell>
                           <TableCell>₹ {(proposal.subtotal || 0).toLocaleString("en-IN")}</TableCell>
-                          <TableCell></TableCell>
-                          <TableCell></TableCell>
                         </TableRow>
 
                         {/* GST Row */}
@@ -1958,7 +1824,7 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
 
 
                         {/* Other Charges */}
-                        {(proposal.otherCharges ?? []).map((otherCharges, index) => (
+                        {(proposal.otherCharge ?? []).map((otherCharges, index) => (
                           <TableRow key={index} sx={{ backgroundColor: index % 2 === 0 ? "#f0f6ff" : "white" }}>
                             <TableCell width={50}>
                               <IconButton onClick={(e) => handleMenuOpenother(e, index)}>
@@ -1985,18 +1851,10 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
                                 InputProps={{ disableUnderline: true, startAdornment: <span>₹</span> }}
                               />
                             </TableCell>
+
+
                             <TableCell>
-                              <TextField
-                                variant="standard"
-                                type="number"
-                                fullWidth
-                                value={otherCharges.quantity || ""}
-                                onChange={(e) => handleOtherChargeChange(index, "quantity", Number(e.target.value) || 0)}
-                                InputProps={{ disableUnderline: true }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              ₹ {((otherCharges.price || 0) * (otherCharges.quantity || 0)).toLocaleString("en-IN")}
+                              ₹ {(otherCharges.price || 0).toLocaleString("en-IN")}
                               {openNoteRow === index && (
                                 <TextField
                                   variant="standard"
@@ -2108,21 +1966,41 @@ const handleOtherChargeChange = <K extends keyof OtherCharge>(
                 </button>
 
               </div>
-              {(proposal._id || proposal._id) && (
-                <button
-                  type="button"
-                  onClick={() => handleCapture(proposal)}
-                  style={{
-                    padding: "8px 16px",
-                    backgroundColor: "#2563eb",
-                    color: "white",
-                    borderRadius: "6px",
-                    marginTop: "1rem",
-                  }}
-                >
-                  Save Table Image
-                </button>
-              )}
+              <span>Bank Details:  </span>
+              <TextField
+                label="Bank Name"
+                placeholder="Jhon Doe"
+                variant="filled"
+                value={proposal.bankname}
+                onChange={(e) => setProposal({ ...proposal, bankname: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="Account Holder Name"
+                placeholder="Jhon Doe"
+                variant="filled"
+                value={proposal.holder}
+                onChange={(e) => setProposal({ ...proposal, holder: e.target.value })}
+                fullWidth
+              />
+              <TextField
+                label="Account Number"
+                placeholder="Jhon Doe"
+                variant="filled"
+                value={proposal.accountnumber}
+                onChange={(e) => setProposal({ ...proposal, accountnumber: e.target.value })}
+                fullWidth
+              />
+               <TextField
+                label="IFSC Code"
+                placeholder="Jhon Doe"
+                variant="filled"
+                value={proposal.ifsc}
+                onChange={(e) => setProposal({ ...proposal, ifsc: e.target.value })}
+                fullWidth
+              />
+
+              
               <span>Balance of System</span>
               <TextareaAutosize
                 maxRows={10}
