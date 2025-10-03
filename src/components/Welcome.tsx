@@ -9,6 +9,8 @@ import {
   OutlinedInput,
   IconButton,
   Divider,
+  Button,
+  CircularProgress
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -30,7 +32,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [showSignup, setShowSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
 
   const [form, setForm] = useState<FormData>({
@@ -79,7 +81,6 @@ export default function Home() {
       setLoading(true);
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/admin/admin-login`,
-        // "http://localhost:5000/api/admin/admin-login",
         form,
         {
           withCredentials: true,
@@ -87,7 +88,6 @@ export default function Home() {
         }
       );
 
-      // ✅ Save token
       if (res.data.token) {
         localStorage.setItem("adminToken", res.data.token);
         console.log("✅ Admin token saved:", res.data.token);
@@ -101,8 +101,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-  
-
   return (
     <div className="min-h-screen flex justify-center items-center px-4 bg-gradient-to-br  to-indigo-900 relative overflow-hidden">
       {/* Animated Background */}
@@ -197,12 +195,30 @@ export default function Home() {
           )}
         </FormControl>
 
-        <button
-          type="submit"
-          className="bg-blue-600/80 hover:bg-blue-700/90 transition text-xl font-semibold py-3 w-full text-white rounded-xl shadow-md"
-        >
-          Login
-        </button>
+        <Button
+        type="submit"
+        variant="contained"
+        fullWidth
+        disabled={loading}
+        sx={{
+          backgroundColor: "primary.main",
+          fontSize: "1.1rem",
+          fontWeight: 600,
+          py: 1.5,
+          borderRadius: 2,
+          textTransform: "none",
+          boxShadow: 2,
+          "&:hover": {
+            backgroundColor: "primary.dark",
+          },
+        }}
+      >
+        {loading ? (
+          <CircularProgress size={24} sx={{ color: "white" }} />
+        ) : (
+          "Login"
+        )}
+      </Button>
 
         <Link to="/login">Employee Login here || <span className="text-blue-700 font-medium">Login</span></Link>
 
