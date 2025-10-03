@@ -224,6 +224,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
         {/* PAGE 1: COVER */}
         <Page size="A4" style={styles.page}>
             <View>
+                <Text style={{fontSize: 8, marginBottom: 4}}>{proposal.date}</Text>
                 <Image src={logo} style={styles.logo} />
                 {/* <Text style={styles.mainTitle}>SOLAR</Text>
                 <Text style={styles.subTitle}>PROPOSAL</Text> */}
@@ -252,6 +253,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 </View>
                 <View style={styles.column2}>
                     <Text style={styles.label2}>Prepared For</Text>
+                    <Text style={styles.text2}>{proposal.date}</Text>
                     <Text style={styles.text2}>{proposal.clienttitle} {proposal.clientName}</Text>
                     <Text style={styles.text2}>{proposal.clientPhone}</Text>
                     <Text style={styles.text2}>{proposal.clientEmail}</Text>

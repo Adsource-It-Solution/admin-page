@@ -28,6 +28,7 @@ import {
   TableBody,
   Menu,
   Divider,
+  CircularProgress
 } from "@mui/material";
 import {
   ResponsiveContainer,
@@ -39,6 +40,7 @@ import {
   Tooltip,
   Legend
 } from "recharts";
+import { useParams } from "react-router-dom";
 import { ToWords } from 'to-words';
 import { toast } from "react-toastify";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -49,7 +51,10 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import UploadIcon from "@mui/icons-material/Upload";
 import ClearIcon from '@mui/icons-material/Clear';
-// import generateSolarQuoteHTML from "./utils/generateSolarHtml";
+import { SolarProposalPDF } from "../components/ProposalPdf";
+import { pdf } from "@react-pdf/renderer";
+import { saveAs } from "file-saver";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 
 interface Service {
   _id: string;
@@ -128,6 +133,7 @@ export type Proposal = {
   accountnumber: string;
   ifsc: string;
   bankname: string;
+  date: string;
 
   rows: RowType[];
   gst: number;
@@ -164,6 +170,8 @@ interface GraphDatum {
 }
 
 export default function ProposalPage() {
+  const { id } = useParams();
+  // const navigate = useNavigate();
   const [proposal, setProposal] = useState<Proposal>({
     clientName: "",
     clientPhone: "",
@@ -207,6 +215,7 @@ export default function ProposalPage() {
     accountnumber: `IDFC FIRST BANK`,
     ifsc: `10223162147`,
     bankname: `IDFB0021005`,
+    date: "",
 
     // tabledata
     rows: [
@@ -259,7 +268,6 @@ export default function ProposalPage() {
   • Include leasing charges.`
   });
 
-  const [, setProposals] = useState<Proposal[]>([]);
   const [, setServices] = useState<Service[]>([]);
   const [, setProducts] = useState<Product[]>([]);
 
@@ -339,6 +347,18 @@ export default function ProposalPage() {
   const [anchorEll, setAnchorEll] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEll);
 
+  const [loadingPdf, setLoadingPdf] = useState<boolean>(false);
+
+
+  const getToday = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // months are 0-based
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  const [date, setDate] = useState<string>(getToday());
+
 
   useEffect(() => {
     const consumption = parseFloat(proposal.consumption || "0");
@@ -373,11 +393,6 @@ export default function ProposalPage() {
         axios.get(`${import.meta.env.VITE_API_URL}/api/service/products`),
         axios.get(`${import.meta.env.VITE_API_URL}/api/service/employees`)
       ]);
-      // const [srv, prod] = await Promise.all([
-      //   axios.get(`http://localhost:5000/api/service`),
-      //   axios.get(`http://localhost:5000/api/service/products`),
-      //   axios.get(`http://localhost:5000/api/service/employees`)
-      // ]);
       setServices(srv.data);
       setProducts(prod.data);
     } catch (error) {
@@ -507,63 +522,55 @@ export default function ProposalPage() {
     setMenuRowIndex(null);
   };
 
-  // Fetch proposals along with master data
   useEffect(() => {
-    fetchProposals();
-    fetchMasterData();
-  }, []);
-  const fetchProposals = async () => {
-    try {
-      // const res = await axios.get("http://localhost:5000/api/proposal/proposals");
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`);
-      setProposals(res.data);
-    } catch {
-      toast.error("❌ Failed to fetch proposals");
-    }
-  };
+    if (!id) return;
+    const fetchProposal = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/${id}`);
+        setProposal(res.data);
+      } catch (err) {
+        console.error(err);
+        toast.error("❌ Failed to fetch proposal");
+      }
+    };
+    fetchProposal();
+  }, [id]);
 
   const handleAddOrUpdateProposal = async (e: FormEvent) => {
     e.preventDefault();
 
     try {
-      // Prepare proposal data to send
       const currentProposal = {
         ...proposal,
         rows: proposal.rows || [],
         otherCharge: proposal.otherCharge || [],
-        gst: proposal.gst || 0,
-        subtotal: proposal.subtotal || 0,
-        gstAmount: proposal.gstAmount || 0,
-        total: proposal.total || 0,
+        date,
       };
 
       let savedProposal: Proposal;
 
       if (!editingId) {
-        // Add new proposal
+        // CREATE
         const res = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/proposal/add-proposal`,
-           //("http://localhost:5000/api/proposal/add-proposal");
           currentProposal
         );
         savedProposal = res.data.proposal;
         toast.success("✅ Proposal added");
         setEditingId(savedProposal._id ?? null);
       } else {
-        // Update existing proposal
+        // UPDATE
         const res = await axios.put(
           `${import.meta.env.VITE_API_URL}/api/proposal/${editingId}`,
-          //("http://localhost:5000/api/proposal/${editingId}");
           currentProposal
         );
         savedProposal = res.data.proposal || { ...currentProposal, _id: editingId };
         toast.success("✅ Proposal updated");
       }
 
-      // Update frontend state with saved proposal
       setProposal((prev) => ({
         ...prev,
-        ...savedProposal, // overwrite only what's returned from backend
+        ...savedProposal,
         rows: savedProposal.rows || prev.rows,
         otherCharge: savedProposal.otherCharge || prev.otherCharge,
         gst: savedProposal.gst ?? prev.gst,
@@ -572,16 +579,27 @@ export default function ProposalPage() {
         total: savedProposal.total ?? prev.total,
       }));
 
-      // Reset editing state
-      setEditingId(null);
-
-      // Refresh proposal list if needed
-      fetchProposals();
+      // navigate("/proposallist");
     } catch (err: any) {
       toast.error("❌ " + (err.response?.data?.error || err.message || "Something went wrong"));
-      console.log(err)
+      console.error(err);
     }
   };
+
+  const handleDownloadPdf = async () => {
+    if (!editingId) return;
+  
+    try {
+      setLoadingPdf(true);
+      const blob = await pdf(<SolarProposalPDF proposal={proposal} />).toBlob();
+      saveAs(blob, `proposal_${editingId}.pdf`);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingPdf(false);
+    }
+  };
+
 
   const handleAddPanelBrand = () => {
     if (
@@ -692,6 +710,17 @@ export default function ProposalPage() {
           <form onSubmit={handleAddOrUpdateProposal}>
 
             <Stack spacing={4}>
+              <TextField
+                label="Select Date"
+                type="date"
+                value={date}
+                variant="filled"
+                onChange={(e) => setDate(e.target.value)}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                sx={{ width: 200 }}
+              />
               <div className="flex flex-row">
                 <FormControl sx={{ marginRight: 2, width: 100 }} variant="filled">
                   <InputLabel id="client-type-label">Title</InputLabel>
@@ -1958,12 +1987,22 @@ export default function ProposalPage() {
               </Box>
 
               <div className="flex justify-center">
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded mt-4"
-                >
-                  {editingId ? "Update Proposal" : "Add Proposal"}
-                </button>
+                <Button type="submit" variant="contained" color="primary">
+                  {id ? "Update Proposal" : "Add Proposal"}
+                </Button>
+
+                {editingId && (
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={loadingPdf ? <CircularProgress size={20} /> : <PictureAsPdfIcon />}
+                    onClick={handleDownloadPdf}
+                    sx={{ ml: 2 }}
+                  >
+                    {loadingPdf ? "Generating PDF..." : "Download PDF"}
+                  </Button>
+                )}
+
 
               </div>
               <span>Bank Details:  </span>
@@ -1991,7 +2030,7 @@ export default function ProposalPage() {
                 onChange={(e) => setProposal({ ...proposal, accountnumber: e.target.value })}
                 fullWidth
               />
-               <TextField
+              <TextField
                 label="IFSC Code"
                 placeholder="Jhon Doe"
                 variant="filled"
@@ -2000,7 +2039,7 @@ export default function ProposalPage() {
                 fullWidth
               />
 
-              
+
               <span>Balance of System</span>
               <TextareaAutosize
                 maxRows={10}

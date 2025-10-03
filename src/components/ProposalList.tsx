@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from '@mui/icons-material/Edit';
 import axios from "axios";
 import { toast } from "react-toastify";
 import { pdf } from "@react-pdf/renderer";
@@ -16,8 +17,10 @@ import { saveAs } from "file-saver";
 
 import type { Proposal } from "../pages/Proposal";
 import { SolarProposalPDF } from "./ProposalPdf";
+import { useNavigate } from "react-router-dom";
 
 function ProposalList() {
+  const navigate = useNavigate()
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
@@ -27,8 +30,7 @@ function ProposalList() {
     try {
       setLoading(true);
       const res = await axios.get
-      (`${import.meta.env.VITE_API_URL}/api/proposal/proposals`)
-      // ("http://localhost:5000/api/proposal/proposals");
+        (`${import.meta.env.VITE_API_URL}/api/proposal/proposals`)
       // Sort descending by createdAt
       const sorted = res.data.sort(
         (a: any, b: any) =>
@@ -53,8 +55,7 @@ function ProposalList() {
     if (!id) return;
     try {
       await axios.delete
-      (`${import.meta.env.VITE_API_URL}/api/proposal/${id}`)
-      // (`http://localhost:5000/api/proposal/${id}`);
+        (`${import.meta.env.VITE_API_URL}/api/proposal/${id}`)
       toast.success("🗑️ Proposal deleted");
       fetchProposals();
     } catch (err) {
@@ -103,6 +104,10 @@ function ProposalList() {
                   <div>
                     <h3 className="font-bold text-lg">{p.clientName}</h3>
                     <p>
+                      Created at:{" "}
+                      <span className="text-base font-semibold">{p.date}</span>
+                    </p>
+                    <p>
                       Phone no.:{" "}
                       <span className="text-base font-semibold">{p.clientPhone}</span>
                     </p>
@@ -118,6 +123,13 @@ function ProposalList() {
                   </div>
 
                   <Stack direction="row" spacing={4}>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => navigate(`/proposal/${p._id}`)}
+                    >
+                      Edit <EditIcon sx={{marginLeft: 1}}/>
+                    </Button>
                     <IconButton
                       color="primary"
                       onClick={() => handleDownloadPdf(p)}
