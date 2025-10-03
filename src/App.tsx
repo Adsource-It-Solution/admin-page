@@ -9,6 +9,7 @@ import ProposalList from "./components/ProposalList"
 import Client from "./components/Client"
 import Login from "./pages/Login"
 import EmployeePage from "./components/EmployeePage"
+import ForgetPassword from "./components/ForgetPassword"
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Routes>
         <Route path="/" element= {<Welcome/>}/>
         <Route path="/login" element= {<Login/>}/>
+        <Route path="/forgetpassword" element= {<ForgetPassword/>}/>
         <Route path="/employeepage" element={<EmployeePage/>}/>
         <Route element={<Dashboard/>}>
           <Route path="/service" element={<Service/>}/>

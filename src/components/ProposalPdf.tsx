@@ -224,10 +224,13 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
         {/* PAGE 1: COVER */}
         <Page size="A4" style={styles.page}>
             <View>
-                <Text style={{fontSize: 8, marginBottom: 4}}>{proposal.date}</Text>
+                <Text style={{ fontSize: 8, marginBottom: 4 }}>
+                    {proposal.date
+                        ? new Date(proposal.date).toLocaleDateString("en-GB")
+                        : "NA"}
+                </Text>
+
                 <Image src={logo} style={styles.logo} />
-                {/* <Text style={styles.mainTitle}>SOLAR</Text>
-                <Text style={styles.subTitle}>PROPOSAL</Text> */}
             </View>
             {/* Prepared By / For */}
             <View style={styles.row2}>
@@ -253,7 +256,6 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 </View>
                 <View style={styles.column2}>
                     <Text style={styles.label2}>Prepared For</Text>
-                    <Text style={styles.text2}>{proposal.date}</Text>
                     <Text style={styles.text2}>{proposal.clienttitle} {proposal.clientName}</Text>
                     <Text style={styles.text2}>{proposal.clientPhone}</Text>
                     <Text style={styles.text2}>{proposal.clientEmail}</Text>
@@ -570,9 +572,9 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 </View>
             </View>
             <View style={{ marginTop: 20 }}>
-                    <Text style={{ fontFamily: 'Work Sans', fontSize: 16, color: "#2563eb" }}>Balance of System:</Text>
-                    <Text style={{ fontFamily: 'Work Sans', fontSize: 12, }}>{proposal.balanceOfSystem}</Text>
-                </View>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 16, color: "#2563eb" }}>Balance of System:</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 12, }}>{proposal.balanceOfSystem}</Text>
+            </View>
         </Page>
 
         <Page size="A4" style={styles.page}>

@@ -19,15 +19,15 @@ export type Employee = {
   name: string;
   email: string;
   password: string;
-  phone?: string;
-  designation?: string;
+  phoneno: string;
+  designation: string;
 };
 
 function Employee() {
   const [employee, setEmployee] = useState<Employee>({
     name: "",
     email: "",
-    phone: "",
+    phoneno: "",
     password: "",
     designation: "",
   });
@@ -55,8 +55,7 @@ function Employee() {
   const fetchEmployees = async () => {
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/service/employees`,
-        // "http://localhost:5000/api/service/employees"
+        `${import.meta.env.VITE_API_URL}/api/service/employees`
       );
       setEmployees(res.data || []);
     } catch (err) {
@@ -67,44 +66,38 @@ function Employee() {
   const handleAddEmployee = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      // console.log("Sending employee:", employee); // ✅ Debugging
-  
       const payload = {
         name: employee.name,
         email: employee.email,
         password: employee.password,
-        phoneno: employee.phone,      
+        phoneno: employee.phoneno,
         designation: employee.designation || "",
       };
-  
+
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/service/add-employee`,
-        // "http://localhost:5000/api/service/add-employee",
         payload
       );
-  
-      console.log("Response from backend:", res.data); // ✅ Debugging
-  
-      setEmployee({ name: "", email: "", phone: "", designation: "", password: "" });
+      console.log(res.data.message);
+      setEmployee({ name: "", email: "", phoneno: "", designation: "", password: "" });
       fetchEmployees();
       toast.success("✅ Employee added successfully!");
     } catch (err: any) {
-      console.error("Error adding employee:", err);
       toast.error("❌ " + (err.response?.data?.error || "Something went wrong"));
     }
   };
-  
 
   const handleEditClick = (emp: Employee) => {
-    setEditingId(emp._id || null);
-    setEditData({ ...emp });
+    setEditingId(emp._id || null); // Set the ID of the employee you're editing
+    setEditData({ ...emp }); // Populate the fields with employee data
   };
 
   const handleSaveEdit = async (id: string) => {
     try {
-      await axios.put
-      (`${import.meta.env.VITE_API_URL}/api/service/employees/${id}`, editData)
-      // (`http://localhost:5000/api/service/employees/${id}`, editData);
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/service/employees/${id}`,
+        editData
+      );
       setEditingId(null);
       setEditData({});
       fetchEmployees();
@@ -122,9 +115,7 @@ function Employee() {
   const handleDelete = async (id?: string) => {
     if (!id) return;
     try {
-      await axios.delete
-      (`${import.meta.env.VITE_API_URL}/api/service/employees/${id}`)
-      // (`http://localhost:5000/api/service/employees/${id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/service/employees/${id}`);
       fetchEmployees();
       toast.success("🗑️ Employee deleted");
     } catch (err) {
@@ -134,9 +125,9 @@ function Employee() {
 
   const searchEmployees = async (query: string) => {
     try {
-      const res = await axios.get
-      (`${import.meta.env.VITE_API_URL}/api/service/search-employee?query=${query}`)
-      // (`http://localhost:5000/api/service/search-employee?query=${query}`);
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/service/search-employee?query=${query}`
+      );
       setEmployees(res.data.results || []);
     } catch (err) {
       console.error(err);
@@ -167,8 +158,8 @@ function Employee() {
           <TextField
             label="Phone"
             variant="filled"
-            value={employee.phone}
-            onChange={(e) => setEmployee({ ...employee, phone: e.target.value })}
+            value={employee.phoneno}
+            onChange={(e) => setEmployee({ ...employee, phoneno: e.target.value })}
             fullWidth
           />
           <TextField
@@ -240,9 +231,9 @@ function Employee() {
                     <TextField
                       label="Phone"
                       variant="filled"
-                      value={editData.phone || ""}
+                      value={editData.phoneno || ""}
                       onChange={(e) =>
-                        setEditData({ ...editData, phone: e.target.value })
+                        setEditData({ ...editData, phoneno: e.target.value })
                       }
                     />
                     <TextField
@@ -276,7 +267,7 @@ function Employee() {
                     <div>
                       <h3 className="font-bold">{emp.name}</h3>
                       <p className="text-gray-600">{emp.email}</p>
-                      <p className="text-gray-600">{emp.phone}</p>
+                      <p className="text-gray-600">{emp.phoneno}</p>
                       <p className="text-gray-600">{emp.designation}</p>
                       <p className="text-blue-600 font-mono">
                         ID: {emp._id}

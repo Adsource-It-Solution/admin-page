@@ -140,6 +140,7 @@ export type Proposal = {
   subtotal: number;
   gstAmount: number;
   total: number;
+  quantitytable: number;
   otherCharge: OtherCharge[];
 
   services: string[];
@@ -226,6 +227,7 @@ export default function ProposalPage() {
     subtotal: 0,
     gstAmount: 0,
     total: 0,
+    quantitytable: 0,
     otherCharge: [{ description: "", price: 0, note: "" }],
     // graphType: "",
     services: [],
@@ -1880,6 +1882,7 @@ export default function ProposalPage() {
                                 InputProps={{ disableUnderline: true, startAdornment: <span>₹</span> }}
                               />
                             </TableCell>
+                            <TableCell></TableCell>
 
 
                             <TableCell>
@@ -1961,50 +1964,9 @@ export default function ProposalPage() {
                       )}
                     </Menu>
                   </div>
-                  {/* <Button
-                    onClick={() => handleCapture(proposal)}
-                    variant="contained"
-                    sx={{
-                      px: 4,
-                      py: 1.5,
-                      borderRadius: "9999px",
-                      boxShadow: "inset 5px 1px 17px 9px rgba(0,0,0,0.35)",
-                      textTransform: "none",
-                      fontWeight: "600",
-                      marginBottom: 6,
-                      backgroundColor: "#1f3c88",
-                      "&:hover": {
-                        backgroundColor: "#162b63",
-                      },
-                    }}
-                  >
-                    Save image as table
-                  </Button> */}
 
                 </div>
-
-                {/* Amount in Words Section */}
               </Box>
-
-              <div className="flex justify-center">
-                <Button type="submit" variant="contained" color="primary">
-                  {id ? "Update Proposal" : "Add Proposal"}
-                </Button>
-
-                {editingId && (
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    startIcon={loadingPdf ? <CircularProgress size={20} /> : <PictureAsPdfIcon />}
-                    onClick={handleDownloadPdf}
-                    sx={{ ml: 2 }}
-                  >
-                    {loadingPdf ? "Generating PDF..." : "Download PDF"}
-                  </Button>
-                )}
-
-
-              </div>
               <span>Bank Details:  </span>
               <TextField
                 label="Bank Name"
@@ -2114,18 +2076,28 @@ export default function ProposalPage() {
                   lineHeight: "1.5",
                 }}
               />
+
+<div className="flex justify-center">
+                <Button type="submit" variant="contained" color="primary">
+                  {id ? "Update Proposal" : "Add Proposal"}
+                </Button>
+
+                {editingId && (
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={loadingPdf ? <CircularProgress size={20} /> : <PictureAsPdfIcon />}
+                    onClick={handleDownloadPdf}
+                    sx={{ ml: 2 }}
+                  >
+                    {loadingPdf ? "Generating PDF..." : "Download PDF"}
+                  </Button>
+                )}
+
+
+              </div>
             </Stack>
           </form>
-          {/* {previewHtml && (
-            <div className="mt-6">
-              <h2 className="text-xl font-semibold mb-2">📄 Proposal Preview</h2>
-              <iframe
-                title="Proposal PDF Preview"
-                srcDoc={previewHtml}
-                className="w-full h-[800px] border"
-              />
-            </div>
-          )} */}
         </CardContent>
       </Card>
     </Stack>

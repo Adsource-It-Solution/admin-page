@@ -105,8 +105,13 @@ function ProposalList() {
                     <h3 className="font-bold text-lg">{p.clientName}</h3>
                     <p>
                       Created at:{" "}
-                      <span className="text-base font-semibold">{p.date}</span>
+                      <span className="text-base font-semibold">
+                        {p.date
+                          ? new Date(p.date).toLocaleDateString("en-GB")
+                          : "N/A"}
+                      </span>
                     </p>
+
                     <p>
                       Phone no.:{" "}
                       <span className="text-base font-semibold">{p.clientPhone}</span>
@@ -128,7 +133,7 @@ function ProposalList() {
                       color="primary"
                       onClick={() => navigate(`/proposal/${p._id}`)}
                     >
-                      Edit <EditIcon sx={{marginLeft: 1}}/>
+                      Edit <EditIcon sx={{ marginLeft: 1 }} />
                     </Button>
                     <IconButton
                       color="primary"
