@@ -80,7 +80,8 @@ export type OtherCharge = {
 export type RowType = {
   description: string;
   price: number;
-  quantity: number;
+  subtotalrow: number;
+  quantitytable: number;
   note?: string;
   otherCharges?: number;
 };
@@ -140,7 +141,6 @@ export type Proposal = {
   subtotal: number;
   gstAmount: number;
   total: number;
-  quantitytable: number;
   otherCharge: OtherCharge[];
 
   services: string[];
@@ -220,15 +220,14 @@ export default function ProposalPage() {
 
     // tabledata
     rows: [
-      { description: "", price: 0, quantity: 0, note: "", otherCharges: 0 },
-      { description: "", price: 0, quantity: 0, note: "", otherCharges: 0 },
+      { description: "", price: 0, quantitytable: 0, note: "", otherCharges: 0, subtotalrow: 0 },
+      { description: "", price: 0, quantitytable: 0, note: "", otherCharges: 0 ,subtotalrow: 0},
     ],
     gst: 0,
     subtotal: 0,
     gstAmount: 0,
     total: 0,
-    quantitytable: 0,
-    otherCharge: [{ description: "", price: 0, note: "" }],
+    otherCharge: [{ description: "", price: 0, note: "", }],
     // graphType: "",
     services: [],
     products: [],
@@ -420,7 +419,7 @@ export default function ProposalPage() {
   const handleAddOtherCharge = () => {
     setProposal((prev) => ({
       ...prev,
-      otherCharge: [...prev.otherCharge, { description: "", price: 0, quantity: 0 }],
+      otherCharge: [...prev.otherCharge, { description: "", price: 0, quantityother: 0, subtotal: 0 }],
     }));
     handleMenuCloseother();
   };
@@ -451,7 +450,7 @@ export default function ProposalPage() {
   useEffect(() => {
     const { rows = [], otherCharge = [], gst = 0 } = proposal;
 
-    const subtotal = rows.reduce((acc, r) => acc + (r.price || 0) * (r.quantity || 0), 0);
+    const subtotal = rows.reduce((acc, r) => acc + (r.price || 0) * (r.quantitytable || 0), 0);
     const otherChargesTotal = otherCharge.reduce((acc, oc) => acc + oc.price, 0);
     const gstAmount = (subtotal * gst) / 100;
     const total = subtotal + otherChargesTotal + gstAmount;
@@ -486,7 +485,7 @@ export default function ProposalPage() {
 
   const handleAddRowBelow = () => {
     if (menuRowIndex === null) return;
-    const newRow: RowType = { description: "", price: 0, quantity: 0, note: "", otherCharges: 0 };
+    const newRow: RowType = { description: "", price: 0, quantitytable: 0, note: "", otherCharges: 0, subtotalrow: 0 };
     setProposal((prev) => {
       const updatedRows = [
         ...prev.rows.slice(0, menuRowIndex + 1),
@@ -1796,13 +1795,13 @@ export default function ProposalPage() {
                                 variant="standard"
                                 type="number"
                                 fullWidth
-                                value={row.quantity || ""}
-                                onChange={(e) => handleRowChange(index, "quantity", Number(e.target.value) || 0)}
+                                value={row.quantitytable || ""}
+                                onChange={(e) => handleRowChange(index, "quantitytable", Number(e.target.value) || 0)}
                                 InputProps={{ disableUnderline: true }}
                               />
                             </TableCell>
                             <TableCell>
-                              ₹ {((row.price || 0) * (row.quantity || 0)).toLocaleString("en-IN")}
+                              ₹ {((row.price || 0) * (row.quantitytable || 0)).toLocaleString("en-IN")}
                               {openNoteRow === index && (
                                 <TextField
                                   variant="standard"

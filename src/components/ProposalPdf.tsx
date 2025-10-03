@@ -398,7 +398,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             <View style={styles.section}>
                 <Text style={styles.subHeader}>Commercial Offer & Payment</Text>
                 <Text style={{ fontSize: 14, marginBottom: 5 }}>
-                    Price Quote & Payment schedule for 5 KW Grid Tie Rooftop Solar System:
+                    Price Quote & Payment schedule for {proposal.projectsize} Grid Tie Rooftop Solar System:
                 </Text>
 
                 <View style={styles.table}>
@@ -415,9 +415,9 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                         <View key={i} style={styles.tableRow}>
                             <Text style={styles.tableCol}>{row.description || "Give Description"}</Text>
                             <Text style={styles.tableColprice}>{row.price || ""}</Text>
-                            <Text style={styles.tableColquantity}>{row.quantity || ""}</Text>
+                            <Text style={styles.tableColquantity}>{row.quantitytable || ""}</Text>
                             <Text style={styles.tableColtotal}>
-                                {(row.price && row.quantity) ? (row.price * row.quantity).toLocaleString("en-IN") : ""}
+                                {(row.price && row.quantitytable) ? (row.price * row.quantitytable).toLocaleString("en-IN") : ""}
                             </Text>
                         </View>
                     ))}
@@ -425,9 +425,9 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     {/* Subtotal */}
                     <View style={styles.tableRow}>
                         <Text style={styles.tableCol}>Subtotal</Text>
-                        <Text style={styles.tableColprice}>{proposal.subtotal ? proposal.subtotal.toLocaleString("en-IN") : ""}</Text>
+                        <Text style={styles.tableColprice}></Text>
                         <Text style={styles.tableColquantity}></Text>
-                        <Text style={styles.tableColtotal}></Text>
+                        <Text style={styles.tableColtotal}>{proposal.subtotal}</Text>
                     </View>
 
                     {/* GST */}
@@ -436,7 +436,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                         <Text style={styles.tableColprice}>{proposal.gst > 0 ? `${proposal.gst}%` : ""}</Text>
                         <Text style={styles.tableColquantity}></Text>
                         <Text style={styles.tableColtotal}>
-                            {proposal.gstAmount > 0 ? proposal.gstAmount.toLocaleString("en-IN") : ""}
+                            {proposal.gstAmount}
                         </Text>
                     </View>
 
@@ -445,22 +445,18 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                         <View key={i} style={styles.tableRow}>
                             <Text style={styles.tableCol}>{charges.description || "Give Description"}</Text>
                             <Text style={styles.tableColprice}>{charges.price || ""}</Text>
-                            <Text style={styles.tableColquantity}>{charges.quantity || ""}</Text>
+                            <Text style={styles.tableColquantity}></Text>
                             <Text style={styles.tableColtotal}>
-                                {charges.price && charges.quantity
-                                    ? (charges.price * charges.quantity).toLocaleString("en-IN")
-                                    : ""}
+                            {charges.price || ""}
                             </Text>
                         </View>
                     ))}
-
-
                     {/* Total */}
                     <View style={styles.totalRow}>
                         <Text style={styles.totalText}>Total Cost</Text>
                         <Text style={styles.totalText}></Text>
                         <Text style={styles.totalText}></Text>
-                        <Text style={styles.totalText}>{proposal.total ? proposal.total.toLocaleString("en-IN") : ""}</Text>
+                        <Text style={styles.totalText}>{proposal.total}</Text>
                     </View>
                 </View>
 
