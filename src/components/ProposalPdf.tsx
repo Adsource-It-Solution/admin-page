@@ -212,9 +212,9 @@ const LineChart10Years: React.FC<BarChart10YearsProps> = ({
 const numberToWords = (num: number): string => {
     if (!num) return "Zero Rupees";
     const words = toWords
-    .convert(num)
-    .replace(/\b[a-z]/g, (char) => char.toUpperCase()); 
-  return words + " Rupees Only";
+        .convert(num)
+        .replace(/\b[a-z]/g, (char) => char.toUpperCase());
+    return words + " Rupees Only";
 };
 
 
@@ -253,9 +253,9 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <View style={styles.column2}>
                     <Text style={styles.label2}>Prepared For</Text>
                     <Text style={styles.text2}>{proposal.clienttitle} {proposal.clientName}</Text>
-                    <Text style={styles.text2}>Phone: {proposal.clientPhone}</Text>
-                    <Text style={styles.text2}>Email: {proposal.clientEmail}</Text>
-                    <Text style={styles.text2}>Address: {proposal.clientAddress}</Text>
+                    <Text style={styles.text2}>{proposal.clientPhone}</Text>
+                    <Text style={styles.text2}>{proposal.clientEmail}</Text>
+                    <Text style={styles.text2}>{proposal.clientAddress}</Text>
                 </View>
             </View>
             <View style={{ marginTop: 5 }}>
@@ -549,6 +549,11 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     <View>
                         <Text style={{ fontFamily: 'Work Sans', color: "#1d4ed8", fontSize: 18 }}>Cable</Text>
                         <Text style={{ fontFamily: 'Work Sans', }}>Cable brand: {proposal.cableBrands}</Text>
+                        <Text style={{ fontFamily: 'Work Sans', color: "#1d4ed8", fontSize: 18 }}>Battery</Text>
+                        <Text style={{ fontFamily: 'Work Sans' }}>
+                            {proposal.batteryBrands ? proposal.batteryBrands : 'NA'}
+                        </Text>
+
                     </View>
                     <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} />
                 </View>
@@ -561,26 +566,26 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>Inverter: {proposal.Invertorwarranty} Year(s)</Text>
                     <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>Balance of System: {proposal.systemwarranty} Year(s)</Text>
                 </View>
+                <View style={{ marginTop: 10 }}>
+                    <Text style={{ fontFamily: 'Work Sans', fontSize: 16, color: "#2563eb" }}>Balance of System:</Text>
+                    <Text style={{ fontFamily: 'Work Sans', fontSize: 12, }}>{proposal.balanceOfSystem}</Text>
+                </View>
             </View>
         </Page>
 
         <Page size="A4" style={styles.page}>
             <View style={{ marginBottom: 10 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, fontWeight: "bold", marginBottom: 5 }}>Terms & Conditions</Text>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 14, }}>{proposal.termandcondition}</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "bold", marginBottom: 5 }}>Terms & Conditions</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 12, }}>{proposal.termandcondition}</Text>
             </View>
             <View style={{ marginTop: 10 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, color: "#2563eb" }}>Balance of System:</Text>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 14, }}>{proposal.balanceOfSystem}</Text>
-            </View>
-            <View style={{ marginTop: 10 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, color: "#2563eb" }}>Coustomer Scope:</Text>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>{proposal.customerScope}</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 16, color: "#2563eb" }}>Coustomer Scope:</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 12 }}>{proposal.customerScope}</Text>
             </View>
 
             <View style={{ marginTop: 10 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, color: "#2563eb" }}>Our Scope:</Text>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>{proposal.ourScope}</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 16, color: "#2563eb" }}>Our Scope:</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 12 }}>{proposal.ourScope}</Text>
             </View>
         </Page>
 
