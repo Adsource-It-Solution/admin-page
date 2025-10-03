@@ -566,11 +566,11 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>Inverter: {proposal.Invertorwarranty} Year(s)</Text>
                     <Text style={{ fontFamily: 'Work Sans', fontSize: 14 }}>Balance of System: {proposal.systemwarranty} Year(s)</Text>
                 </View>
-                <View style={{ marginTop: 10 }}>
+            </View>
+            <View style={{ marginTop: 10 }}>
                     <Text style={{ fontFamily: 'Work Sans', fontSize: 16, color: "#2563eb" }}>Balance of System:</Text>
                     <Text style={{ fontFamily: 'Work Sans', fontSize: 12, }}>{proposal.balanceOfSystem}</Text>
                 </View>
-            </View>
         </Page>
 
         <Page size="A4" style={styles.page}>
