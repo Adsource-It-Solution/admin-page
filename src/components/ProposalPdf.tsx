@@ -13,7 +13,7 @@ import {
 import type { Proposal } from "../pages/Proposal"
 import communicate from "../assets/communication.png"
 import solarbackground from "../assets/solar_background.jpg"
-import logo from "../assets/logo.png"
+import logo from "../assets/logo.webp"
 // import panellogo from "../assets/Panel_logo.png"
 import phonecall from "../assets/phone-call.png"
 import solarproposal from "../assets/Solar_Proposal.jpg"
@@ -22,6 +22,7 @@ import solarpowerplant from "../assets/solar-power-plant.png"
 import worldwide from "../assets/worldwide.png"
 import location from "../assets/icons8-location-94.png"
 import Bill from "../assets/Billimage.png"
+import calander from "../assets/calendar.png"
 import { ToWords } from 'to-words';
 
 const toWords = new ToWords({ localeCode: "en-IN" });
@@ -257,7 +258,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                             <Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} /><Text>  {proposal.clientAddress}</Text>
                         </Text>) : null}
                     <Text style={{ fontSize: 14, marginBottom: 4 }}>
-                        {proposal.date
+                        <Image src={calander}/>Date: {proposal.date
                             ? new Date(proposal.date).toLocaleDateString("en-GB")
                             : "NA"}
                     </Text>

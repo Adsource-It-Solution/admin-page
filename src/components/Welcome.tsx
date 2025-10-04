@@ -87,7 +87,7 @@ export default function Welcome() {
       }
 
       toast.success(res.data.message || "Login successful");
-      navigate(isAdmin ? "/proposal" : "/employee/dashboard");
+      navigate(isAdmin ? "/proposal" : "/employeepage");
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Login failed");
     } finally {

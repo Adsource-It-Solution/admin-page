@@ -1924,20 +1924,20 @@ export default function ProposalPage() {
                                 (otherCharges.price || 0) *
                                 (otherCharges.quantityother || 0)
                               ).toLocaleString("en-IN")}
-                              {openNoteRow === index && (
-                                <TextField
-                                  variant="standard"
-                                  fullWidth
-                                  value={otherCharges.note || ""}
-                                  onChange={(e) =>
-                                    handleOtherChargeChange(index, "note", e.target.value)
-                                  }
-                                  InputProps={{ disableUnderline: true }}
-                                  placeholder="Add note"
-                                  sx={{ fontSize: "0.8rem", mt: 0.5 }}
-                                />
-                              )}
+
+                              <TextField
+                                variant="standard"
+                                fullWidth
+                                value={otherCharges.note || ""}
+                                onChange={(e) =>
+                                  handleOtherChargeChange(index, "note", e.target.value)
+                                }
+                                InputProps={{ disableUnderline: true }}
+                                placeholder="Add note"
+                                sx={{ fontSize: "0.8rem", mt: 0.5 }}
+                              />
                             </TableCell>
+
                           </TableRow>
                         ))}
 
