@@ -75,6 +75,8 @@ export type OtherCharge = {
   description: string;
   price: number;
   note?: string;
+  quantityother: number;
+  subtotalother: string;
 };
 
 export type RowType = {
@@ -135,6 +137,7 @@ export type Proposal = {
   ifsc: string;
   bankname: string;
   date: string;
+  heading: string;
 
   rows: RowType[];
   gst: number;
@@ -156,7 +159,7 @@ export type Proposal = {
 
 type ClientPrefix = "Mr." | "Mrs." | "Ms.";
 type CustomerType = "Industrial" | "Commercial" | "Government" | "Residential" | "others";
-type PanelType = "Mono" | "Mono-Perc" | "Poly" | "BIVP" | "Mono-Prev Half Cut" | "Mono BiFacial" | "TopCon MonoFacial" | "TopCon BiFacial";
+type PanelType = "Mono" | "Mono-Perc" | "Poly" | "BIVP" | "Mono-Perc Half Cut" | "Mono BiFacial" | "TopCon MonoFacial" | "TopCon BiFacial";
 type InvertorSize = "2kw-1ph" | "3kw-1ph" | "5kw-1ph" | "5KW- 3P" | "6KW- 3P" | "8KW- 3P" | "10KW- 3P" | "12KW- 3P" | "15KW- 3P" | "20KW- 3P" | "25KW- 3P" | "30KW- 3P" | "50KW- 3P" | "100KW- 3P";
 type InvertorPhase = "Single Phase" | "Three Phase";
 type Invertortype = "String Invertor" | "Micro Invertor" | "Off Grid Inverter" | "Hybrid Inverter";
@@ -178,6 +181,7 @@ export default function ProposalPage() {
     clientPhone: "",
     clientEmail: "",
     clientAddress: "",
+    heading: "",
     // projectDetails: "",
     clienttitle: "",
     customerType: "",
@@ -221,13 +225,13 @@ export default function ProposalPage() {
     // tabledata
     rows: [
       { description: "", price: 0, quantitytable: 0, note: "", otherCharges: 0, subtotalrow: 0 },
-      { description: "", price: 0, quantitytable: 0, note: "", otherCharges: 0 ,subtotalrow: 0},
+      { description: "", price: 0, quantitytable: 0, note: "", otherCharges: 0, subtotalrow: 0 },
     ],
     gst: 0,
     subtotal: 0,
     gstAmount: 0,
     total: 0,
-    otherCharge: [{ description: "", price: 0, note: "", }],
+    otherCharge: [{ description: "", price: 0, note: "", quantityother: 0, subtotalother: "" }],
     // graphType: "",
     services: [],
     products: [],
@@ -255,15 +259,10 @@ export default function ProposalPage() {
     termandcondition: `Packing is included in the offer.
   • Transportation charges are our scope.
   • Civil and digging are at our scope.
-  • Prices quotes are firm and valid for 10 days from the date of offer. After this period a
-  reconfirmation from our office should be taken.
-  • Water supply at site will be provided by customer free of cost during installation and
-  commissioning.
-  • Closed, covered, locked stores will be provided by customer during installation and
-  commissioning.
-  • We will start the approval process as soon as we receive order confirmation. From
-  confirmation till 10 days before installation, a nominal cancellation charge of INR 25,000
-  or 5% of system cost, whichever is higher.
+  • Prices quotes are firm and valid for 10 days from the date of offer. After this period a reconfirmation from our office should be taken.
+  • Water supply at site will be provided by customer free of cost during installation and commissioning.
+  • Closed, covered, locked stores will be provided by customer during installation and commissioning.
+  • We will start the approval process as soon as we receive order confirmation. From confirmation till 10 days before installation, a nominal cancellation charge of INR 25,000 or 5% of system cost, whichever is higher.
   • Delivery: 2-3 weeks from the date of technically and commercially cleared order.
   • Force Majeure clause applies.
   • Include leasing charges.`
@@ -419,7 +418,7 @@ export default function ProposalPage() {
   const handleAddOtherCharge = () => {
     setProposal((prev) => ({
       ...prev,
-      otherCharge: [...prev.otherCharge, { description: "", price: 0, quantityother: 0, subtotal: 0 }],
+      otherCharge: [...prev.otherCharge, { description: "", price: 0, quantityother: 0, subtotalother: "" }],
     }));
     handleMenuCloseother();
   };
@@ -589,7 +588,7 @@ export default function ProposalPage() {
 
   const handleDownloadPdf = async () => {
     if (!editingId) return;
-  
+
     try {
       setLoadingPdf(true);
       const blob = await pdf(<SolarProposalPDF proposal={proposal} />).toBlob();
@@ -711,17 +710,19 @@ export default function ProposalPage() {
           <form onSubmit={handleAddOrUpdateProposal}>
 
             <Stack spacing={4}>
-              <TextField
-                label="Select Date"
-                type="date"
-                value={date}
-                variant="filled"
-                onChange={(e) => setDate(e.target.value)}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                sx={{ width: 200 }}
-              />
+              <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
+                <TextField
+                  label="Select Date"
+                  type="date"
+                  value={date}
+                  variant="filled"
+                  onChange={(e) => setDate(e.target.value)}
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  sx={{ width: 200 }}
+                />
+              </Box>
               <div className="flex flex-row">
                 <FormControl sx={{ marginRight: 2, width: 100 }} variant="filled">
                   <InputLabel id="client-type-label">Title</InputLabel>
@@ -968,7 +969,7 @@ export default function ProposalPage() {
                           <MenuItem value="Mono-Perc">Mono-Perc</MenuItem>
                           <MenuItem value="Poly">Poly</MenuItem>
                           <MenuItem value="BIVP">BIVP</MenuItem>
-                          <MenuItem value="Mono-Prev Half Cut">Mono-Prec Half Cut</MenuItem>
+                          <MenuItem value="Mono-Perc Half Cut">Mono-Perc Half Cut</MenuItem>
                           <MenuItem value="Mono BiFacial">Mono BiFacial</MenuItem>
                           <MenuItem value="TopCon MonoFacial">TopCon MonoFacial</MenuItem>
                           <MenuItem value="TopCon BiFacial">TopCon BiFacial</MenuItem>
@@ -1054,7 +1055,6 @@ export default function ProposalPage() {
                           onChange={(e) => {
                             const selectedBrand = e.target.value as string;
                             const currentBrands = proposal.invertorBrands as string[] || [];
-
                             if (!currentBrands.includes(selectedBrand)) {
                               setProposal({
                                 ...proposal,
@@ -1794,6 +1794,7 @@ export default function ProposalPage() {
                               <TextField
                                 variant="standard"
                                 type="number"
+                                placeholder="Qty"
                                 fullWidth
                                 value={row.quantitytable || ""}
                                 onChange={(e) => handleRowChange(index, "quantitytable", Number(e.target.value) || 0)}
@@ -1855,43 +1856,82 @@ export default function ProposalPage() {
 
                         {/* Other Charges */}
                         {(proposal.otherCharge ?? []).map((otherCharges, index) => (
-                          <TableRow key={index} sx={{ backgroundColor: index % 2 === 0 ? "#f0f6ff" : "white" }}>
+                          <TableRow
+                            key={index}
+                            sx={{ backgroundColor: index % 2 === 0 ? "#f0f6ff" : "white" }}
+                          >
                             <TableCell width={50}>
                               <IconButton onClick={(e) => handleMenuOpenother(e, index)}>
                                 <MoreVertIcon />
                               </IconButton>
                             </TableCell>
+
+                            {/* Description */}
                             <TableCell>
                               <TextField
                                 variant="standard"
                                 fullWidth
                                 value={otherCharges.description}
-                                onChange={(e) => handleOtherChargeChange(index, "description", e.target.value)}
+                                onChange={(e) =>
+                                  handleOtherChargeChange(index, "description", e.target.value)
+                                }
                                 InputProps={{ disableUnderline: true }}
                                 placeholder="Description"
                               />
                             </TableCell>
+
+                            {/* Price */}
                             <TableCell>
                               <TextField
                                 variant="standard"
                                 type="number"
                                 fullWidth
                                 value={otherCharges.price || ""}
-                                onChange={(e) => handleOtherChargeChange(index, "price", Number(e.target.value) || 0)}
+                                onChange={(e) =>
+                                  handleOtherChargeChange(
+                                    index,
+                                    "price",
+                                    Number(e.target.value) || 0
+                                  )
+                                }
                                 InputProps={{ disableUnderline: true, startAdornment: <span>₹</span> }}
                               />
                             </TableCell>
-                            <TableCell></TableCell>
 
-
+                            {/* Quantity */}
                             <TableCell>
-                              ₹ {(otherCharges.price || 0).toLocaleString("en-IN")}
+                              <TextField
+                                variant="standard"
+                                type="number"
+                                fullWidth
+                                value={otherCharges.quantityother || ""}
+                                onChange={(e) =>
+                                  handleOtherChargeChange(
+                                    index,
+                                    "quantityother",
+                                    Number(e.target.value) || 0
+                                  )
+                                }
+                                InputProps={{ disableUnderline: true }}
+                                placeholder="Qty"
+                              />
+                            </TableCell>
+
+                            {/* Note */}
+                            <TableCell>
+                              ₹{" "}
+                              {(
+                                (otherCharges.price || 0) *
+                                (otherCharges.quantityother || 0)
+                              ).toLocaleString("en-IN")}
                               {openNoteRow === index && (
                                 <TextField
                                   variant="standard"
                                   fullWidth
                                   value={otherCharges.note || ""}
-                                  onChange={(e) => handleOtherChargeChange(index, "note", e.target.value)}
+                                  onChange={(e) =>
+                                    handleOtherChargeChange(index, "note", e.target.value)
+                                  }
                                   InputProps={{ disableUnderline: true }}
                                   placeholder="Add note"
                                   sx={{ fontSize: "0.8rem", mt: 0.5 }}
@@ -1900,6 +1940,7 @@ export default function ProposalPage() {
                             </TableCell>
                           </TableRow>
                         ))}
+
 
 
                         {/* Total */}
@@ -2076,7 +2117,7 @@ export default function ProposalPage() {
                 }}
               />
 
-<div className="flex justify-center">
+              <div className="flex justify-center">
                 <Button type="submit" variant="contained" color="primary">
                   {id ? "Update Proposal" : "Add Proposal"}
                 </Button>

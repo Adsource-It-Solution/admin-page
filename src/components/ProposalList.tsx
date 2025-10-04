@@ -6,6 +6,7 @@ import {
   Button,
   IconButton,
   CircularProgress,
+  TextField
 } from "@mui/material";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -14,6 +15,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { pdf } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 import type { Proposal } from "../pages/Proposal";
 import { SolarProposalPDF } from "./ProposalPdf";
@@ -25,13 +28,38 @@ function ProposalList() {
   const [loading, setLoading] = useState(false);
   const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [newTitle, setNewTitle] = useState("");
+
+  const handleSave = async (id: string | undefined) => {
+    if (!id) return; // prevent crash if id is missing
+  
+    try {
+      await fetch(`/api/proposals/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ heading: newTitle }),
+      });
+  
+      setProposals((prev) =>
+        prev.map((x) => (x._id === id ? { ...x, heading: newTitle } : x))
+      );
+  
+      setEditingId(null);
+      setNewTitle("");
+    } catch (err) {
+      console.error("Error updating proposal", err);
+    }
+  };
+  
+  
+
   // Fetch proposals from backend
   const fetchProposals = async () => {
     try {
       setLoading(true);
       const res = await axios.get
         (`${import.meta.env.VITE_API_URL}/api/proposal/proposals`)
-      // Sort descending by createdAt
       const sorted = res.data.sort(
         (a: any, b: any) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -93,7 +121,7 @@ function ProposalList() {
             </p>
           )}
 
-          {proposals.map((p) => (
+          {proposals.map((p, index) => (
             <Card key={p._id}>
               <CardContent>
                 <Stack
@@ -102,6 +130,55 @@ function ProposalList() {
                   alignItems="center"
                 >
                   <div>
+                    {editingId === p._id ? (
+                      <div className="flex items-center gap-2">
+                        <TextField
+                          value={newTitle}
+                          onChange={(e) => setNewTitle(e.target.value)}
+                          size="small"
+                          variant="outlined"
+                          autoFocus
+                        />
+                        <IconButton onClick={() => handleSave(p._id)}>
+                          <Button
+                            color="success"
+                            variant="contained"
+                            disabled={loadingPdf === p._id}
+                          >
+                            <SaveIcon />
+                          </Button>
+                        </IconButton>
+                        <IconButton
+                          onClick={() => {
+                            setEditingId(null);
+                            setNewTitle("");
+                          }}
+                        >
+                          <Button
+                            color="error"
+                            variant="contained"
+                            disabled={loadingPdf === p._id}
+                          >
+                            <CancelIcon />
+                          </Button>
+                        </IconButton>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-lg">
+                          {p.heading ? p.heading : `Proposal: ${index + 1}`}
+                        </h3>
+                        <IconButton
+                          onClick={() => {
+                            setEditingId(p._id ?? null);
+                            setNewTitle(p.heading || `Proposal: ${index + 1}`);
+                          }}
+                        >
+                          <EditIcon color="primary"/>
+
+                        </IconButton>
+                      </div>
+                    )}
                     <h3 className="font-bold text-lg">{p.clientName}</h3>
                     <p>
                       Created at:{" "}
