@@ -12,7 +12,6 @@ import {
   Select,
   InputLabel,
   FormControl,
-  Chip,
   Box,
   Collapse,
   Typography,
@@ -55,6 +54,7 @@ import { SolarProposalPDF } from "../components/ProposalPdf";
 import { pdf } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import { fetchBrandsByCategory } from "../utils/brand.api";
 
 interface Service {
   _id: string;
@@ -173,6 +173,52 @@ interface GraphDatum {
   decrement: number;
 }
 
+const preloadedPanelBrands = [
+  { name: "N/A" },
+  { name: "Waaree Energies" },
+  { name: "Tata Power Solar" },
+  { name: "Adani Solar" },
+  { name: "Vikram Solar" },
+  { name: "Goldi Solar" },
+  { name: "Rayzon Solar" }
+];
+
+const preloadedInverterBrands = [
+  { name: "N/A" },
+  { name: "Luminous", logo: "/office.svg" },
+  { name: "Tata Power Solar", logo: "/office.svg" },
+  { name: "Microtek", logo: "/office.svg" },
+  { name: "Su-Kam", logo: "/office.svg" },
+  { name: "Delta", logo: "/office.svg" },
+  { name: "ABB", logo: "/office.svg" },
+  { name: "Schneider Electric", logo: "/office.svg" },
+  { name: "Huawei", logo: "/office.svg" }
+];
+
+const preloadedBatteryBrands = [
+  { name: "N/A" },
+  { name: "Luminous", logo: "/office.svg" },
+  { name: "Exide", logo: "/office.svg" },
+  { name: "Amaron", logo: "/office.svg" },
+  { name: "Okaya", logo: "/office.svg" },
+  { name: "LG", logo: "/office.svg" },
+  { name: "Samsung", logo: "/office.svg" },
+  { name: "Panasonic", logo: "/office.svg" },
+  { name: "CATL", logo: "/office.svg" },
+];
+
+const preloadedCableBrands = [
+  { name: "N/A" },
+  { name: "Polycab", logo: "/office.svg" },
+  { name: "Havells", logo: "/office.svg" },
+  { name: "Finolex", logo: "/office.svg" },
+  { name: "KEI", logo: "/office.svg" },
+  { name: "RR Kabel", logo: "/office.svg" },
+  { name: "Syska", logo: "/office.svg" },
+  { name: "V-Guard", logo: "/office.svg" },
+  { name: "Anchor", logo: "/office.svg" },
+];
+
 export default function ProposalPage() {
   const { id } = useParams();
   // const navigate = useNavigate();
@@ -282,58 +328,15 @@ export default function ProposalPage() {
   const [newPanelBrand, setNewPanelBrand] = useState("");
   const [openProposal, setOpenPropsal] = useState(false);
   const [openBattery, setOpenBattery] = useState(false);
-  const [, setBatteryBrand] = useState<string>('');
-  const [batteryBrandList, setBatteryBrandList] = useState<{ name: string; logo?: string }[]>([
-    { name: "N/A" },
-    { name: "Luminous", logo: "/office.svg" },
-    { name: "Exide", logo: "/office.svg" },
-    { name: "Amaron", logo: "/office.svg" },
-    { name: "Okaya", logo: "/office.svg" },
-    { name: "LG", logo: "/office.svg" },
-    { name: "Samsung", logo: "/office.svg" },
-    { name: "Panasonic", logo: "/office.svg" },
-    { name: "CATL", logo: "/office.svg" },
-  ]);
-  const [newBattery, setNewBattery] = useState("");
-  const [newBatteryLogo, setNewBatteryLogo] = useState<string | null>(null);
-  const [openBatteryDialog, setOpenBatteryDialog] = useState(false);
+
   const LeadAcidSubtype: LeadAcidSubtype[] = ["40Ah", "75Ah", "100Ah", "150Ah", "200Ah"];
 
 
   // Invertor and cable brands
   const [openInvertor, setOpenInvertor] = useState(false);
-  const [, setInvertorBrands] = useState<string[]>([]);
-  const [brands, setBrands] = useState<{ name: string; logo?: string }[]>([
-    { name: "N/A" },
-    { name: "Luminous", logo: "/office.svg" },
-    { name: "Tata Power Solar", logo: "/office.svg" },
-    { name: "Microtek", logo: "/office.svg" },
-    { name: "Su-Kam", logo: "/office.svg" },
-    { name: "Delta", logo: "/office.svg" },
-    { name: "ABB", logo: "/office.svg" },
-    { name: "Schneider Electric", logo: "/office.svg" },
-    { name: "Huawei", logo: "/office.svg" }
-  ]);
   const [openDialog, setOpenDialog] = useState(false);
   const [newBrand, setNewBrand] = useState("");
   const [newLogo, setNewLogo] = useState<string | null>(null);
-
-  // Cable brands
-  const [cableBrandList, setCableBrandList] = useState<string[]>([
-    "Polycab", "Havells", "Finolex", "KEI", "RR Kabel", "Syska", "V-Guard", "Anchor"
-  ]);
-  const [, setCableBrands] = useState<string[]>([]);
-
-  const [panelBrand, setPanelBrand] = useState<{ name: string; logo?: string }[]>([
-    { name: "N/A" },
-    { name: "Waaree Energies" },
-    { name: "Tata Power Solar" },
-    { name: "Adani Solar" },
-    { name: "Vikram Solar" },
-    { name: "Goldi Solar" },
-    { name: "Rayzon Solar" }
-  ]);
-  const [newCable, setNewCable] = useState<string>(" ");
   const [openCableDialog, setOpenCableDialog] = useState(false);
 
   const [graphData, setGraphData] = useState<GraphDatum[]>([]);
@@ -348,6 +351,46 @@ export default function ProposalPage() {
   const menuOpen = Boolean(anchorEll);
 
   const [loadingPdf, setLoadingPdf] = useState<boolean>(false);
+
+  const [panelBrands, setPanelBrands] = useState<any[]>([]);
+  const [inverterBrands, setInverterBrands] = useState<any[]>([]);
+  const [batteryBrands, setBatteryBrands] = useState<any[]>([]);
+  const [cableBrands, setCableBrands] = useState<any[]>([]);
+  const [newCableBrand, setNewCableBrand] = useState("");
+  const [newCableLogo, setNewCableLogo] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        const [panels, inverters, batteries, cables] = await Promise.all([
+          fetchBrandsByCategory("panel"),
+          fetchBrandsByCategory("inverter"),
+          fetchBrandsByCategory("battery"),
+          fetchBrandsByCategory("cable"),
+        ]);
+
+        console.log("Fetched panels:", panels);
+        console.log("Fetched inverters:", inverters);
+
+        const mergeBrands = (preloaded: any[], backend: any[]) => [
+          ...preloaded,
+          ...backend.filter((b) => !preloaded.some((p) => p.name === b.name)),
+        ];
+
+        setPanelBrands(mergeBrands(preloadedPanelBrands, panels));
+        setInverterBrands(mergeBrands(preloadedInverterBrands, inverters));
+        setBatteryBrands(mergeBrands(preloadedBatteryBrands, batteries));
+        setCableBrands(mergeBrands(preloadedCableBrands, cables));
+      } catch (err) {
+        console.error("Error fetching brands:", err);
+      }
+    };
+
+    fetchAll();
+  }, []);
+
+
 
 
   const getToday = () => {
@@ -601,27 +644,6 @@ export default function ProposalPage() {
   };
 
 
-  const handleAddPanelBrand = () => {
-    if (
-      newPanelBrand.trim() &&
-      !panelBrand.some((b) => b.name.toLowerCase() === newPanelBrand.toLowerCase())
-    ) {
-      const newBrand = { name: newPanelBrand, logo: newPanelLogo || undefined };
-      setPanelBrand((prev) => [...prev, newBrand]);
-
-      // Automatically select the newly added brand
-      setProposal((prev) => ({
-        ...prev,
-        panelBrands: [newBrand.name]
-      }));
-
-    }
-
-    setNewPanelBrand("");
-    setNewPanelLogo(null);
-    setOpenPanelDialog(false);
-  };
-
   const handlePanelLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
@@ -632,74 +654,156 @@ export default function ProposalPage() {
     }
   };
 
+  // ---- Add Panel Brand ----
+  const handleAddPanelBrand = async () => {
+    if (!newPanelBrand.trim()) return;
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/brands`, {
+        name: newPanelBrand,
+        logo: newPanelLogo,
+        category: "panel",
+      });
+
+      const createdBrand = res.data;
+
+      setPanelBrands((prev) => [...prev, createdBrand]);
+
+      // auto-select the newly added brand
+      setProposal((prev: any) => ({
+        ...prev,
+        panelBrands: [createdBrand.name],
+      }));
+
+      // reset form
+      setNewPanelBrand("");
+      setNewPanelLogo(null);
+      setOpenPanelDialog(false);
+    } catch (err) {
+      console.error("Error adding panel brand", err);
+    }
+  };
+
+
+  // Inverter
+  const handleinvertorLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setNewLogo(reader.result as string);
-      };
+      reader.onloadend = () => setNewLogo(reader.result as string);
       reader.readAsDataURL(e.target.files[0]);
     }
   };
 
-  const handleAddBrand = () => {
-    if (newBrand.trim() && !brands.some((b) => b.name === newBrand)) {
-      setBrands([...brands, { name: newBrand, logo: newLogo || undefined }]);
-      setInvertorBrands((prev) => [...prev, newBrand]); // auto-select
+  // Add new inverter brand
+  const handleAddinvertorBrand = async () => {
+    if (!newBrand.trim()) return;
+
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/brands`, {
+        name: newBrand,
+        logo: newLogo,
+        category: "inverter",
+      });
+      const created = res.data;
+
+      setInverterBrands((prev) => [...prev, created]);
+
+      setProposal((prev: any) => ({
+        ...prev,
+        invertorBrands: [created.name],
+      }));
+
+      setNewBrand("");
+      setNewLogo(null);
+      setOpenDialog(false);
+    } catch (err) {
+      console.error("Error adding inverter brand", err);
     }
-    setNewBrand("");
-    setNewLogo(null);
-    setOpenDialog(false);
   };
-  const handleDeleteBrand = (brandName: string) => {
-    setProposal((prev) => ({
+
+  const handleDeleteBrand = (brandToRemove: string) => {
+    setProposal((prev: any) => ({
       ...prev,
-      invertorBrands: (prev.invertorBrands as string[]).filter((b) => b !== brandName),
+      invertorBrands: (prev.invertorBrands || []).filter(
+        (b: string) => b !== brandToRemove
+      ),
     }));
   };
-
-  const handleAddCable = () => {
-    if (newCable.trim() && !cableBrandList.includes(newCable)) {
-      setCableBrandList((prev) => [...prev, newCable]);
-      setCableBrands((prev) => [...prev, newCable]);
-    }
-    setNewCable("");
-    setOpenCableDialog(false);
-  };
-
 
   const handleBatteryLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
+      reader.onloadend = () => setNewLogo(reader.result as string);
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  // Add new battery brand
+  const handleAddBatteryBrand = async () => {
+    if (!newBrand.trim()) return;
+
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/brands`, {
+        name: newBrand,
+        logo: newLogo,
+        category: "battery",
+      });
+      const created = res.data;
+
+      setBatteryBrands((prev) => [...prev, created]);
+
+      setProposal((prev: any) => ({
+        ...prev,
+        batteryBrand: created.name,
+      }));
+
+      setNewBrand("");
+      setNewLogo(null);
+      setOpenDialog(false);
+    } catch (err) {
+      console.error("Error adding battery brand", err);
+    }
+  };
+
+
+  const handleCableLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setNewBatteryLogo(reader.result as string);
+        setNewCableLogo(reader.result as string);
       };
       reader.readAsDataURL(e.target.files[0]);
     }
   };
 
-  const handleAddBattery = () => {
-    if (
-      newBattery.trim() &&
-      !batteryBrandList.some((t) => t.name === newBattery)
-    ) {
-      // add to list
-      setBatteryBrandList([
-        ...batteryBrandList,
-        { name: newBattery, logo: newBatteryLogo || undefined },
-      ]);
+  // Add new cable brand
+  const handleAddCableBrand = async () => {
+    if (!newCableBrand.trim()) return;
 
-      // set selected brand to the new one (single string)
-      setBatteryBrand(newBattery);
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/brands`, {
+        name: newCableBrand,
+        logo: newCableLogo,
+        category: "cable",
+      });
+
+      const created = res.data;
+      setCableBrands((prev) => [...prev, created]);
+
+      // auto-select
+      setProposal((prev: any) => ({
+        ...prev,
+        cableBrands: [created.name],
+      }));
+
+      // reset
+      setNewCableBrand("");
+      setNewCableLogo(null);
+      setOpenCableDialog(false);
+    } catch (err) {
+      console.error("Error adding cable brand", err);
     }
-    setNewBattery('');
-    setNewBatteryLogo(null);
-    setOpenBatteryDialog(false);
   };
-
-
-
 
   return (
     <Stack spacing={5} sx={{ maxWidth: 900, margin: "auto", mt: 5 }}>
@@ -872,29 +976,64 @@ export default function ProposalPage() {
                     </Typography>
 
                     <Stack spacing={4}>
-                      <FormControl fullWidth variant="filled">
-                        <InputLabel id="panel-brand-label">Panel Brand</InputLabel>
-                        <Select
-                          labelId="panel-brand-label"
-                          value={proposal.panelBrands?.[0] || ""} // first element
-                          onChange={(e) =>
-                            setProposal({ ...proposal, panelBrands: [e.target.value as string] }) // wrap in array
-                          }
-                          displayEmpty
-                        >
-                          {panelBrand.map((brand, index) => (
-                            <MenuItem key={index} value={brand.name}>
-                              <Stack direction="row" spacing={1} alignItems="center">
-                                {brand.logo && (
-                                  <Avatar src={brand.logo} alt={brand.name} sx={{ width: 24, height: 24 }} />
+                      <TextField
+                        select
+                        label="Panel Brand"
+                        value={proposal.panelBrands?.[0] || ""}
+                        onChange={(e) =>
+                          setProposal((prev) => ({
+                            ...prev,
+                            panelBrands: [e.target.value],
+                          }))
+                        }
+                        fullWidth
+                      >
+                        {panelBrands.length === 0 ? (
+                          <MenuItem disabled>Loading...</MenuItem>
+                        ) : (
+                          panelBrands.map((b) => (
+                            <MenuItem
+                              key={b._id}
+                              value={b.name}
+                              sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                            >
+                              <div style={{ display: "flex", alignItems: "center" }}>
+                                {b.logo && (
+                                  <img
+                                    src={b.logo}
+                                    alt={b.name}
+                                    style={{ width: 20, height: 20, marginRight: 8 }}
+                                  />
                                 )}
-                                <span>{brand.name}</span>
-                              </Stack>
+                                {b.name}
+                              </div>
+
+                              <IconButton
+                                size="small"
+                                edge="end"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm(`Delete brand "${b.name}"?`)) {
+                                    await axios.delete(`${import.meta.env.VITE_API_URL}/brands/${b._id}`);
+                                    setPanelBrands((prev) => prev.filter((item) => item._id !== b._id));
+                                    if (proposal.panelBrands?.[0] === b.name) {
+                                      setProposal((prev) => ({ ...prev, panelBrands: [""] }));
+                                    }
+                                  }
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
                             </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                          ))
+                        )}
+                      </TextField>
+
+
+
+                      {/* Add Button */}
                       <Button
+                        type="button"
                         variant="contained"
                         color="primary"
                         onClick={() => setOpenPanelDialog(true)}
@@ -903,7 +1042,13 @@ export default function ProposalPage() {
                         ➕ Add Panel Brand
                       </Button>
 
-                      <Dialog open={openPanelDialog} onClose={() => setOpenPanelDialog(false)}>
+                      {/* Add Dialog */}
+                      <Dialog
+                        open={openPanelDialog}
+                        onClose={() => setOpenPanelDialog(false)}
+                        fullWidth
+                        maxWidth="sm"
+                      >
                         <DialogTitle>Add Panel Brand</DialogTitle>
                         <DialogContent>
                           <TextField
@@ -923,7 +1068,11 @@ export default function ProposalPage() {
                               onChange={handlePanelLogoUpload}
                             />
                             <label htmlFor="upload-logo">
-                              <Button variant="contained" component="span" startIcon={<UploadIcon />}>
+                              <Button
+                                type="button"
+                                variant="contained"
+                                startIcon={<UploadIcon />}
+                              >
                                 Upload Logo
                               </Button>
                             </label>
@@ -937,8 +1086,13 @@ export default function ProposalPage() {
                           </Stack>
                         </DialogContent>
                         <DialogActions>
-                          <Button onClick={() => setOpenPanelDialog(false)}>Cancel</Button>
-                          <Button onClick={handleAddPanelBrand} variant="contained" color="success">
+                          <Button type="button" onClick={() => setOpenPanelDialog(false)}>Cancel</Button>
+                          <Button
+                            onClick={handleAddPanelBrand}
+                            variant="contained"
+                            color="success"
+                            type="button"
+                          >
                             Add
                           </Button>
                         </DialogActions>
@@ -1046,74 +1200,114 @@ export default function ProposalPage() {
                   >
                     <Stack spacing={4}>
                       {/* ✅ Inverter Brands (multiple select) */}
-                      <FormControl fullWidth variant="filled">
-                        <InputLabel id="invertor-brand-label">Select Inverter Brands</InputLabel>
-                        <Select
-                          labelId="invertor-brand-label"
-                          multiple={false}
-                          value=""
-                          onChange={(e) => {
-                            const selectedBrand = e.target.value as string;
-                            const currentBrands = proposal.invertorBrands as string[] || [];
-                            if (!currentBrands.includes(selectedBrand)) {
-                              setProposal({
-                                ...proposal,
-                                invertorBrands: [...currentBrands, selectedBrand],
-                              });
-                            }
-                          }}
-                          renderValue={() => (
-                            <Stack direction="row" spacing={1} flexWrap="wrap">
-                              {(proposal.invertorBrands as string[] | undefined)?.map((value) => {
-                                const brand = brands.find((b) => b.name === value);
-                                return (
-                                  <Chip
-                                    key={value}
-                                    label={value}
-                                    avatar={brand?.logo ? <Avatar src={brand.logo} /> : undefined}
+                      <TextField
+                        select
+                        label="Invertor Brand"
+                        value={proposal.invertorBrands?.[0] || ""}
+                        onChange={(e) =>
+                          setProposal((prev: any) => ({
+                            ...prev,
+                            invertorBrands: [e.target.value],
+                          }))
+                        }
+                        fullWidth
+                      >
+                        {inverterBrands.length === 0 ? (
+                          <MenuItem disabled>Loading...</MenuItem>
+                        ) : (
+                          inverterBrands.map((b) => (
+                            <MenuItem 
+                            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                            key={b._id} value={b.name}>
+                              <div style={{ display: "flex", alignItems: "center" }}>
+                                {b.logo && (
+                                  <img
+                                    src={b.logo}
+                                    alt={b.name}
+                                    style={{ width: 20, height: 20, marginRight: 8 }}
                                   />
-                                );
-                              })}
-                            </Stack>
-                          )}
-                        >
-                          {brands.map((brand, index) => (
-                            <MenuItem key={index} value={brand.name}>
-                              {brand.logo && (
-                                <Avatar
-                                  src={brand.logo}
-                                  alt={brand.name}
-                                  sx={{ width: 24, height: 24, marginRight: 1 }}
-                                />
-                              )}
-                              {brand.name}
+                                )}
+                                {b.name}
+                              </div>
+
+                              <IconButton
+                                size="small"
+                                edge="end"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm(`Delete brand "${b.name}"?`)) {
+                                    await axios.delete(`${import.meta.env.VITE_API_URL}/brands/${b._id}`);
+                                    setInverterBrands((prev) => prev.filter((item) => item._id !== b._id));
+                                    if (proposal.invertorBrands?.[0] === b.name) {
+                                      setProposal((prev) => ({ ...prev, invertorBrands: [""] }));
+                                    }
+                                  }
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
                             </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                          ))
+                        )}
+                      </TextField>
 
 
-
-                      {/* Button to open dialog */}
                       <Button
+                        type="button"
                         variant="contained"
                         color="primary"
                         onClick={() => setOpenDialog(true)}
-                        sx={{
-                          mt: 2,
-                          width: "auto",
-                          alignSelf: "flex-start",
-                        }}
+                        sx={{ mt: 2, width: "auto", alignSelf: "flex-start" }}
                       >
                         ➕ Add Inverter Brand
                       </Button>
 
-                      {/* Show selected brands in separate box */}
+                      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="sm">
+                        <DialogTitle>Add Inverter Brand</DialogTitle>
+                        <DialogContent>
+                          <TextField
+                            autoFocus
+                            margin="dense"
+                            label="Brand Name"
+                            fullWidth
+                            value={newBrand}
+                            onChange={(e) => setNewBrand(e.target.value)}
+                          />
+                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
+                            <input
+                              accept="image/*"
+                              id="upload-inverter-logo"
+                              type="file"
+                              style={{ display: "none" }}
+                              onChange={handleinvertorLogoUpload}
+                            />
+                            <label htmlFor="upload-inverter-logo">
+                              <Button variant="contained" type="button" startIcon={<UploadIcon />}>
+                                Upload Logo
+                              </Button>
+                            </label>
+                            {newLogo && (
+                              <Avatar
+                                src={newLogo}
+                                alt="preview"
+                                sx={{ width: 50, height: 50, border: "2px solid #1976d2" }}
+                              />
+                            )}
+                          </Stack>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button type="button" onClick={() => setOpenDialog(false)}>Cancel</Button>
+                          <Button type="button" onClick={handleAddinvertorBrand} variant="contained" color="success">
+                            Add
+                          </Button>
+                        </DialogActions>
+                      </Dialog>
+
                       <Box sx={{ mt: 3, p: 2, border: "1px solid #ccc", borderRadius: 2 }}>
                         <h3>Selected Inverter Brands:</h3>
                         <Stack direction="column" spacing={2}>
                           {(proposal.invertorBrands as string[] | undefined)?.map((brandName) => {
-                            const brand = brands.find((b) => b.name === brandName);
+                            const brand = inverterBrands.find((b) => b.name === brandName);
                             if (!brand) return null;
 
                             return (
@@ -1143,7 +1337,11 @@ export default function ProposalPage() {
                                 </Stack>
 
                                 {/* Delete button */}
-                                <IconButton color="error" onClick={() => handleDeleteBrand(brandName)}>
+                                <IconButton
+                                  type="button"
+                                  color="error"
+                                  onClick={() => handleDeleteBrand(brandName)}
+                                >
                                   <ClearIcon />
                                 </IconButton>
                               </Stack>
@@ -1151,6 +1349,7 @@ export default function ProposalPage() {
                           })}
                         </Stack>
                       </Box>
+
 
                       {/* Dialog for adding new brand */}
                       <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
@@ -1170,10 +1369,10 @@ export default function ProposalPage() {
                               id="upload-logo"
                               type="file"
                               style={{ display: "none" }}
-                              onChange={handleLogoUpload}
+                              onChange={handleinvertorLogoUpload}
                             />
                             <label htmlFor="upload-logo">
-                              <Button variant="contained" component="span" startIcon={<UploadIcon />}>
+                              <Button variant="contained" type="button" startIcon={<UploadIcon />}>
                                 Upload Logo
                               </Button>
                             </label>
@@ -1187,8 +1386,8 @@ export default function ProposalPage() {
                           </Stack>
                         </DialogContent>
                         <DialogActions>
-                          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-                          <Button onClick={handleAddBrand} variant="contained" color="success">
+                          <Button type="button" onClick={() => setOpenDialog(false)}>Cancel</Button>
+                          <Button type="button" onClick={handleAddinvertorBrand} variant="contained" color="success">
                             Add
                           </Button>
                         </DialogActions>
@@ -1310,54 +1509,58 @@ export default function ProposalPage() {
                     <Stack spacing={4}>
                       <div>
                         {/* Select Battery Brands */}
-                        <FormControl fullWidth variant="filled">
-                          <InputLabel id="battery-brand-label">Select Battery Brand</InputLabel>
-                          <Select
-                            labelId="battery-brand-label"
-                            value={proposal.batteryBrands || ""} // must match the selected string
-                            onChange={(e) => {
-                              const selected = e.target.value as string;
-                              setProposal({ ...proposal, batteryBrands: selected }); // update proposal state
-                            }}
-                            renderValue={(selected) => {
-                              const brand = batteryBrandList.find((b) => b.name === selected);
-                              return (
-                                <Stack direction="row" spacing={1} alignItems="center">
-                                  {brand?.logo && (
-                                    <Avatar
-                                      src={brand.logo}
-                                      alt={brand.name}
-                                      sx={{ width: 24, height: 24 }}
-                                    />
-                                  )}
-                                  <span>{brand?.name || selected}</span>
-                                </Stack>
-                              );
-                            }}
-                          >
-                            {batteryBrandList.map((brand) => (
-                              <MenuItem key={brand.name} value={brand.name}>
-                                <Stack direction="row" spacing={1} alignItems="center">
-                                  {brand.logo && <Avatar src={brand.logo} alt={brand.name} sx={{ width: 24, height: 24 }} />}
-                                  <span>{brand.name}</span>
-                                </Stack>
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
+                        <TextField
+                          select
+                          label="Battery Brand"
+                          value={proposal.batteryBrands || ""}
+                          onChange={(e) => setProposal((prev: any) => ({ ...prev, batteryBrand: e.target.value }))}
+                          fullWidth
+                        >
+                          {batteryBrands.map((b) => (
+                            <MenuItem 
+                            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                            key={b._id} value={b.name}>
+                              <div style={{ display: "flex", alignItems: "center" }}>
+                                {b.logo && (
+                                  <img
+                                    src={b.logo}
+                                    alt={b.name}
+                                    style={{ width: 20, height: 20, marginRight: 8 }}
+                                  />
+                                )}
+                                {b.name}
+                              </div>
+                              <IconButton
+                                size="small"
+                                edge="end"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm(`Delete brand "${b.name}"?`)) {
+                                    await axios.delete(`${import.meta.env.VITE_API_URL}/brands/${b._id}`);
+                                    setBatteryBrands((prev) => prev.filter((item) => item._id !== b._id));
+                                    if (proposal.batteryBrands?.[0] === b.name) {
+                                      setProposal((prev) => ({ ...prev, batteryBrands: "" }));
+                                    }
+                                  }
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </MenuItem>
+                          ))}
+                        </TextField>
 
-                        {/* Button to open dialog */}
                         <Button
+                          type="button"
                           variant="contained"
                           color="primary"
-                          onClick={() => setOpenBatteryDialog(true)}
+                          onClick={() => setOpenDialog(true)}
                           sx={{ mt: 2, width: "auto", alignSelf: "flex-start" }}
                         >
                           ➕ Add Battery Brand
                         </Button>
 
-                        {/* Dialog for adding new battery brand */}
-                        <Dialog open={openBatteryDialog} onClose={() => setOpenBatteryDialog(false)}>
+                        <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="sm">
                           <DialogTitle>Add Battery Brand</DialogTitle>
                           <DialogContent>
                             <TextField
@@ -1365,8 +1568,8 @@ export default function ProposalPage() {
                               margin="dense"
                               label="Brand Name"
                               fullWidth
-                              value={newBattery}
-                              onChange={(e) => setNewBattery(e.target.value)}
+                              value={newBrand}
+                              onChange={(e) => setNewBrand(e.target.value)}
                             />
                             <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
                               <input
@@ -1377,13 +1580,13 @@ export default function ProposalPage() {
                                 onChange={handleBatteryLogoUpload}
                               />
                               <label htmlFor="upload-battery-logo">
-                                <Button variant="contained" component="span" startIcon={<UploadIcon />}>
+                                <Button variant="contained" type="button" startIcon={<UploadIcon />}>
                                   Upload Logo
                                 </Button>
                               </label>
-                              {newBatteryLogo && (
+                              {newLogo && (
                                 <Avatar
-                                  src={newBatteryLogo}
+                                  src={newLogo}
                                   alt="preview"
                                   sx={{ width: 50, height: 50, border: "2px solid #1976d2" }}
                                 />
@@ -1391,8 +1594,8 @@ export default function ProposalPage() {
                             </Stack>
                           </DialogContent>
                           <DialogActions>
-                            <Button onClick={() => setOpenBatteryDialog(false)}>Cancel</Button>
-                            <Button onClick={handleAddBattery} variant="contained" color="success">
+                            <Button type="button" onClick={() => setOpenDialog(false)}>Cancel</Button>
+                            <Button type="button" onClick={handleAddBatteryBrand} variant="contained" color="success">
                               Add
                             </Button>
                           </DialogActions>
@@ -1532,41 +1735,74 @@ export default function ProposalPage() {
                       />
 
 
-                      <Select
-                        value={proposal.cableBrands || ""}
+                      <TextField
+                        select
+                        label="Cable Brand"
+                        value={proposal.cableBrands?.[0] || ""}
                         onChange={(e) =>
-                          setProposal({ ...proposal, cableBrands: e.target.value as string })
+                          setProposal((prev: any) => ({
+                            ...prev,
+                            cableBrands: [e.target.value],
+                          }))
                         }
-                        displayEmpty
+                        fullWidth
                       >
-                        <MenuItem disabled value="">
-                          Select Cable Brand
-                        </MenuItem>
-                        {cableBrandList.map((brand, index) => (
-                          <MenuItem key={index} value={brand}>
-                            {brand}
-                          </MenuItem>
-                        ))}
-                      </Select>
+                        {cableBrands.length === 0 ? (
+                          <MenuItem disabled>Loading...</MenuItem>
+                        ) : (
+                          cableBrands.map((b) => (
+                            <MenuItem 
+                            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                            key={b._id} value={b.name}>
+                              <div style={{ display: "flex", alignItems: "center" }}>
+                                {b.logo && (
+                                  <img
+                                    src={b.logo}
+                                    alt={b.name}
+                                    style={{ width: 20, height: 20, marginRight: 8 }}
+                                  />
+                                )}
+                                {b.name}
+                              </div>
+                              <IconButton
+                                size="small"
+                                edge="end"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm(`Delete brand "${b.name}"?`)) {
+                                    await axios.delete(`${import.meta.env.VITE_API_URL}/brands/${b._id}`);
+                                    setCableBrands((prev) => prev.filter((item) => item._id !== b._id));
+                                    if (proposal.cableBrands?.[0] === b.name) {
+                                      setProposal((prev) => ({ ...prev, cableBrands: "" }));
+                                    }
+                                  }
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </MenuItem>
+                          ))
+                        )}
+                      </TextField>
 
-
-
-                      {/* Button to open dialog */}
+                      {/* Add Button */}
                       <Button
+                        type="button"
                         variant="contained"
                         color="primary"
                         onClick={() => setOpenCableDialog(true)}
-                        sx={{
-                          mt: 2,
-                          width: "auto",
-                          alignSelf: "flex-start",
-                        }}
+                        sx={{ mt: 2, width: "auto", alignSelf: "flex-start" }}
                       >
                         ➕ Add Cable Brand
                       </Button>
 
-                      {/* Dialog for adding new brand */}
-                      <Dialog open={openCableDialog} onClose={() => setOpenCableDialog(false)}>
+                      {/* Add Dialog */}
+                      <Dialog
+                        open={openCableDialog}
+                        onClose={() => setOpenCableDialog(false)}
+                        fullWidth
+                        maxWidth="sm"
+                      >
                         <DialogTitle>Add Cable Brand</DialogTitle>
                         <DialogContent>
                           <TextField
@@ -1574,42 +1810,47 @@ export default function ProposalPage() {
                             margin="dense"
                             label="Brand Name"
                             fullWidth
-                            value={newCable}
-                            onChange={(e) => setNewCable(e.target.value)}
+                            value={newCableBrand}
+                            onChange={(e) => setNewCableBrand(e.target.value)}
                           />
+                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
+                            <input
+                              accept="image/*"
+                              id="upload-cable-logo"
+                              type="file"
+                              style={{ display: "none" }}
+                              onChange={handleCableLogoUpload}
+                            />
+                            <label htmlFor="upload-cable-logo">
+                              <Button
+                                variant="contained"
+                                type="button"
+                                startIcon={<UploadIcon />}
+                              >
+                                Upload Logo
+                              </Button>
+                            </label>
+                            {newCableLogo && (
+                              <Avatar
+                                src={newCableLogo}
+                                alt="preview"
+                                sx={{ width: 50, height: 50, border: "2px solid #1976d2" }}
+                              />
+                            )}
+                          </Stack>
                         </DialogContent>
                         <DialogActions>
-                          <Button onClick={() => setOpenCableDialog(false)}>Cancel</Button>
-                          <Button onClick={handleAddCable} variant="contained" color="success">
+                          <Button type="button" onClick={() => setOpenCableDialog(false)}>Cancel</Button>
+                          <Button
+                            type="button"
+                            onClick={handleAddCableBrand}
+                            variant="contained"
+                            color="success"
+                          >
                             Add
                           </Button>
                         </DialogActions>
                       </Dialog>
-                      {/* Show selected brands in separate boxes with delete */}
-                      <Box sx={{ mt: 3 }}>
-                        <h3>Selected Cable Brand:</h3>
-                        {proposal.cableBrands ? (
-                          <Stack
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="space-between"
-                            spacing={2}
-                            sx={{
-                              p: 1.5,
-                              border: "1px solid #ddd",
-                              borderRadius: 2,
-                              bgcolor: "#fafafa",
-                            }}
-                          >
-                            {/* Brand logo + name */}
-                            <Stack direction="row" alignItems="center" spacing={1}>
-                              <span style={{ fontWeight: 500 }}>{proposal.cableBrands}</span>
-                            </Stack>
-                          </Stack>
-                        ) : (
-                          <p style={{ color: "#777" }}>No brand selected</p>
-                        )}
-                      </Box>
 
 
                       {/* structure description  */}
@@ -1766,7 +2007,7 @@ export default function ProposalPage() {
                         {proposal.rows.map((row, index) => (
                           <TableRow key={index} sx={{ backgroundColor: index % 2 === 0 ? "#f0f6ff" : "white" }}>
                             <TableCell width={50}>
-                              <IconButton onClick={(e) => handleMenuOpen(e, index)}>
+                              <IconButton type="button" onClick={(e) => handleMenuOpen(e, index)}>
                                 <MoreVertIcon />
                               </IconButton>
                             </TableCell>
@@ -1830,7 +2071,7 @@ export default function ProposalPage() {
                         {/* GST Row */}
                         <TableRow>
                           <TableCell width={50}>
-                            <IconButton onClick={(e) => handleMenuOpenother(e, -1)}>
+                            <IconButton type="button" onClick={(e) => handleMenuOpenother(e, -1)}>
                               <MoreVertIcon />
                             </IconButton>
                           </TableCell>
@@ -1861,7 +2102,7 @@ export default function ProposalPage() {
                             sx={{ backgroundColor: index % 2 === 0 ? "#f0f6ff" : "white" }}
                           >
                             <TableCell width={50}>
-                              <IconButton onClick={(e) => handleMenuOpenother(e, index)}>
+                              <IconButton type="button" onClick={(e) => handleMenuOpenother(e, index)}>
                                 <MoreVertIcon />
                               </IconButton>
                             </TableCell>
@@ -2124,6 +2365,7 @@ export default function ProposalPage() {
 
                 {editingId && (
                   <Button
+                    type="button"
                     variant="outlined"
                     color="secondary"
                     startIcon={loadingPdf ? <CircularProgress size={20} /> : <PictureAsPdfIcon />}

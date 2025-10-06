@@ -13,7 +13,7 @@ import {
 import type { Proposal } from "../pages/Proposal"
 import communicate from "../assets/communication.png"
 import solarbackground from "../assets/solar_background.jpg"
-import logo from "../assets/logo.webp"
+import logo from "../assets/logo.jpg"
 // import panellogo from "../assets/Panel_logo.png"
 import phonecall from "../assets/phone-call.png"
 import solarproposal from "../assets/Solar_Proposal.jpg"
