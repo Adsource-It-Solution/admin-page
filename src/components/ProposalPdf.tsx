@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     subHeader2: { fontFamily: 'Roboto', fontSize: 32, fontWeight: "bold", marginBottom: 10,  color: "#1e40af" },
     text: { marginBottom: 5 },
     listItem: { fontFamily: 'Roboto', marginLeft: 15, marginBottom: 5, fontSize: 14 },
-    logo: { width: 100, height: 50 },
+    logo: { width: 100, height: 70 },
     logoTop: { width: 120, height: 50, resizeMode: "contain", alignSelf: "flex-end", },
     smallLogo: { width: 60, height: 60, marginVertical: 10 },
     image: { width: "100%", height: "100%", objectFit: "contain", marginVertical: 10 },
