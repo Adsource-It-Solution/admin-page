@@ -1,5 +1,5 @@
 import type { ChangeEvent, FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import {
   TextField,
@@ -94,6 +94,12 @@ export default function Welcome() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+  fetch("https://admin-backend-gh6c.onrender.com/api/health")
+    .then(() => console.log("Render backend woken up"))
+    .catch((err) => console.error("Failed to wake backend:", err));
+}, []);
 
   return (
     <div className="min-h-screen flex justify-center items-center px-4 bg-gradient-to-br to-indigo-900 relative overflow-hidden">
