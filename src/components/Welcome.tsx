@@ -31,16 +31,11 @@ interface FormErrors {
 export default function Welcome() {
   const navigate = useNavigate();
 
-  // Toggle between Admin and Employee login
   const [isAdmin, setIsAdmin] = useState(true);
-
-  // Show/hide password
   const [showPassword, setShowPassword] = useState(false);
-
-  // Loading state
   const [loading, setLoading] = useState(false);
+  const [backendReady, setBackendReady] = useState(false); // NEW: Backend ready state
 
-  // Form state
   const [form, setForm] = useState<FormData>({ email: "", password: "" });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
@@ -95,11 +90,17 @@ export default function Welcome() {
     }
   };
 
+  // Wake backend and set backendReady
   useEffect(() => {
-  fetch("https://admin-backend-gh6c.onrender.com/api/health")
-    .then(() => console.log("Render backend woken up"))
-    .catch((err) => console.error("Failed to wake backend:", err));
-}, []);
+    fetch(`${import.meta.env.VITE_API_URL}/api/health`)
+      .then(() => {
+        console.log("Render backend woken up");
+        setBackendReady(true); // enable login button
+      })
+      .catch((err) => {
+        console.error("Failed to wake backend:", err);
+      });
+  }, []);
 
   return (
     <div className="min-h-screen flex justify-center items-center px-4 bg-gradient-to-br to-indigo-900 relative overflow-hidden">
@@ -171,11 +172,12 @@ export default function Welcome() {
               )}
             </FormControl>
 
+            {/* Login Button */}
             <Button
               type="submit"
               variant="contained"
               fullWidth
-              disabled={loading}
+              disabled={loading || !backendReady} // DISABLED until backend is ready
               sx={{
                 backgroundColor: "primary.main",
                 fontSize: "1.1rem",
@@ -187,7 +189,8 @@ export default function Welcome() {
                 "&:hover": { backgroundColor: "primary.dark" }
               }}
             >
-              {loading ? <CircularProgress size={24} sx={{ color: "white" }} /> : "Login"}
+              {loading ? <CircularProgress size={24} sx={{ color: "white" }} /> 
+                       : backendReady ? "Login" : "Waking Backend..."}
             </Button>
 
             <div className="flex justify-between text-white mt-2 text-sm">
@@ -200,7 +203,7 @@ export default function Welcome() {
               </button>
               <span>{isAdmin ? "Use your Admin credentials" : "Use your Employee credentials"}</span>
             </div>
-              {/* <Link to="/forget-password" className="text-blue-500">Forget Password? </Link> */}
+
           </motion.form>
         </AnimatePresence>
       </motion.div>
