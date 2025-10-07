@@ -95,7 +95,7 @@ export default function Welcome() {
     fetch(`${import.meta.env.VITE_API_URL}/api/health`)
       .then(() => {
         console.log("Render backend woken up");
-        setBackendReady(true); // enable login button
+        setBackendReady(true); 
       })
       .catch((err) => {
         console.error("Failed to wake backend:", err);
@@ -190,7 +190,7 @@ export default function Welcome() {
               }}
             >
               {loading ? <CircularProgress size={24} sx={{ color: "white" }} /> 
-                       : backendReady ? "Login" : "Waking Backend..."}
+                       : backendReady ? "Login" : "Connecting to Server..."}
             </Button>
 
             <div className="flex justify-between text-white mt-2 text-sm">
