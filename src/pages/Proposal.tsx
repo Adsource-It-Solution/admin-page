@@ -335,6 +335,7 @@ export default function ProposalPage() {
   // Invertor and cable brands
   const [openInvertor, setOpenInvertor] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [openInvertorDialog, setOpenInvertorDialog] = useState(false);
   const [newBrand, setNewBrand] = useState("");
   const [newLogo, setNewLogo] = useState<string | null>(null);
   const [openCableDialog, setOpenCableDialog] = useState(false);
@@ -355,6 +356,7 @@ export default function ProposalPage() {
   const [panelBrands, setPanelBrands] = useState<any[]>([]);
   const [inverterBrands, setInverterBrands] = useState<any[]>([]);
   const [batteryBrands, setBatteryBrands] = useState<any[]>([]);
+  const [newBatteryLogo, setNewBatteryLogo] = useState<string | null>(null);
   const [cableBrands, setCableBrands] = useState<any[]>([]);
   const [newCableBrand, setNewCableBrand] = useState("");
   const [newCableLogo, setNewCableLogo] = useState<string | null>(null);
@@ -715,7 +717,7 @@ export default function ProposalPage() {
 
       setNewBrand("");
       setNewLogo(null);
-      setOpenDialog(false);
+      setOpenInvertorDialog(false);
     } catch (err) {
       console.error("Error adding inverter brand", err);
     }
@@ -745,7 +747,7 @@ export default function ProposalPage() {
     try {
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/brands`, {
         name: newBrand,
-        logo: newLogo,
+        logo: newBatteryLogo,
         category: "battery",
       });
       const created = res.data;
@@ -758,7 +760,7 @@ export default function ProposalPage() {
       }));
 
       setNewBrand("");
-      setNewLogo(null);
+      setNewBatteryLogo(null);
       setOpenDialog(false);
     } catch (err) {
       console.error("Error adding battery brand", err);
@@ -1060,22 +1062,27 @@ export default function ProposalPage() {
                             onChange={(e) => setNewPanelBrand(e.target.value)}
                           />
                           <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
+                            {/* Hidden File Input */}
                             <input
                               accept="image/*"
-                              id="upload-logo"
+                              id="upload-panel-logo"
                               type="file"
                               style={{ display: "none" }}
                               onChange={handlePanelLogoUpload}
                             />
-                            <label htmlFor="upload-logo">
+
+                            {/* Label wraps the Button */}
+                            <label htmlFor="upload-panel-logo">
                               <Button
-                                type="button"
                                 variant="contained"
+                                component="span"
                                 startIcon={<UploadIcon />}
                               >
                                 Upload Logo
                               </Button>
                             </label>
+
+                            {/* Preview Avatar */}
                             {newPanelLogo && (
                               <Avatar
                                 src={newPanelLogo}
@@ -1084,6 +1091,7 @@ export default function ProposalPage() {
                               />
                             )}
                           </Stack>
+
                         </DialogContent>
                         <DialogActions>
                           <Button type="button" onClick={() => setOpenPanelDialog(false)}>Cancel</Button>
@@ -1216,9 +1224,9 @@ export default function ProposalPage() {
                           <MenuItem disabled>Loading...</MenuItem>
                         ) : (
                           inverterBrands.map((b) => (
-                            <MenuItem 
-                            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-                            key={b._id} value={b.name}>
+                            <MenuItem
+                              sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                              key={b._id} value={b.name}>
                               <div style={{ display: "flex", alignItems: "center" }}>
                                 {b.logo && (
                                   <img
@@ -1256,13 +1264,13 @@ export default function ProposalPage() {
                         type="button"
                         variant="contained"
                         color="primary"
-                        onClick={() => setOpenDialog(true)}
+                        onClick={() => setOpenInvertorDialog(true)}
                         sx={{ mt: 2, width: "auto", alignSelf: "flex-start" }}
                       >
                         ➕ Add Inverter Brand
                       </Button>
 
-                      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="sm">
+                      <Dialog open={openInvertorDialog} onClose={() => setOpenInvertorDialog(false)} fullWidth maxWidth="sm">
                         <DialogTitle>Add Inverter Brand</DialogTitle>
                         <DialogContent>
                           <TextField
@@ -1274,18 +1282,27 @@ export default function ProposalPage() {
                             onChange={(e) => setNewBrand(e.target.value)}
                           />
                           <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
+                            {/* Hidden File Input */}
                             <input
                               accept="image/*"
-                              id="upload-inverter-logo"
+                              id="upload-invertor-logo"
                               type="file"
                               style={{ display: "none" }}
                               onChange={handleinvertorLogoUpload}
                             />
-                            <label htmlFor="upload-inverter-logo">
-                              <Button variant="contained" type="button" startIcon={<UploadIcon />}>
+
+                            {/* Label wraps the Button */}
+                            <label htmlFor="upload-invertor-logo">
+                              <Button
+                                variant="contained"
+                                component="span"
+                                startIcon={<UploadIcon />}
+                              >
                                 Upload Logo
                               </Button>
                             </label>
+
+                            {/* Preview Avatar */}
                             {newLogo && (
                               <Avatar
                                 src={newLogo}
@@ -1294,9 +1311,10 @@ export default function ProposalPage() {
                               />
                             )}
                           </Stack>
+
                         </DialogContent>
                         <DialogActions>
-                          <Button type="button" onClick={() => setOpenDialog(false)}>Cancel</Button>
+                          <Button type="button" onClick={() => setOpenInvertorDialog(false)}>Cancel</Button>
                           <Button type="button" onClick={handleAddinvertorBrand} variant="contained" color="success">
                             Add
                           </Button>
@@ -1349,49 +1367,6 @@ export default function ProposalPage() {
                           })}
                         </Stack>
                       </Box>
-
-
-                      {/* Dialog for adding new brand */}
-                      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-                        <DialogTitle>Add Inverter Brand</DialogTitle>
-                        <DialogContent>
-                          <TextField
-                            autoFocus
-                            margin="dense"
-                            label="Brand Name"
-                            fullWidth
-                            value={newBrand}
-                            onChange={(e) => setNewBrand(e.target.value)}
-                          />
-                          <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
-                            <input
-                              accept="image/*"
-                              id="upload-logo"
-                              type="file"
-                              style={{ display: "none" }}
-                              onChange={handleinvertorLogoUpload}
-                            />
-                            <label htmlFor="upload-logo">
-                              <Button variant="contained" type="button" startIcon={<UploadIcon />}>
-                                Upload Logo
-                              </Button>
-                            </label>
-                            {newLogo && (
-                              <Avatar
-                                src={newLogo}
-                                alt="preview"
-                                sx={{ width: 50, height: 50, border: "2px solid #1976d2" }}
-                              />
-                            )}
-                          </Stack>
-                        </DialogContent>
-                        <DialogActions>
-                          <Button type="button" onClick={() => setOpenDialog(false)}>Cancel</Button>
-                          <Button type="button" onClick={handleAddinvertorBrand} variant="contained" color="success">
-                            Add
-                          </Button>
-                        </DialogActions>
-                      </Dialog>
 
                       {/* ✅ Inverter Type */}
                       <FormControl fullWidth variant="filled">
@@ -1513,13 +1488,13 @@ export default function ProposalPage() {
                           select
                           label="Battery Brand"
                           value={proposal.batteryBrands || ""}
-                          onChange={(e) => setProposal((prev: any) => ({ ...prev, batteryBrand: e.target.value }))}
+                          onChange={(e) => setProposal((prev) => ({ ...prev, batteryBrands: e.target.value }))}
                           fullWidth
                         >
                           {batteryBrands.map((b) => (
-                            <MenuItem 
-                            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-                            key={b._id} value={b.name}>
+                            <MenuItem
+                              sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                              key={b._id} value={b.name}>
                               <div style={{ display: "flex", alignItems: "center" }}>
                                 {b.logo && (
                                   <img
@@ -1572,6 +1547,7 @@ export default function ProposalPage() {
                               onChange={(e) => setNewBrand(e.target.value)}
                             />
                             <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
+                              {/* Hidden File Input */}
                               <input
                                 accept="image/*"
                                 id="upload-battery-logo"
@@ -1579,19 +1555,28 @@ export default function ProposalPage() {
                                 style={{ display: "none" }}
                                 onChange={handleBatteryLogoUpload}
                               />
+
+                              {/* Label wraps the Button */}
                               <label htmlFor="upload-battery-logo">
-                                <Button variant="contained" type="button" startIcon={<UploadIcon />}>
+                                <Button
+                                  variant="contained"
+                                  component="span"
+                                  startIcon={<UploadIcon />}
+                                >
                                   Upload Logo
                                 </Button>
                               </label>
-                              {newLogo && (
+
+                              {/* Preview Avatar */}
+                              {newBatteryLogo && (
                                 <Avatar
-                                  src={newLogo}
+                                  src={newBatteryLogo}
                                   alt="preview"
                                   sx={{ width: 50, height: 50, border: "2px solid #1976d2" }}
                                 />
                               )}
                             </Stack>
+
                           </DialogContent>
                           <DialogActions>
                             <Button type="button" onClick={() => setOpenDialog(false)}>Cancel</Button>
@@ -1751,9 +1736,9 @@ export default function ProposalPage() {
                           <MenuItem disabled>Loading...</MenuItem>
                         ) : (
                           cableBrands.map((b) => (
-                            <MenuItem 
-                            sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-                            key={b._id} value={b.name}>
+                            <MenuItem
+                              sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                              key={b._id} value={b.name}>
                               <div style={{ display: "flex", alignItems: "center" }}>
                                 {b.logo && (
                                   <img
@@ -1814,6 +1799,7 @@ export default function ProposalPage() {
                             onChange={(e) => setNewCableBrand(e.target.value)}
                           />
                           <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 2 }}>
+                            {/* Hidden File Input */}
                             <input
                               accept="image/*"
                               id="upload-cable-logo"
@@ -1821,15 +1807,19 @@ export default function ProposalPage() {
                               style={{ display: "none" }}
                               onChange={handleCableLogoUpload}
                             />
+
+                            {/* Label wraps the Button */}
                             <label htmlFor="upload-cable-logo">
                               <Button
                                 variant="contained"
-                                type="button"
+                                component="span"
                                 startIcon={<UploadIcon />}
                               >
                                 Upload Logo
                               </Button>
                             </label>
+
+                            {/* Preview Avatar */}
                             {newCableLogo && (
                               <Avatar
                                 src={newCableLogo}
@@ -1838,6 +1828,7 @@ export default function ProposalPage() {
                               />
                             )}
                           </Stack>
+
                         </DialogContent>
                         <DialogActions>
                           <Button type="button" onClick={() => setOpenCableDialog(false)}>Cancel</Button>
