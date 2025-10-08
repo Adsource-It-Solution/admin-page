@@ -502,17 +502,25 @@ export default function ProposalPage() {
     setProposal((prev) => ({ ...prev, subtotal, gstAmount, total }));
   }, [proposal.rows, proposal.otherCharge, proposal.gst]);
 
-  const toWords = new ToWords({ localeCode: 'en-IN' });
+  
+  const toWords = new ToWords({
+    localeCode: 'en-IN',
+    converterOptions: {
+      currency: true,
+      ignoreDecimal: false,
+      ignoreZeroCurrency: false,
+      doNotAddOnly: true,
+    },
+  });
 
-
-  // Convert number to words
   const numberToWords = (num: number) => {
-    return (
-      toWords
-        .convert(num)
-        .replace(/\b[a-z]/g, (char) => char.toUpperCase()) + " Rupees"
-    );
+    // Convert number to currency words
+    const words = toWords.convert(num, { currency: true });
+    return words.charAt(0).toUpperCase() + words.slice(1);
   };
+
+  // Example:
+  console.log(numberToWords(102.5));
 
   // Row actions
   const handleRowChange = <K extends keyof RowType>(

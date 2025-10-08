@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     page: { padding: 30, fontFamily: "Work Sans", fontSize: 12 },
     header: { fontFamily: 'Work Sans', fontSize: 48, fontWeight: "bold", textAlign: "center", marginBottom: 20 },
     subHeader: { fontFamily: 'Roboto', fontSize: 32, fontWeight: "bold", marginBottom: 10 },
-    subHeader2: { fontFamily: 'Roboto', fontSize: 32, fontWeight: "bold", marginBottom: 10,  color: "#1e40af" },
+    subHeader2: { fontFamily: 'Roboto', fontSize: 32, fontWeight: "bold", marginBottom: 10, color: "#1e40af" },
     text: { marginBottom: 5 },
     listItem: { fontFamily: 'Roboto', marginLeft: 15, marginBottom: 5, fontSize: 14 },
     logo: { width: 100, height: 70 },
@@ -86,9 +86,9 @@ const styles = StyleSheet.create({
     tableColprice: { flex: 1, fontSize: 12, paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
     tableColquantity: { flex: 1, fontSize: 12, paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
     tableColtotal: { flex: 1, fontSize: 12, paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
-    totalRow: { flexDirection: "row", backgroundColor: "#003366", paddingVertical: 4 },
+    totalRow: { flexDirection: "row", backgroundColor: "#003366", paddingVertical: 4, justifyContent: "space-between"  },
     totalText: { flex: 1, fontSize: 12, fontWeight: "bold", color: "#fff", paddingHorizontal: 2 },
-    amountWords: { fontSize: 12, fontWeight: "bold", color: "#fff", padding: 2 },
+    amountWords: { fontSize: 12, fontWeight: "bold", color: "#fff", padding: 2, marginRight: 2 },
 });
 
 interface SolarProposalPDFProps { proposal: Proposal; }
@@ -222,11 +222,27 @@ const LineChart10Years: React.FC<BarChart10YearsProps> = ({
 };
 
 const numberToWords = (num: number): string => {
-    if (!num) return "Zero Rupees";
-    const words = toWords
-        .convert(num)
+    if (!num) return "Zero Rupees Only";
+
+    const [rupees, paise] = num.toString().split(".");
+
+    let rupeesInWords = toWords
+        .convert(Number(rupees))
         .replace(/\b[a-z]/g, (char) => char.toUpperCase());
-    return words + " Rupees Only";
+
+    let paiseInWords = "";
+    if (paise && Number(paise) > 0) {
+        // Convert paise part (limit to two digits)
+        const paiseValue = Number(paise.padEnd(2, "0").slice(0, 2));
+        paiseInWords =
+            " And " +
+            toWords
+                .convert(paiseValue)
+                .replace(/\b[a-z]/g, (char) => char.toUpperCase()) +
+            " Paise";
+    }
+
+    return `${rupeesInWords} Rupees${paiseInWords} Only`;
 };
 
 
@@ -257,7 +273,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                             <Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} /><Text>  {proposal.clientAddress}</Text>
                         </Text>) : null}
                     <Text style={{ fontSize: 14, marginBottom: 4 }}>
-                        <Image src={calander}/>  Date: {proposal.date
+                        <Image src={calander} />  Date: {proposal.date
                             ? new Date(proposal.date).toLocaleDateString("en-GB")
                             : "NA"}
                     </Text>
@@ -276,7 +292,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <Text style={{ fontFamily: 'Roboto', fontSize: 28, fontWeight: "bold" }}>
                     WELCOME
                 </Text>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 24, fontWeight: "600", marginTop: 6 , color: "#1e40af"}}>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 24, fontWeight: "600", marginTop: 6, color: "#1e40af" }}>
                     {proposal.clienttitle?.toUpperCase()} {proposal.clientName?.toUpperCase()}
                 </Text>
                 <View style={styles.blueLine} />
@@ -352,8 +368,8 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     <Text style={{ fontFamily: 'Roboto', fontWeight: "600", fontSize: 16, marginBottom: 4 }}>SUNMAYO PRIVATE LIMITED</Text>
                     <View>
                         {/* <Image src={location} style={styles.smallImage} /> */}
-                        <Text style={{ fontFamily: 'Roboto',  fontSize: 16 }}><Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
-                        <Text style={{ fontFamily: 'Roboto',  fontSize: 16 }}>    Gurgaon, Haryana 122001</Text>
+                        <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}><Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
+                        <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>    Gurgaon, Haryana 122001</Text>
                     </View>
 
                     <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
@@ -425,7 +441,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             <View style={styles.section}>
                 <Text style={styles.subHeader}>COMMERCIAL OFFER</Text>
                 <Text style={{ fontSize: 14, marginBottom: 5, fontFamily: "Roboto" }}>
-                    Price Quote & Payment schedule for {proposal.projectsize} Grid Tie Rooftop Solar System:
+                    Price Quote & Payment schedule for {proposal.projectsize} KW Grid Tie Rooftop Solar System:
                 </Text>
 
                 <View style={styles.table}>
@@ -444,18 +460,19 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                             <Text style={styles.tableColprice}>{row.price || ""}</Text>
                             <Text style={styles.tableColquantity}>{row.quantitytable || ""}</Text>
                             <View style={styles.tableColtotal}>
-                                {(row.price && row.quantitytable)
-                                    ? (row.price * row.quantitytable).toLocaleString("en-IN")
-                                    : ""}
+                                <Text>
+                                    {(row.price && row.quantitytable)
+                                        ? (row.price * row.quantitytable).toLocaleString("en-IN")
+                                        : ""}
+                                </Text>
+
                                 {row.note?.trim() ? (
-                                    <Text style={{ fontSize: 8 }}>
-                                        {row.note}
-                                    </Text>
+                                    <Text style={{ fontSize: 8 }}>{row.note}</Text>
                                 ) : null}
                             </View>
-
                         </View>
                     ))}
+
 
                     {/* Subtotal */}
                     <View style={styles.tableRow}>
@@ -506,19 +523,33 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                         <Text style={styles.totalText}></Text>
                         <Text style={styles.totalText}>{proposal.total}</Text>
                     </View>
-                </View>
 
-                {/* Amount in Words */}
-                <View
-                    style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        padding: 5,
-                        backgroundColor: "#003366",
-                    }}
-                >
-                    <Text style={styles.amountWords}>Amount in Words:</Text>
-                    <Text style={styles.amountWords}>{numberToWords(proposal.total || 0)}</Text>
+                    {/* Amount in Words */}
+                    <View
+                        style={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                            alignItems: "flex-start",
+                            padding: 5,
+                            backgroundColor: "#003366",
+                            flexWrap: "wrap", 
+                        }}
+                    >
+                        <Text style={[styles.amountWords, { flexShrink: 0 }]}>Amount in Words:</Text>
+                        <Text
+                            style={[
+                                styles.amountWords,
+                                {
+                                    flex: 1,
+                                    textAlign: "right",
+                                    flexWrap: "wrap", 
+                                    maxWidth: "70%",
+                                },
+                            ]}
+                        >
+                            {numberToWords(proposal.total || 0)}
+                        </Text>
+                    </View>
                 </View>
 
                 {/* Payment Schedule */}
@@ -579,7 +610,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                         Panel type: {proposal.paneltype}
                     </Text>
                 </View>
-                <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 80 }} />
+                {/* <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 80 }} /> */}
                 <View>
                     <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Panel Brand: {proposal.panelBrands}</Text>
                 </View>
@@ -592,13 +623,13 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
 
                 <View style={{ marginTop: 10 }}>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>Inverter: {proposal.InvertorSize}</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>Phase: {proposal.invertorPhase}</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>Phase Qty: {proposal.invertorquantitiy}</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Inverter: {proposal.InvertorSize}</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Phase: {proposal.invertorPhase}</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Phase Qty: {proposal.invertorquantitiy}</Text>
                 </View>
-                <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} />
+                {/* <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} /> */}
                 <View>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>Invertor Brand: {proposal.invertorBrands}</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Invertor Brand: {proposal.invertorBrands}</Text>
                 </View>
             </View>
 
@@ -610,26 +641,26 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <View style={{ flexDirection: "row" }}>
                     <View>
                         <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 18, fontWeight: "bold" }}>Cable</Text>
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>Cable brand: {proposal.cableBrands}</Text>
+                        <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Cable brand: {proposal.cableBrands}</Text>
                         <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 18, fontWeight: "bold" }}>Battery</Text>
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>
+                        <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>
                             {proposal.batteryBrands ? proposal.batteryBrands : 'NA'}
                         </Text>
 
                     </View>
-                    <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} />
+                    {/* <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} /> */}
                 </View>
 
                 {/* Warranty */}
                 <View>
                     <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 18, fontWeight: "bold" }}>Warranty</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>Panel Performance: {proposal.performancewarranty} Year(s)</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>Panel Product Wrranty: {proposal.warranty} Year(s)</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>Inverter: {proposal.Invertorwarranty} Year(s)</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>Balance of System: {proposal.systemwarranty} Year(s)</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Panel Performance: {proposal.performancewarranty} Year(s)</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Panel Product Wrranty: {proposal.warranty} Year(s)</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Inverter: {proposal.Invertorwarranty} Year(s)</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Balance of System: {proposal.systemwarranty} Year(s)</Text>
                 </View>
             </View>
-            <Image src={Bill}/>
+            <Image src={Bill} />
         </Page>
 
         <Page size="A4" style={styles.page}>
@@ -642,7 +673,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <Text style={{ fontFamily: 'Roboto', fontSize: 14, }}>{proposal.balanceOfSystem}</Text>
             </View>
             <View style={{ marginBottom: 2 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 16,fontWeight: "bold", color: "#2563eb" }}>Coustomer Scope:</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "bold", color: "#2563eb" }}>Coustomer Scope:</Text>
                 <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>{proposal.customerScope}</Text>
             </View>
 

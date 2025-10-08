@@ -177,7 +177,7 @@ export default function Welcome() {
               type="submit"
               variant="contained"
               fullWidth
-              disabled={loading || !backendReady} // DISABLED until backend is ready
+              disabled={loading || !backendReady}
               sx={{
                 backgroundColor: "primary.main",
                 fontSize: "1.1rem",
