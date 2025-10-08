@@ -27,7 +27,9 @@ import {
   TableBody,
   Menu,
   Divider,
-  CircularProgress
+  CircularProgress,
+  Checkbox,
+  ListItemText
 } from "@mui/material";
 import {
   ResponsiveContainer,
@@ -50,6 +52,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import UploadIcon from "@mui/icons-material/Upload";
 import ClearIcon from '@mui/icons-material/Clear';
+import CloseIcon from "@mui/icons-material/Close";
 import { SolarProposalPDF } from "../components/ProposalPdf";
 import { pdf } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
@@ -153,6 +156,9 @@ export type Proposal = {
   tableImage?: string;
   graphimage?: string;
 
+  deleted?: boolean;
+  deletedAt?: string;
+
   // [key: string]: string | string[] | number | RowType[] | undefined;
 };
 
@@ -160,7 +166,7 @@ export type Proposal = {
 type ClientPrefix = "Mr." | "Mrs." | "Ms.";
 type CustomerType = "Industrial" | "Commercial" | "Government" | "Residential" | "others";
 type PanelType = "Mono" | "Mono-Perc" | "Poly" | "BIVP" | "Mono-Perc Half Cut" | "Mono BiFacial" | "TopCon MonoFacial" | "TopCon BiFacial";
-type InvertorSize = "2kw-1ph" | "3kw-1ph" | "5kw-1ph" | "5KW- 3P" | "6KW- 3P" | "8KW- 3P" | "10KW- 3P" | "12KW- 3P" | "15KW- 3P" | "20KW- 3P" | "25KW- 3P" | "30KW- 3P" | "50KW- 3P" | "100KW- 3P";
+type InvertorSize = "2kw" | "3kw" | "5kw-" | "5KW" | "6KW" | "8KW" | "10KW" | "12KW" | "15KW" | "20KW" | "25KW" | "30KW" | "50KW" | "100KW";
 type InvertorPhase = "Single Phase" | "Three Phase";
 type Invertortype = "String Invertor" | "Micro Invertor" | "Off Grid Inverter" | "Hybrid Inverter";
 type ProposalStructure = "Elevated" | "Standard" | "Metal Shed";
@@ -320,6 +326,8 @@ export default function ProposalPage() {
   // State for editing proposal and employee details
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
   // Customer and proposal-related states
   // const [customerType, setCustomerType] = useState<CustomerType>();
   const [openPanel, setOpenPanel] = useState(false);
@@ -360,6 +368,34 @@ export default function ProposalPage() {
   const [cableBrands, setCableBrands] = useState<any[]>([]);
   const [newCableBrand, setNewCableBrand] = useState("");
   const [newCableLogo, setNewCableLogo] = useState<string | null>(null);
+
+  const [menuOpenpanel, setMenuOpenpanel] = useState(false);
+
+  const [open, setOpen] = useState(false);
+
+  const handleSelect = (value: string) => {
+    // Add new selection if not already in the array
+    setProposal((prev: any) => ({
+      ...prev,
+      invertorBrands: prev.invertorBrands
+        ? [...prev.invertorBrands, value]
+        : [value],
+    }));
+    setOpen(false); // close dropdown after selection
+  };
+
+  const handleSelectChange = (value: string) => {
+    // Add value if not present, otherwise remove it
+    setProposal((prev) => {
+      const current = prev.panelBrands || [];
+      const exists = current.includes(value);
+      const updated = exists
+        ? current.filter((b) => b !== value)
+        : [...current, value];
+      return { ...prev, panelBrands: updated };
+    });
+    setMenuOpenpanel(false);
+  };
 
 
   useEffect(() => {
@@ -502,7 +538,7 @@ export default function ProposalPage() {
     setProposal((prev) => ({ ...prev, subtotal, gstAmount, total }));
   }, [proposal.rows, proposal.otherCharge, proposal.gst]);
 
-  
+
   const toWords = new ToWords({
     localeCode: 'en-IN',
     converterOptions: {
@@ -651,6 +687,22 @@ export default function ProposalPage() {
     } finally {
       setLoadingPdf(false);
     }
+  };
+
+  const handlePreviewPdf = async () => {
+    try {
+      setLoadingPdf(true);
+      const blob = await pdf(<SolarProposalPDF proposal={proposal} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      setPreviewUrl(url);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingPdf(false);
+    }
+  };
+  const handleClosePreview = () => {
+    setPreviewUrl(null);
   };
 
 
@@ -963,7 +1015,7 @@ export default function ProposalPage() {
                 >
                   <div className="flex text-right justify-between">
                     <span className="font-semibold text-lg">
-                      🔆 Panel Details
+                      🔆 Soalr Panel Details
                     </span>
                     <span className="bg-blue-600 p-2 rounded-full">
                       {openPanel ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />}
@@ -982,21 +1034,23 @@ export default function ProposalPage() {
                     }}
                   >
                     <Typography variant="h6" gutterBottom>
-                      🔆 Panel Details
+                      🔆 Solar Panel Details
                     </Typography>
 
                     <Stack spacing={4}>
                       <TextField
                         select
                         label="Panel Brand"
-                        value={proposal.panelBrands?.[0] || ""}
-                        onChange={(e) =>
-                          setProposal((prev) => ({
-                            ...prev,
-                            panelBrands: [e.target.value],
-                          }))
-                        }
+                        value={proposal.panelBrands || []}
+                        onClick={() => setMenuOpenpanel((o) => !o)}
                         fullWidth
+                        SelectProps={{
+                          multiple: true,
+                          open: menuOpenpanel,
+                          onClose: () => setMenuOpenpanel(false),
+                          onOpen: () => setMenuOpenpanel(true),
+                          renderValue: (selected: any) => selected.join(", "), // display selected items only
+                        }}
                       >
                         {panelBrands.length === 0 ? (
                           <MenuItem disabled>Loading...</MenuItem>
@@ -1005,9 +1059,21 @@ export default function ProposalPage() {
                             <MenuItem
                               key={b._id}
                               value={b.name}
-                              sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectChange(b.name);
+                              }}
+                              sx={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                              }}
                             >
                               <div style={{ display: "flex", alignItems: "center" }}>
+                                <Checkbox
+                                  checked={proposal.panelBrands?.includes(b.name)}
+                                  size="small"
+                                />
                                 {b.logo && (
                                   <img
                                     src={b.logo}
@@ -1015,29 +1081,42 @@ export default function ProposalPage() {
                                     style={{ width: 20, height: 20, marginRight: 8 }}
                                   />
                                 )}
-                                {b.name}
+                                <ListItemText primary={b.name} />
                               </div>
 
-                              <IconButton
-                                size="small"
-                                edge="end"
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  if (window.confirm(`Delete brand "${b.name}"?`)) {
-                                    await axios.delete(`${import.meta.env.VITE_API_URL}/brands/${b._id}`);
-                                    setPanelBrands((prev) => prev.filter((item) => item._id !== b._id));
-                                    if (proposal.panelBrands?.[0] === b.name) {
-                                      setProposal((prev) => ({ ...prev, panelBrands: [""] }));
+                              {/* Delete icon only visible when dropdown is open */}
+                              {menuOpenpanel && (
+                                <IconButton
+                                  size="small"
+                                  edge="end"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    if (window.confirm(`Delete brand "${b.name}"?`)) {
+                                      await axios.delete(
+                                        `${import.meta.env.VITE_API_URL}/brands/${b._id}`
+                                      );
+                                      setPanelBrands((prev) =>
+                                        prev.filter((item) => item._id !== b._id)
+                                      );
+                                      if (proposal.panelBrands?.includes(b.name)) {
+                                        setProposal((prev) => ({
+                                          ...prev,
+                                          panelBrands: prev.panelBrands.filter(
+                                            (val) => val !== b.name
+                                          ),
+                                        }));
+                                      }
                                     }
-                                  }
-                                }}
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
+                                  }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              )}
                             </MenuItem>
                           ))
                         )}
                       </TextField>
+
 
 
 
@@ -1196,7 +1275,7 @@ export default function ProposalPage() {
                 >
                   <div className="flex text-right justify-between">
                     <span className="font-semibold text-lg">
-                      Invertor Details
+                      Inverter Details
                     </span>
                     <span className="bg-blue-600 p-2 rounded-full">
                       {openInvertor ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />}
@@ -1216,56 +1295,60 @@ export default function ProposalPage() {
                   >
                     <Stack spacing={4}>
                       {/* ✅ Inverter Brands (multiple select) */}
-                      <TextField
-                        select
-                        label="Invertor Brand"
-                        value={proposal.invertorBrands?.[0] || ""}
-                        onChange={(e) =>
-                          setProposal((prev: any) => ({
-                            ...prev,
-                            invertorBrands: [e.target.value],
-                          }))
-                        }
-                        fullWidth
-                      >
-                        {inverterBrands.length === 0 ? (
-                          <MenuItem disabled>Loading...</MenuItem>
-                        ) : (
-                          inverterBrands.map((b) => (
-                            <MenuItem
-                              sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-                              key={b._id} value={b.name}>
-                              <div style={{ display: "flex", alignItems: "center" }}>
-                                {b.logo && (
-                                  <img
-                                    src={b.logo}
-                                    alt={b.name}
-                                    style={{ width: 20, height: 20, marginRight: 8 }}
-                                  />
-                                )}
-                                {b.name}
-                              </div>
-
-                              <IconButton
-                                size="small"
-                                edge="end"
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  if (window.confirm(`Delete brand "${b.name}"?`)) {
-                                    await axios.delete(`${import.meta.env.VITE_API_URL}/brands/${b._id}`);
-                                    setInverterBrands((prev) => prev.filter((item) => item._id !== b._id));
-                                    if (proposal.invertorBrands?.[0] === b.name) {
-                                      setProposal((prev) => ({ ...prev, invertorBrands: [""] }));
-                                    }
-                                  }
+                      <FormControl fullWidth>
+                        <InputLabel>Inverter Brand</InputLabel>
+                        <Select
+                          value=""
+                          open={open}
+                          onClose={() => setOpen(false)}
+                          onOpen={() => setOpen(true)}
+                          onChange={(e) => handleSelect(e.target.value)}
+                          renderValue={() =>
+                            proposal.invertorBrands?.length
+                              ? proposal.invertorBrands.join(", ")
+                              : ""
+                          }
+                        >
+                          {inverterBrands.length === 0 ? (
+                            <MenuItem disabled>Loading...</MenuItem>
+                          ) : (
+                            inverterBrands.map((b: any) => (
+                              <MenuItem
+                                key={b._id}
+                                value={b.name}
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  alignItems: "center",
                                 }}
                               >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </MenuItem>
-                          ))
-                        )}
-                      </TextField>
+                                <div style={{ display: "flex", alignItems: "center" }}>
+                                  {b.logo && (
+                                    <img
+                                      src={b.logo}
+                                      alt={b.name}
+                                      style={{ width: 20, height: 20, marginRight: 8 }}
+                                    />
+                                  )}
+                                  {b.name}
+                                </div>
+
+                                <IconButton
+                                  size="small"
+                                  edge="end"
+                                  onClick={(e) => {
+                                    e.stopPropagation(); // prevent selection
+                                    handleDeleteBrand(b.name);
+                                  }}
+                                >
+                                  <DeleteIcon fontSize="small" />
+                                </IconButton>
+                              </MenuItem>
+                            ))
+                          )}
+                        </Select>
+                      </FormControl>
+
 
 
                       <Button
@@ -1378,7 +1461,7 @@ export default function ProposalPage() {
 
                       {/* ✅ Inverter Type */}
                       <FormControl fullWidth variant="filled">
-                        <InputLabel id="invertor-type">Invertor Type</InputLabel>
+                        <InputLabel id="invertor-type">Inverter Type</InputLabel>
                         <Select
                           labelId="invertor-type"
                           value={proposal.invertortype || ""}
@@ -1389,13 +1472,13 @@ export default function ProposalPage() {
                           {/* "Off Grid Inverter" | "Hybrid Inverter" */}
                           <MenuItem value="Off Grid Inverter">Off Grid Inverter</MenuItem>
                           <MenuItem value="Hybrid Inverter">Hybrid Inverter</MenuItem>
-                          <MenuItem value="String Invertor">String Invertor</MenuItem>
-                          <MenuItem value="Micro Invertor">Micro Invertor</MenuItem>
+                          <MenuItem value="String Invertor">String Inverter</MenuItem>
+                          <MenuItem value="Micro Invertor">Micro Inverter</MenuItem>
                         </Select>
                       </FormControl>
 
                       <TextField
-                        label="Invertor Warranty in years"
+                        label="Inverter Warranty in years"
                         placeholder="e.g: 12"
                         variant="filled"
                         value={proposal.Invertorwarranty || ""}
@@ -1405,7 +1488,7 @@ export default function ProposalPage() {
                         fullWidth
                       />
                       <FormControl fullWidth variant="filled">
-                        <InputLabel id="invertor-size">Invertor Size</InputLabel>
+                        <InputLabel id="invertor-size">Inverter Size</InputLabel>
                         <Select
                           labelId="invertor-size"
                           value={proposal.InvertorSize}
@@ -1413,27 +1496,26 @@ export default function ProposalPage() {
                             setProposal({ ...proposal, InvertorSize: e.target.value as InvertorSize })
                           }
                         >
-                          {/* "2kw-1ph" |"3kw-1ph" | "5kw-1ph"  */}
-                          <MenuItem value="2kw-1ph"> 2kw-1ph</MenuItem>
-                          <MenuItem value="3kw-1ph">3kw-1ph</MenuItem>
-                          <MenuItem value="5kw-1ph">5kw-1ph</MenuItem>
-                          <MenuItem value="5KW- 3P">5KW- 3P</MenuItem>
-                          <MenuItem value="6KW- 3P">6KW- 3P</MenuItem>
-                          <MenuItem value="8KW- 3P">8KW- 3P</MenuItem>
-                          <MenuItem value="10KW- 3P">10KW- 3P</MenuItem>
-                          <MenuItem value="12KW- 3P">12KW- 3P</MenuItem>
-                          <MenuItem value="15KW- 3P">15KW- 3P</MenuItem>
-                          <MenuItem value="20KW- 3P">20KW- 3P</MenuItem>
-                          <MenuItem value="25KW- 3P">25KW- 3P</MenuItem>
-                          <MenuItem value="30KW- 3P">30KW- 3P</MenuItem>
-                          <MenuItem value="50KW- 3P">50KW- 3P</MenuItem>
-                          <MenuItem value="100KW- 3P">100KW- 3P</MenuItem>
+                          <MenuItem value="2kw"> 2kw</MenuItem>
+                          <MenuItem value="3kw">3kw</MenuItem>
+                          <MenuItem value="5kw">5kw</MenuItem>
+                          <MenuItem value="5KW">5KW</MenuItem>
+                          <MenuItem value="6KW">6KW</MenuItem>
+                          <MenuItem value="8KW">8KW</MenuItem>
+                          <MenuItem value="10KW">10KW</MenuItem>
+                          <MenuItem value="12KW">12KW</MenuItem>
+                          <MenuItem value="15KW">15KW</MenuItem>
+                          <MenuItem value="20KW">20KW</MenuItem>
+                          <MenuItem value="25KW">25KW</MenuItem>
+                          <MenuItem value="30KW">30KW</MenuItem>
+                          <MenuItem value="50KW">50KW</MenuItem>
+                          <MenuItem value="100KW">100KW</MenuItem>
                         </Select>
                       </FormControl>
 
                       {/* ✅ Inverter Phase */}
                       <FormControl fullWidth variant="filled">
-                        <InputLabel id="invertor-phase">Invertor Phase</InputLabel>
+                        <InputLabel id="invertor-phase">Inverter Phase</InputLabel>
                         <Select
                           labelId="invertor-phase"
                           value={proposal.invertorPhase || ""}
@@ -1446,7 +1528,7 @@ export default function ProposalPage() {
                         </Select>
                       </FormControl>
                       <TextField
-                        label="No. of Invertor"
+                        label="No. of Inverter"
                         placeholder="e.g: 12"
                         variant="filled"
                         value={proposal.invertorquantitiy || ""}
@@ -1463,7 +1545,7 @@ export default function ProposalPage() {
 
               {/* Battery details  */}
               <Stack spacing={2}>
-                {/* Button to toggle invertor section */}
+                {/* Button to toggle battery section */}
                 <button
                   type="button"
                   className="rounded-2xl p-5 bg-blue-200"
@@ -2357,7 +2439,7 @@ export default function ProposalPage() {
                 }}
               />
 
-              <div className="flex justify-center">
+              <div className="flex justify-center gap-2">
                 <Button type="submit" variant="contained" color="primary">
                   {id ? "Update Proposal" : "Add Proposal"}
                 </Button>
@@ -2374,9 +2456,42 @@ export default function ProposalPage() {
                     {loadingPdf ? "Generating PDF..." : "Download PDF"}
                   </Button>
                 )}
-
+                <Button
+                  type="button"
+                  variant="outlined"
+                  color="info"
+                  startIcon={loadingPdf ? <CircularProgress size={20} /> : <PictureAsPdfIcon />}
+                  onClick={handlePreviewPdf}
+                >
+                  {loadingPdf ? "Generating PDF..." : "Preview PDF"}
+                </Button>
 
               </div>
+              {previewUrl && (
+                <div
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70"
+                >
+                  <div className="relative w-11/12 max-w-5xl h-[98vh] bg-white shadow-lg rounded">
+                    {/* Close Button */}
+                    <IconButton
+                      onClick={handleClosePreview}
+                      style={{ position: "absolute", top: 24, right: 12, zIndex: 10 }}
+                      color="error"
+                    >
+                      <CloseIcon />
+                    </IconButton>
+
+                    {/* PDF iframe */}
+                    <iframe
+                      src={previewUrl}
+                      title="Proposal Preview"
+                      width="100%"
+                      height="100%"
+                      style={{ border: "none", borderRadius: 4 }}
+                    />
+                  </div>
+                </div>
+              )}
             </Stack>
           </form>
         </CardContent>

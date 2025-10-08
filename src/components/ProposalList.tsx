@@ -11,55 +11,30 @@ import {
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
 import axios from "axios";
 import { toast } from "react-toastify";
 import { pdf } from "@react-pdf/renderer";
 import { saveAs } from "file-saver";
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Cancel';
 
 import type { Proposal } from "../pages/Proposal";
 import { SolarProposalPDF } from "./ProposalPdf";
 import { useNavigate } from "react-router-dom";
 
 function ProposalList() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingPdf, setLoadingPdf] = useState<string | null>(null);
-
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
 
-  const handleSave = async (id: string | undefined) => {
-    if (!id) return; // prevent crash if id is missing
-  
-    try {
-      await fetch(`/api/proposals/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ heading: newTitle }),
-      });
-  
-      setProposals((prev) =>
-        prev.map((x) => (x._id === id ? { ...x, heading: newTitle } : x))
-      );
-  
-      setEditingId(null);
-      setNewTitle("");
-    } catch (err) {
-      console.error("Error updating proposal", err);
-    }
-  };
-  
-  
-
-  // Fetch proposals from backend
+  // Fetch active proposals
   const fetchProposals = async () => {
     try {
       setLoading(true);
-      const res = await axios.get
-        (`${import.meta.env.VITE_API_URL}/api/proposal/proposals`)
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/proposal/proposals`);
       const sorted = res.data.sort(
         (a: any, b: any) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -73,26 +48,46 @@ function ProposalList() {
     }
   };
 
-  // Fetch on component mount
   useEffect(() => {
     fetchProposals();
   }, []);
 
-  // Delete a proposal
+  // -------------------
+  // Soft delete: move to recycle bin
+  // -------------------
   const handleDelete = async (id?: string) => {
     if (!id) return;
     try {
-      await axios.delete
-        (`${import.meta.env.VITE_API_URL}/api/proposal/${id}`)
-      toast.success("🗑️ Proposal deleted");
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/proposal/${id}`);
+      toast.success("🗑️ Proposal moved to Recycle Bin");
       fetchProposals();
     } catch (err) {
       console.error(err);
-      toast.error("❌ Failed to delete proposal");
+      toast.error("❌ Failed to move proposal to Recycle Bin");
     }
   };
 
+  // -------------------
+  // Save updated heading
+  // -------------------
+  const handleSave = async (id: string | undefined) => {
+    if (!id) return;
+    try {
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/proposal/${id}`, { heading: newTitle });
+      setProposals(prev =>
+        prev.map(x => (x._id === id ? { ...x, heading: newTitle } : x))
+      );
+      setEditingId(null);
+      setNewTitle("");
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Failed to update proposal");
+    }
+  };
+
+  // -------------------
   // Download PDF
+  // -------------------
   const handleDownloadPdf = async (proposal: Proposal) => {
     try {
       setLoadingPdf(proposal._id || null);
@@ -140,11 +135,7 @@ function ProposalList() {
                           autoFocus
                         />
                         <IconButton onClick={() => handleSave(p._id)}>
-                          <Button
-                            color="success"
-                            variant="contained"
-                            disabled={loadingPdf === p._id}
-                          >
+                          <Button color="success" variant="contained">
                             <SaveIcon />
                           </Button>
                         </IconButton>
@@ -154,11 +145,7 @@ function ProposalList() {
                             setNewTitle("");
                           }}
                         >
-                          <Button
-                            color="error"
-                            variant="contained"
-                            disabled={loadingPdf === p._id}
-                          >
+                          <Button color="error" variant="contained">
                             <CancelIcon />
                           </Button>
                         </IconButton>
@@ -174,62 +161,26 @@ function ProposalList() {
                             setNewTitle(p.heading || `Proposal: ${index + 1}`);
                           }}
                         >
-                          <EditIcon color="primary"/>
-
+                          <EditIcon color="primary" />
                         </IconButton>
                       </div>
                     )}
                     <h3 className="font-bold text-lg">{p.clientName}</h3>
-                    <p>
-                      Created at:{" "}
-                      <span className="text-base font-semibold">
-                        {p.date
-                          ? new Date(p.date).toLocaleDateString("en-GB")
-                          : "N/A"}
-                      </span>
-                    </p>
-
-                    <p>
-                      Phone no.:{" "}
-                      <span className="text-base font-semibold">{p.clientPhone}</span>
-                    </p>
-                    <p>
-                      Email:{" "}
-                      <span className="text-base font-semibold">{p.clientEmail}</span>
-                    </p>
-                    <p>
-                      Address:{" "}
-                      <span className="text-base font-semibold">{p.clientAddress}</span>
-                    </p>
+                    <p>Created at: <span className="text-base font-semibold">{p.date ? new Date(p.date).toLocaleDateString("en-GB") : "N/A"}</span></p>
+                    <p>Phone no.: <span className="text-base font-semibold">{p.clientPhone}</span></p>
+                    <p>Email: <span className="text-base font-semibold">{p.clientEmail}</span></p>
+                    <p>Address: <span className="text-base font-semibold">{p.clientAddress}</span></p>
                     <p className="text-lg">✅ Proposal Created!</p>
                   </div>
 
                   <Stack direction="row" spacing={4}>
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      onClick={() => navigate(`/proposal/${p._id}`)}
-                    >
+                    <Button variant="outlined" color="primary" onClick={() => navigate(`/proposal/${p._id}`)}>
                       Edit <EditIcon sx={{ marginLeft: 1 }} />
                     </Button>
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleDownloadPdf(p)}
-                      disabled={loadingPdf === p._id}
-                    >
-                      {loadingPdf === p._id ? (
-                        <CircularProgress size={24} color="inherit" />
-                      ) : (
-                        <PictureAsPdfIcon />
-                      )}
+                    <IconButton color="primary" onClick={() => handleDownloadPdf(p)} disabled={loadingPdf === p._id}>
+                      {loadingPdf === p._id ? <CircularProgress size={24} color="inherit" /> : <PictureAsPdfIcon />}
                     </IconButton>
-
-                    <Button
-                      color="error"
-                      variant="contained"
-                      onClick={() => handleDelete(p._id)}
-                      disabled={loadingPdf === p._id}
-                    >
+                    <Button color="error" variant="contained" onClick={() => handleDelete(p._id)} disabled={loadingPdf === p._id}>
                       <DeleteIcon />
                     </Button>
                   </Stack>

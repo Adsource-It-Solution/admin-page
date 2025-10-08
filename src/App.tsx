@@ -10,6 +10,7 @@ import Client from "./components/Client"
 import Login from "./pages/Login"
 import EmployeePage from "./components/EmployeePage"
 import ForgetPassword from "./components/ForgetPassword"
+import Recycle from "./pages/Recycle"
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/forgetpassword" element= {<ForgetPassword/>}/>
         <Route path="/employeepage" element={<EmployeePage/>}/>
         <Route element={<Dashboard/>}>
+          <Route path="/recycle" element= {<Recycle/>}/>
           <Route path="/service" element={<Service/>}/>
           <Route path="/product" element= {<Product/>}/>
           <Route path="/employee" element= {<Employee/>}/>
@@ -27,8 +29,6 @@ function App() {
           <Route path="/proposal/:id" element = {<Proposal/>}/>
           <Route path="/proposallist" element = {<ProposalList/>}/>
           <Route path="/ourclient" element = {<Client/>}/>
-          
-          {/* <Route path="/proposal/edit/:id" element={<ProposalForm />} /> */}
         </Route>
 
       </Routes>

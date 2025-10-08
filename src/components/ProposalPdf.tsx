@@ -49,17 +49,16 @@ Font.register({
 // PDF Styles
 const styles = StyleSheet.create({
     page: { padding: 30, fontFamily: "Work Sans", fontSize: 12 },
-    header: { fontFamily: 'Work Sans', fontSize: 48, fontWeight: "bold", textAlign: "center", marginBottom: 20 },
-    subHeader: { fontFamily: 'Roboto', fontSize: 32, fontWeight: "bold", marginBottom: 10 },
-    subHeader2: { fontFamily: 'Roboto', fontSize: 32, fontWeight: "bold", marginBottom: 10, color: "#1e40af" },
+    header: { fontFamily: 'Work Sans', fontSize: 32, fontWeight: "bold", textAlign: "center", marginBottom: 20 },
+    subHeader: { fontFamily: 'Roboto', fontSize: 24, fontWeight: "bold", marginBottom: 10 },
+    subHeader2: { fontFamily: 'Roboto', fontSize: 24, fontWeight: "bold", marginBottom: 10, color: "#1e40af" },
     text: { marginBottom: 5 },
-    listItem: { fontFamily: 'Roboto', marginLeft: 15, marginBottom: 5, fontSize: 14 },
+    listItem: { fontFamily: 'Roboto', marginLeft: 15, marginBottom: 5, fontSize: 16 },
     logo: { width: 100, height: 70 },
     logoTop: { width: 120, height: 50, resizeMode: "contain", alignSelf: "flex-end", },
     smallLogo: { width: 60, height: 60, marginVertical: 10 },
     image: { width: "100%", height: "100%", objectFit: "contain", marginVertical: 10 },
     smallImage: { width: 20, height: 20, marginRight: 5 },
-    // tableImage: { width: "100%", height: 200, objectFit: "contain", marginVertical: 10 },
     section: { marginBottom: 20 },
     row: { flexDirection: "row", alignItems: "center", marginBottom: 5 },
     rowBetween: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 },
@@ -70,7 +69,7 @@ const styles = StyleSheet.create({
     text2: { fontSize: 16, marginBottom: 2 },
     specRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
     specCol: { width: "30%" },
-    specTitle: { fontFamily: 'Work Sans', fontWeight: "bold", marginBottom: 4, fontSize: 20 },
+    specTitle: { fontFamily: 'Work Sans', fontWeight: "bold", marginBottom: 4, fontSize: 16 },
     blueLine: { backgroundColor: "#696969", height: 2, marginTop: 5, width: "100%" },
     headerContainer: { alignItems: "center", marginBottom: 20 },
     mainTitle: { fontFamily: 'Work Sans', fontSize: 48, fontWeight: "bold", marginBottom: 10, color: "#f97316" },
@@ -81,14 +80,14 @@ const styles = StyleSheet.create({
     table: { display: "flex", width: "auto", borderStyle: "solid", },
     tableRow: { flexDirection: "row", paddingVertical: 4 },
     tableHeader: { backgroundColor: "#003366" },
-    tableColHeader: { flex: 1, fontSize: 12, fontWeight: "bold", color: "#fff", padding: 2 },
-    tableCol: { flex: 1, fontSize: 12, paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
-    tableColprice: { flex: 1, fontSize: 12, paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
-    tableColquantity: { flex: 1, fontSize: 12, paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
-    tableColtotal: { flex: 1, fontSize: 12, paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
-    totalRow: { flexDirection: "row", backgroundColor: "#003366", paddingVertical: 4, justifyContent: "space-between"  },
-    totalText: { flex: 1, fontSize: 12, fontWeight: "bold", color: "#fff", paddingHorizontal: 2 },
-    amountWords: { fontSize: 12, fontWeight: "bold", color: "#fff", padding: 2, marginRight: 2 },
+    tableColHeader: { flex: 1, fontSize: 16, fontFamily: "Roboto", fontWeight: "bold", color: "#fff", padding: 2 },
+    tableCol: { flex: 1, fontSize: 14,  fontFamily: "Roboto", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
+    tableColprice: { flex: 1, fontSize: 14, fontFamily: "Roboto", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
+    tableColquantity: { flex: 1, fontSize: 14, fontFamily: "Roboto", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
+    tableColtotal: { flex: 1, fontSize: 14,  fontFamily: "Roboto", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
+    totalRow: { flexDirection: "row", backgroundColor: "#003366", paddingVertical: 4, justifyContent: "space-between" },
+    totalText: { flex: 1, fontSize: 14, fontWeight: "bold", color: "#fff", paddingHorizontal: 2 },
+    amountWords: { fontSize: 14, fontWeight: "bold", color: "#fff", padding: 2, marginRight: 2 },
 });
 
 interface SolarProposalPDFProps { proposal: Proposal; }
@@ -290,7 +289,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             {/* Page 2: Welcome */}
             <View style={{ marginBottom: 10 }}>
                 <Text style={{ fontFamily: 'Roboto', fontSize: 28, fontWeight: "bold" }}>
-                    WELCOME
+                    Welcome
                 </Text>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 24, fontWeight: "600", marginTop: 6, color: "#1e40af" }}>
                     {proposal.clienttitle?.toUpperCase()} {proposal.clientName?.toUpperCase()}
@@ -304,7 +303,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
                 <Text
                     style={{
-                        fontFamily: 'Work Sans',
+                        fontFamily: 'Roboto',
                         fontSize: 12,
                         marginTop: 10,
                         lineHeight: 1.5,
@@ -317,7 +316,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 </Text>
                 <Text
                     style={{
-                        fontFamily: 'Work Sans',
+                        fontFamily: 'Roboto',
                         fontSize: 12,
                         marginTop: 10,
                         lineHeight: 1.5,
@@ -331,7 +330,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 </Text>
                 <Text
                     style={{
-                        fontFamily: 'Work Sans',
+                        fontFamily: 'Roboto',
                         fontSize: 12,
                         marginTop: 10,
                         lineHeight: 1.5,
@@ -345,7 +344,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 </Text>
                 <Text
                     style={{
-                        fontFamily: 'Work Sans',
+                        fontFamily: 'Roboto',
                         fontSize: 12,
                         marginTop: 10,
                         lineHeight: 1.5,
@@ -415,13 +414,13 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             <View style={{ marginTop: 20, flexDirection: "row", justifyContent: "space-between" }}>
                 <View style={{ flexDirection: "column", alignItems: "center" }}>
                     <Image src={solarpowerplant} style={styles.logo} />
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16, marginTop: 4, fontWeight: "semibold" }}>Yearly consumption:</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16, marginTop: 4, textAlign: "left" }}>{proposal.consumption} kWh</Text>
+                    <Text style={{ fontFamily: 'Work Sans', fontSize: 16, marginTop: 4, fontWeight: "semibold" }}>Yearly consumption:</Text>
+                    <Text style={{ fontFamily: 'Work Sans', fontSize: 16, marginTop: 4, textAlign: "left" }}>{proposal.consumption} kWh</Text>
                 </View>
                 <View style={{ flexDirection: "column", alignItems: "center" }}>
                     <Image src={solargeneration} style={styles.logo} />
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16, marginTop: 4, fontWeight: "semibold" }}>Yearly solar generation:</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16, marginTop: 4, textAlign: "left" }}>{proposal.generation} kWh</Text>
+                    <Text style={{ fontFamily: 'Work Sans', fontSize: 16, marginTop: 4, fontWeight: "semibold" }}>Yearly solar generation:</Text>
+                    <Text style={{ fontFamily: 'Work Sans', fontSize: 16, marginTop: 4, textAlign: "left" }}>{proposal.generation} kWh</Text>
                 </View>
             </View>
 
@@ -439,8 +438,8 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
         <Page size="A4" style={styles.page}>
             {/* Commercial Offer & Payment */}
             <View style={styles.section}>
-                <Text style={styles.subHeader}>COMMERCIAL OFFER</Text>
-                <Text style={{ fontSize: 14, marginBottom: 5, fontFamily: "Roboto" }}>
+                <Text style={styles.subHeader}>Commercial Offer</Text>
+                <Text style={{ fontSize: 16, marginBottom: 5, fontFamily: "Roboto" }}>
                     Price Quote & Payment schedule for {proposal.projectsize} KW Grid Tie Rooftop Solar System:
                 </Text>
 
@@ -465,7 +464,6 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                                         ? (row.price * row.quantitytable).toLocaleString("en-IN")
                                         : ""}
                                 </Text>
-
                                 {row.note?.trim() ? (
                                     <Text style={{ fontSize: 8 }}>{row.note}</Text>
                                 ) : null}
@@ -532,7 +530,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                             alignItems: "flex-start",
                             padding: 5,
                             backgroundColor: "#003366",
-                            flexWrap: "wrap", 
+                            flexWrap: "wrap",
                         }}
                     >
                         <Text style={[styles.amountWords, { flexShrink: 0 }]}>Amount in Words:</Text>
@@ -542,7 +540,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                                 {
                                     flex: 1,
                                     textAlign: "right",
-                                    flexWrap: "wrap", 
+                                    flexWrap: "wrap",
                                     maxWidth: "70%",
                                 },
                             ]}
@@ -554,7 +552,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
                 {/* Payment Schedule */}
                 <View style={{ marginTop: 10 }}>
-                    <Text style={{ fontFamily: "Work Sans", fontWeight: "bold", marginBottom: 5, fontSize: 20 }}>
+                    <Text style={{ fontFamily: "Work Sans", fontWeight: "bold", marginBottom: 5, fontSize: 16 }}>
                         Payment Schedule
                     </Text>
                     <Text style={styles.listItem}>• As a percentage of the Net Value of System.</Text>
@@ -569,26 +567,26 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     <Text style={{ fontFamily: "Work Sans", fontWeight: "bold", marginBottom: 8, fontSize: 20 }}>
                         Payment Details
                     </Text>
-                    <Text style={{ fontFamily: "Work Sans", fontSize: 14 }}>
+                    <Text style={{ fontFamily: "Roboto", fontSize: 16 }}>
                         Payment can be paid via Cheque / scanner code / Netbanking
                     </Text>
-                    <Text style={{ fontFamily: "Work Sans", fontSize: 14, fontWeight: "bold" }}>
+                    <Text style={{ fontFamily: "Work Sans", fontSize: 16, fontWeight: "bold" }}>
                         {proposal.holder}
                     </Text>
-                    <Text style={{ fontFamily: "Work Sans", fontSize: 14 }}>
+                    <Text style={{ fontFamily: "Work Sans", fontSize: 16 }}>
                         <Text style={{ fontWeight: "bold" }}>Bank:</Text> {proposal.bankname}
                     </Text>
-                    <Text style={{ fontFamily: "Work Sans", fontSize: 14 }}>
+                    <Text style={{ fontFamily: "Work Sans", fontSize: 16 }}>
                         <Text style={{ fontWeight: "bold" }}>A/C:</Text>— {proposal.accountnumber}
                     </Text>
-                    <Text style={{ fontFamily: "Work Sans", fontSize: 14 }}>
+                    <Text style={{ fontFamily: "Work Sans", fontSize: 16 }}>
                         <Text style={{ fontWeight: "bold" }}>IFSC:</Text> {proposal.ifsc}
                     </Text>
                 </View>
 
                 {/* Terms */}
                 <View style={{ marginTop: 15 }}>
-                    <Text style={{ fontFamily: "Roboto", fontSize: 14 }}>
+                    <Text style={{ fontFamily: "Roboto", fontSize: 16 }}>
                         Terms: Prices are firm for 10 days from offer date. Delivery 2–3 weeks. Force majeure applies.
                     </Text>
                 </View>
@@ -598,38 +596,38 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
         {/* PAGE 5: BILL OF MATERIALS */}
         <Page size="A4" style={styles.page}>
             {/* Bill of Materials Header */}
-            <Text style={styles.subHeader}>BILL OF MATERIAL</Text>
+            <Text style={styles.subHeader}>Bill of Material</Text>
 
             {/* Watt, Panels, Type */}
-            <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 18, fontWeight: "bold" }}>Panel</Text>
+            <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Panel</Text>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
                 <View style={{ marginTop: 10 }}>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Watt Peak: {proposal.Wattpeak} Wp</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Panel Qty: {proposal.quantity} Nos</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Watt Peak: {proposal.Wattpeak} Wp</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Panel Qty: {proposal.quantity} Nos</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>
                         Panel type: {proposal.paneltype}
                     </Text>
                 </View>
                 {/* <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 80 }} /> */}
                 <View>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Panel Brand: {proposal.panelBrands}</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Panel Brand: {proposal.panelBrands}</Text>
                 </View>
             </View>
 
             <View style={styles.blueLine} />
 
             {/* Inverter & Phase */}
-            <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 18, fontWeight: "bold" }}>Invertor</Text>
+            <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Inverter</Text>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
 
                 <View style={{ marginTop: 10 }}>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Inverter: {proposal.InvertorSize}</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Phase: {proposal.invertorPhase}</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Phase Qty: {proposal.invertorquantitiy}</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Inverter: {proposal.InvertorSize}</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Phase: {proposal.invertorPhase}</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Phase Qty: {proposal.invertorquantitiy}</Text>
                 </View>
                 {/* <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} /> */}
                 <View>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Invertor Brand: {proposal.invertorBrands}</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Inverter Brand: {proposal.invertorBrands}</Text>
                 </View>
             </View>
 
@@ -640,12 +638,21 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 {/* Cable */}
                 <View style={{ flexDirection: "row" }}>
                     <View>
-                        <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 18, fontWeight: "bold" }}>Cable</Text>
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Cable brand: {proposal.cableBrands}</Text>
-                        <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 18, fontWeight: "bold" }}>Battery</Text>
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>
+                        <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Cable</Text>
+                        <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Cable brand: {proposal.cableBrands}</Text>
+                        <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Battery</Text>
+                        <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>
                             {proposal.batteryBrands ? proposal.batteryBrands : 'NA'}
                         </Text>
+                        <View>
+                            <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Battery Type: {proposal.batterytype}</Text>
+
+                            {typeof proposal.batterytype === "string" &&
+                                proposal.batterytype.toLowerCase() === "lead-acid" &&
+                                proposal.leadAcidSubtype && (
+                                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Battery Subtype: {proposal.leadAcidSubtype}</Text>
+                                )}
+                        </View>
 
                     </View>
                     {/* <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} /> */}
@@ -653,11 +660,11 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
                 {/* Warranty */}
                 <View>
-                    <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 18, fontWeight: "bold" }}>Warranty</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Panel Performance: {proposal.performancewarranty} Year(s)</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Panel Product Wrranty: {proposal.warranty} Year(s)</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Inverter: {proposal.Invertorwarranty} Year(s)</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 20 }}>Balance of System: {proposal.systemwarranty} Year(s)</Text>
+                    <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Warranty</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Panel Performance: {proposal.performancewarranty} Year(s)</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Panel Product Wrranty: {proposal.warranty} Year(s)</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Inverter: {proposal.Invertorwarranty} Year(s)</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Balance of System: {proposal.systemwarranty} Year(s)</Text>
                 </View>
             </View>
             <Image src={Bill} />
@@ -665,7 +672,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
         <Page size="A4" style={styles.page}>
             <View style={{ marginBottom: 10 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, fontWeight: "bold", marginBottom: 4 }}>TERMS & CONDITION</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, fontWeight: "bold", marginBottom: 4 }}>Terms & Condition</Text>
                 <Text style={{ fontFamily: 'Roboto', fontSize: 14, }}>{proposal.termandcondition}</Text>
             </View>
             <View style={{ marginBottom: 2 }}>

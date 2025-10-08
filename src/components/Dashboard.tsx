@@ -8,6 +8,7 @@ import ChecklistIcon from '@mui/icons-material/Checklist';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import AddBusinessIcon from '@mui/icons-material/AddBusiness';
+import RecyclingIcon from '@mui/icons-material/Recycling';
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -31,6 +32,11 @@ const routes = [
     path: '/ourclient',
     name: 'Our CLient',
     icon: <ListAltIcon/>
+  },
+  {
+    path: '/recycle',
+    name: 'Recycle Bin',
+    icon: <RecyclingIcon/>
   }
 ]
 
