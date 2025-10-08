@@ -22,6 +22,7 @@ import worldwide from "../assets/worldwide.png"
 import location from "../assets/icons8-location-94.png"
 import Bill from "../assets/Billimage.png"
 import calander from "../assets/calendar.png"
+import banner from "../assets/banner.png"
 import { ToWords } from 'to-words';
 
 const toWords = new ToWords({ localeCode: "en-IN" });
@@ -304,7 +305,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <Text
                     style={{
                         fontFamily: 'Roboto',
-                        fontSize: 12,
+                        fontSize: 14,
                         marginTop: 10,
                         lineHeight: 1.5,
                         textAlign: "justify",
@@ -317,7 +318,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <Text
                     style={{
                         fontFamily: 'Roboto',
-                        fontSize: 12,
+                        fontSize: 14,
                         marginTop: 10,
                         lineHeight: 1.5,
                         textAlign: "justify",
@@ -331,21 +332,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <Text
                     style={{
                         fontFamily: 'Roboto',
-                        fontSize: 12,
-                        marginTop: 10,
-                        lineHeight: 1.5,
-                        textAlign: "justify",
-                    }}
-                >
-                    Quality is at the heart of everything we do. That’s why we source only world-class solar modules,
-                    inverters, and mounting structures that undergo rigorous testing. Our installation crews, certified and experienced,
-                    ensure that your project is executed safely, efficiently, and with an eye for detail. We pride ourselves on craftsmanship
-                    that goes beyond functionality—it’s about delivering a solar solution that looks as good as it performs.
-                </Text>
-                <Text
-                    style={{
-                        fontFamily: 'Roboto',
-                        fontSize: 12,
+                        fontSize: 14,
                         marginTop: 10,
                         lineHeight: 1.5,
                         textAlign: "justify",
@@ -357,33 +344,34 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
 
                 <View style={{ marginTop: 10 }}>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 12, fontWeight: "semibold", marginBottom: 2 }}>• High-efficiency panels with long term performance warranty.</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 12, fontWeight: "semibold", marginBottom: 2 }}>• Robust hot-dip galvanised elevated structure.</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 12, fontWeight: "semibold", marginBottom: 2 }}>• Turnkey installation with quality-tested BOS components.</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 14, fontWeight: "semibold", marginBottom: 2 }}>• High-efficiency panels with long term performance warranty.</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 14, fontWeight: "semibold", marginBottom: 2 }}>• Robust hot-dip galvanised elevated structure.</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 14, fontWeight: "semibold", marginBottom: 2 }}>• Turnkey installation with quality-tested BOS components.</Text>
                 </View>
 
                 <View style={{ marginTop: 20 }}>
-                    <Text style={{ fontFamily: 'Roboto', fontWeight: "bold", fontSize: 12, marginBottom: 4, lineHeight: 1 }}>Thanks & Regards,</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontWeight: "600", fontSize: 12, marginBottom: 4, lineHeight: 1 }}>SUNMAYO PRIVATE LIMITED</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontWeight: "bold", fontSize: 14, marginBottom: 4, lineHeight: 1 }}>Thanks & Regards,</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontWeight: "600", fontSize: 14, marginBottom: 4, lineHeight: 1 }}>SUNMAYO PRIVATE LIMITED</Text>
                     <View>
                         {/* <Image src={location} style={styles.smallImage} /> */}
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 12, lineHeight: 1, marginBottom: 5 }}><Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 12, marginLeft: 8 }}>    Gurgaon, Haryana 122001</Text>
+                        <Text style={{ fontFamily: 'Roboto', fontSize: 14, lineHeight: 1, marginBottom: 5 }}><Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
+                        <Text style={{ fontFamily: 'Roboto', fontSize: 14, marginLeft: 8 }}>    Gurgaon, Haryana 122001</Text>
                     </View>
 
                     <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4, lineHeight: 1 }}>
                         <Image src={phonecall} style={{ width: 12, height: 12, marginRight: 4 }} />
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 12 }}>+91 9643800850</Text>
+                        <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>+91 9643800850</Text>
                     </View>
                     <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2, lineHeight: 1 }}>
                         <Image src={communicate} style={{ width: 12, height: 12, marginRight: 4 }} />
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 12 }}>info@sunmayo.com</Text>
+                        <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>info@sunmayo.com</Text>
                     </View>
                     <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2, lineHeight: 1 }}>
                         <Image src={worldwide} style={{ width: 12, height: 12, marginRight: 4 }} />
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 12 }}>www.sunmayo.com</Text>
+                        <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>www.sunmayo.com</Text>
                     </View>
                 </View>
+                <Image src={banner}/>
             </View>
         </Page>
 
