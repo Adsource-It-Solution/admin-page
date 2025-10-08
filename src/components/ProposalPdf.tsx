@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     footer2: { position: "absolute", bottom: 30, left: 30, right: 30, fontSize: 10, color: "#6b7280", textAlign: "center" },
     table: { display: "flex", width: "auto", borderStyle: "solid", },
     tableRow: { flexDirection: "row", paddingVertical: 4 },
-    tableHeader: { backgroundColor: "#003366" },
+    tableHeader: { backgroundColor: "#003366", marginBottom: 2 },
     tableColHeader: { flex: 1, fontSize: 16, fontFamily: "Roboto", fontWeight: "bold", color: "#fff", padding: 2 },
     tableCol: { flex: 1, fontSize: 14,  fontFamily: "Roboto", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
     tableColprice: { flex: 1, fontSize: 14, fontFamily: "Roboto", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
@@ -296,7 +296,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 </Text>
                 <View style={styles.blueLine} />
 
-                <Text style={{ fontSize: 20, marginTop: 12, fontWeight: "bold" }}>
+                <Text style={{ fontSize: 20, marginTop: 12, fontWeight: "bold", fontFamily: "Roboto" }}>
                     Dear <Text>{proposal.clientName}</Text>,
                 </Text>
 
@@ -356,10 +356,10 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 </Text>
 
 
-                <View style={{ marginTop: 10, paddingLeft: 10 }}>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14, marginBottom: 2 }}>• High-efficiency panels with long term performance warranty.</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14, marginBottom: 2 }}>• Robust hot-dip galvanised elevated structure.</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14, marginBottom: 2 }}>• Turnkey installation with quality-tested BOS components.</Text>
+                <View style={{ marginTop: 10}}>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 12, fontWeight : "semibold", marginBottom: 2 }}>• High-efficiency panels with long term performance warranty.</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 12, fontWeight : "semibold", marginBottom: 2 }}>• Robust hot-dip galvanised elevated structure.</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 12, fontWeight : "semibold", marginBottom: 2 }}>• Turnkey installation with quality-tested BOS components.</Text>
                 </View>
 
                 <View style={{ marginTop: 20 }}>
@@ -673,20 +673,38 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
         <Page size="A4" style={styles.page}>
             <View style={{ marginBottom: 10 }}>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 20, fontWeight: "bold", marginBottom: 4 }}>Terms & Condition</Text>
-                <Text style={{ fontFamily: 'Roboto', fontSize: 14, }}>{proposal.termandcondition}</Text>
+                <Text   style={{
+                        fontFamily: 'Roboto',
+                        fontSize: 12,
+                        marginTop: 10,
+                        lineHeight: 1.5,
+                        textAlign: "justify",
+                    }} >{proposal.termandcondition}</Text>
             </View>
             <View style={{ marginBottom: 2 }}>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "bold", color: "#2563eb" }}>Balance Of System</Text>
-                <Text style={{ fontFamily: 'Roboto', fontSize: 14, }}>{proposal.balanceOfSystem}</Text>
+                <Text style={{ fontFamily: 'Roboto',
+                        fontSize: 12,
+                        marginTop: 10,
+                        lineHeight: 1.5,
+                        textAlign: "justify" }}>{proposal.balanceOfSystem}</Text>
             </View>
             <View style={{ marginBottom: 2 }}>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "bold", color: "#2563eb" }}>Coustomer Scope:</Text>
-                <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>{proposal.customerScope}</Text>
+                <Text style={{ fontFamily: 'Roboto',
+                        fontSize: 12,
+                        marginTop: 10,
+                        lineHeight: 1.5,
+                        textAlign: "justify" }}>{proposal.customerScope}</Text>
             </View>
 
             <View style={{ marginBottom: 2 }}>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "bold", color: "#2563eb" }}>Our Scope:</Text>
-                <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>{proposal.ourScope}</Text>
+                <Text style={{ fontFamily: 'Roboto',
+                        fontSize: 12,
+                        marginTop: 10,
+                        lineHeight: 1.5,
+                        textAlign: "justify" }}>{proposal.ourScope}</Text>
             </View>
         </Page>
 
