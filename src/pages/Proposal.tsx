@@ -1015,7 +1015,7 @@ export default function ProposalPage() {
                 >
                   <div className="flex text-right justify-between">
                     <span className="font-semibold text-lg">
-                      🔆 Soalr Panel Details
+                      🔆 Solar Panel Details
                     </span>
                     <span className="bg-blue-600 p-2 rounded-full">
                       {openPanel ? <KeyboardArrowDownIcon /> : <KeyboardArrowUpIcon />}
@@ -1294,8 +1294,7 @@ export default function ProposalPage() {
                     }}
                   >
                     <Stack spacing={4}>
-                      {/* ✅ Inverter Brands (multiple select) */}
-                      <FormControl fullWidth>
+                      <FormControl fullWidth variant="filled">
                         <InputLabel>Inverter Brand</InputLabel>
                         <Select
                           value=""
@@ -1348,9 +1347,6 @@ export default function ProposalPage() {
                           )}
                         </Select>
                       </FormControl>
-
-
-
                       <Button
                         type="button"
                         variant="contained"

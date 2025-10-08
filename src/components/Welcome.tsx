@@ -90,8 +90,8 @@ export default function Welcome() {
     }
   };
 
-  // Wake backend and set backendReady
   useEffect(() => {
+    console.log("Waking up the backend")
     fetch(`${import.meta.env.VITE_API_URL}/api/health`)
       .then(() => {
         console.log("Render backend woken up");
