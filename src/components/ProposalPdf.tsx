@@ -589,7 +589,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
                 <View style={{ marginTop: 10 }}>
                     <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Watt Peak: {proposal.Wattpeak} Wp</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Panel Nos: {proposal.quantity}</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Panel NOS: {proposal.quantity}</Text>
                     <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>
                         Panel type: {proposal.paneltype}
                     </Text>
@@ -620,7 +620,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <View style={{ marginTop: 10 }}>
                     <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Inverter: {proposal.invertorSize}</Text>
                     <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Phase: {proposal.invertorPhase}</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Phase NoS: {proposal.invertorquantitiy}</Text>
+                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Phase NOS: {proposal.invertorquantitiy}</Text>
                 </View>
                 {/* <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} /> */}
                 <View>
@@ -657,6 +657,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                                 )}
                         </View>
                         <Text  style={{ fontFamily: 'Roboto', fontSize: 16 }}>Battery Warranty: {proposal.batterywarranty} year(s)</Text>
+                        <Text  style={{ fontFamily: 'Roboto', fontSize: 16 }}>Battery NOS: {proposal.batteryquantity}</Text>
                         
                     </View>
                     {/* <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} /> */}
@@ -719,20 +720,31 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             <View style={{ marginTop: 2, }}>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "Bold" }}>SUNMAYO PRIVATE LIMITED</Text>
                 <View>
-                    <Text style={{ fontSize: 16, fontFamily: "Roboto" }}><Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
-                    <Text style={{ fontSize: 16, fontFamily: "Roboto" }}>   Gurgaon, Haryana 122001</Text>
+                    <Text style={{fontFamily: 'Roboto',
+                    fontSize: 12,
+                    lineHeight: 1.5,
+                    textAlign: "justify", }}><Image source={location} style={{ width: 12, height: 12, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
+                    <Text style={{ fontSize: 12,
+                    lineHeight: 1.5,
+                    textAlign: "justify", }}>   Gurgaon, Haryana 122001</Text>
                 </View>
                 <View style={styles.row}>
-                    <Image src={phonecall} style={styles.smallImage} />
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>+91 9643800850</Text>
+                    <Image src={phonecall} style={{ width: 12, height: 12, marginRight: 4 }} />
+                    <Text style={{ fontSize: 12,
+                    lineHeight: 1.5,
+                    textAlign: "justify", }}>+91 9643800850</Text>
                 </View>
                 <View style={styles.row}>
-                    <Image src={communicate} style={styles.smallImage} />
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>info@sunmayo.com</Text>
+                    <Image src={communicate} style={{ width: 12, height: 12, marginRight: 4 }} />
+                    <Text style={{ fontSize: 12,
+                    lineHeight: 1.5,
+                    textAlign: "justify", }}>info@sunmayo.com</Text>
                 </View>
                 <View style={styles.row}>
-                    <Image src={worldwide} style={styles.smallImage} />
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>www.sunmayo.com</Text>
+                    <Image src={worldwide} style={{ width: 12, height: 12, marginRight: 4 }} />
+                    <Text style={{ fontSize: 12,
+                    lineHeight: 1.5,
+                    textAlign: "justify", }}>www.sunmayo.com</Text>
                 </View>
             </View>
         </Page>
