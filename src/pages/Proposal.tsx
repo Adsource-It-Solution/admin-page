@@ -91,87 +91,22 @@ export type RowType = {
   otherCharges?: number;
 };
 
-export type Proposal = {
-  _id?: string;
-  clientName: string;
-  clientPhone: string;
-  clientEmail: string;
-  clientAddress: string;
-  clienttitle: string;
-  customerType: string;
-  projectsize: string;
-  consumption: string;
-  electricity: string;
-  generation: string;
-  Wattpeak: string;
-  proposalWattpeak: string;
-  warranty: string;
-  Invertorwarranty: string;
-  InvertorSize: string;
-  performancewarranty: string;
-  quantity: string;
-  invertorquantitiy: string;
-  invertortype: string;
-  invertorPhase: string;
-  batteryBrands: string;
-  batterytype: BatteryType | "";
-  leadAcidSubtype?: LeadAcidSubtype | "";
-  batteryquantity: string;
-  batterywarranty: string;
-  cableBrands: string;
-  proposalStructure: string;
-  structureDes: string;
-  systemwarranty: string;
-  balanceOfSystem: string;
-  ourScope: string;
-  customerScope: string;
-  termandcondition: string;
-  stage1: string;
-  stage2: string;
-  stage3: string;
-  stage4: string;
-  priceunitelectricity: string;
-  invertorBrands: string[];
-  otherCustomerType: string;
-  panelBrands: string[];
-  paneltype: string;
-  holder: string;
-  accountnumber: string;
-  ifsc: string;
-  bankname: string;
-  date: string;
-  heading: string;
-
-  rows: RowType[];
-  gst: number;
-  subtotal: number;
-  gstAmount: number;
-  total: number;
-  otherCharge: OtherCharge[];
-
-  services: string[];
-  products: string[];
-  employees: string[];
-
-  tableImage?: string;
-  graphimage?: string;
-
-  deleted?: boolean;
-  deletedAt?: string;
-
-  // [key: string]: string | string[] | number | RowType[] | undefined;
-};
-
-
 type ClientPrefix = "Mr." | "Mrs." | "Ms.";
 type CustomerType = "Industrial" | "Commercial" | "Government" | "Residential" | "others";
 type PanelType = "Mono" | "Mono-Perc" | "Poly" | "BIVP" | "Mono-Perc Half Cut" | "Mono BiFacial" | "TopCon MonoFacial" | "TopCon BiFacial";
-type InvertorSize = "2kw" | "3kw" | "5kw-" | "5KW" | "6KW" | "8KW" | "10KW" | "12KW" | "15KW" | "20KW" | "25KW" | "30KW" | "50KW" | "100KW";
+type InvertorSize = "2KW" | "3KW" | "5KW" | "6KW" | "8KW" | "10KW" | "12KW" | "15KW" | "20KW" | "25KW" | "30KW" | "50KW" | "100KW"
+                      | "2KVA/24V" | "3KVA/36V" | "3.5KVA/48V" | "5KVA/48V" |"6KVA/96V" | "7.5KVA/96V" | "10.1KVA/120V" 
+                      | "3.75KVA/48V" | "5KVA/48V" | "3KVA" | "5KVA";
+type Invertortype = "On Grid" | "Off Grid" | "Hybrid" | "";
 type InvertorPhase = "Single Phase" | "Three Phase";
-type Invertortype = "String Invertor" | "Micro Invertor" | "Off Grid Inverter" | "Hybrid Inverter";
 type ProposalStructure = "Elevated" | "Standard" | "Metal Shed";
 type StrucrtureDes = "Hot Dip Galvanised" | "Pre Galvanised" | "Slotted Channel" | "Ms Channel & Gi Channel"
-// type DirectionType = "Left to Right" | "Right to left";
+const inverterSizesByType: Record<Invertortype, InvertorSize[]> = {
+  "On Grid": ["2KW", "3KW", "5KW", "6KW", "8KW", "10KW", "12KW", "15KW", "20KW", "25KW", "10KW", "12KW", "15KW", "30KW", "50KW", "100KW"],
+  "Off Grid": ["2KVA/24V", "3KVA/36V", "3.5KVA/48V", "5KVA/48V", "6KVA/96V",  "7.5KVA/96V", "10.1KVA/120V"],
+  Hybrid: [ "3.75KVA/48V", "5KVA/48V", "3KVA", "5KVA"],
+  "": [],
+};
 
 interface GraphDatum {
   month: string;
@@ -225,6 +160,77 @@ const preloadedCableBrands = [
   { name: "Anchor", logo: "/office.svg" },
 ];
 
+export type Proposal = {
+  _id?: string;
+  clientName: string;
+  clientPhone: string;
+  clientEmail: string;
+  clientAddress: string;
+  clienttitle: string;
+  customerType: string;
+  projectsize: string;
+  consumption: string;
+  electricity: string;
+  generation: string;
+  Wattpeak: string;
+  proposalWattpeak: string;
+  warranty: string;
+  Invertorwarranty: string;
+  invertortype?: Invertortype;
+  invertorSize?: InvertorSize;
+  performancewarranty: string;
+  quantity: string;
+  invertorquantitiy: string;
+  invertorPhase: string;
+  batteryBrands: string;
+  batterytype: BatteryType | "";
+  leadAcidSubtype?: LeadAcidSubtype | "";
+  batteryquantity: string;
+  batterywarranty: string;
+  cableBrands: string;
+  proposalStructure: string;
+  structureDes: string;
+  systemwarranty: string;
+  balanceOfSystem: string;
+  ourScope: string;
+  customerScope: string;
+  termandcondition: string;
+  stage1: string;
+  stage2: string;
+  stage3: string;
+  stage4: string;
+  priceunitelectricity: string;
+  invertorBrands: string[];
+  otherCustomerType: string;
+  panelBrands: string[];
+  paneltype: string;
+  holder: string;
+  accountnumber: string;
+  ifsc: string;
+  bankname: string;
+  date: string;
+  heading: string;
+
+  rows: RowType[];
+  gst: number;
+  subtotal: number;
+  gstAmount: number;
+  total: number;
+  otherCharge: OtherCharge[];
+
+  services: string[];
+  products: string[];
+  employees: string[];
+
+  tableImage?: string;
+  graphimage?: string;
+
+  deleted?: boolean;
+  deletedAt?: string;
+
+  // [key: string]: string | string[] | number | RowType[] | undefined;
+};
+
 export default function ProposalPage() {
   const { id } = useParams();
   // const navigate = useNavigate();
@@ -245,12 +251,12 @@ export default function ProposalPage() {
     proposalWattpeak: "",
     warranty: "",
     Invertorwarranty: "",
-    InvertorSize: "",
+    invertortype: undefined,
+    invertorSize: undefined,
     invertorPhase: "",
     performancewarranty: "",
     quantity: "",
     invertorquantitiy: "",
-    invertortype: "",
     batteryBrands: "",
     batterytype: "",
     batteryquantity: "",
@@ -322,6 +328,10 @@ export default function ProposalPage() {
 
   const [, setServices] = useState<Service[]>([]);
   const [, setProducts] = useState<Product[]>([]);
+
+  const sizesToShow = proposal.invertortype
+    ? inverterSizesByType[proposal.invertortype]
+    : [];
 
   // State for editing proposal and employee details
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -1456,20 +1466,41 @@ export default function ProposalPage() {
                       </Box>
 
                       {/* ✅ Inverter Type */}
-                      <FormControl fullWidth variant="filled">
+                      <FormControl fullWidth variant="filled" sx={{ mb: 2 }}>
                         <InputLabel id="invertor-type">Inverter Type</InputLabel>
                         <Select
                           labelId="invertor-type"
                           value={proposal.invertortype || ""}
                           onChange={(e) =>
-                            setProposal({ ...proposal, invertortype: e.target.value as Invertortype })
+                            setProposal({
+                              ...proposal,
+                              invertortype: e.target.value as Invertortype,
+                              invertorSize: undefined, // Reset size on type change
+                            })
                           }
                         >
-                          {/* "Off Grid Inverter" | "Hybrid Inverter" */}
-                          <MenuItem value="Off Grid Inverter">Off Grid Inverter</MenuItem>
-                          <MenuItem value="Hybrid Inverter">Hybrid Inverter</MenuItem>
-                          <MenuItem value="String Invertor">String Inverter</MenuItem>
-                          <MenuItem value="Micro Invertor">Micro Inverter</MenuItem>
+                          <MenuItem value="On Grid">On Grid Inverter</MenuItem>
+                          <MenuItem value="Off Grid">Off Grid Inverter</MenuItem>
+                          <MenuItem value="Hybrid">Hybrid Inverter</MenuItem>
+                        </Select>
+                      </FormControl>
+
+                      {/* Inverter Size */}
+                      <FormControl fullWidth variant="filled">
+                        <InputLabel id="invertor-size">Inverter Size</InputLabel>
+                        <Select
+                          labelId="invertor-size"
+                          value={proposal.invertorSize || ""}
+                          onChange={(e) =>
+                            setProposal({ ...proposal, invertorSize: e.target.value as InvertorSize })
+                          }
+                          disabled={!proposal.invertortype} // Disable until type is selected
+                        >
+                          {sizesToShow.map((size) => (
+                            <MenuItem key={size} value={size}>
+                              {size}
+                            </MenuItem>
+                          ))}
                         </Select>
                       </FormControl>
 
@@ -1483,31 +1514,6 @@ export default function ProposalPage() {
                         }
                         fullWidth
                       />
-                      <FormControl fullWidth variant="filled">
-                        <InputLabel id="invertor-size">Inverter Size</InputLabel>
-                        <Select
-                          labelId="invertor-size"
-                          value={proposal.InvertorSize}
-                          onChange={(e) =>
-                            setProposal({ ...proposal, InvertorSize: e.target.value as InvertorSize })
-                          }
-                        >
-                          <MenuItem value="2kw"> 2kw</MenuItem>
-                          <MenuItem value="3kw">3kw</MenuItem>
-                          <MenuItem value="5kw">5kw</MenuItem>
-                          <MenuItem value="5KW">5KW</MenuItem>
-                          <MenuItem value="6KW">6KW</MenuItem>
-                          <MenuItem value="8KW">8KW</MenuItem>
-                          <MenuItem value="10KW">10KW</MenuItem>
-                          <MenuItem value="12KW">12KW</MenuItem>
-                          <MenuItem value="15KW">15KW</MenuItem>
-                          <MenuItem value="20KW">20KW</MenuItem>
-                          <MenuItem value="25KW">25KW</MenuItem>
-                          <MenuItem value="30KW">30KW</MenuItem>
-                          <MenuItem value="50KW">50KW</MenuItem>
-                          <MenuItem value="100KW">100KW</MenuItem>
-                        </Select>
-                      </FormControl>
 
                       {/* ✅ Inverter Phase */}
                       <FormControl fullWidth variant="filled">
