@@ -47,12 +47,19 @@ Font.register({
         { src: '/fonts/Roboto/static/Roboto-Black.ttf' },
     ],
 });
+Font.register({
+    family: 'Poppins',
+    fonts: [
+        { src: '/fonts/Poppins/Poppins-Regular.ttf', fontWeight: 'normal' },
+        { src: '/fonts/Poppins/Poppins-Bold.ttf', fontWeight: 'bold' },
+    ]
+})
 // PDF Styles
 const styles = StyleSheet.create({
     page: { paddingLeft: 25, paddingRight: 25, paddingTop: 10, fontFamily: "Work Sans", fontSize: 12 },
     header: { fontFamily: 'Work Sans', fontSize: 32, fontWeight: "bold", textAlign: "center", marginBottom: 20 },
     subHeader: { fontFamily: 'Roboto', fontSize: 24, fontWeight: "bold", marginBottom: 10 },
-    subHeader2: { fontFamily: 'Roboto', fontSize: 24, fontWeight: "bold", marginBottom: 10, color: "#1e40af" },
+    subHeader2: { fontFamily: 'Poppins', fontSize: 24, fontWeight: "bold", marginBottom: 10, color: "#1e40af" },
     text: { marginBottom: 5 },
     listItem: { fontFamily: 'Roboto', marginLeft: 15, marginBottom: 5, fontSize: 16 },
     logo: { width: 100, height: 70 },
@@ -66,7 +73,7 @@ const styles = StyleSheet.create({
     row2: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginVertical: 10 },
     column2: { flex: 1, marginRight: 20 },
     colimn3: { flex: 1, marginLeft: 20 },
-    label2: { fontFamily: 'Roboto', fontWeight: "bold", marginBottom: 4, fontSize: 20 },
+    label2: { fontFamily: 'Poppins', fontWeight: "bold", marginBottom: 4, fontSize: 20 },
     text2: { fontSize: 16, marginBottom: 2 },
     specRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
     specCol: { width: "30%" },
@@ -75,17 +82,17 @@ const styles = StyleSheet.create({
     headerContainer: { alignItems: "center", marginBottom: 20 },
     mainTitle: { fontFamily: 'Work Sans', fontSize: 48, fontWeight: "bold", marginBottom: 10, color: "#f97316" },
     subTitle: { fontFamily: 'Roboto', fontSize: 32, fontWeight: "bold", color: "#2563eb", marginBottom: 20 },
-    label: { fontFamily: 'Work Sans', fontSize: 14, fontWeight: "bold", marginBottom: 2 },
+    label: { fontFamily: 'Poppins', fontSize: 14, fontWeight: "bold", marginBottom: 2 },
     column: { flexDirection: "column" },
     footer2: { position: "absolute", bottom: 30, left: 30, right: 30, fontSize: 10, color: "#6b7280", textAlign: "center" },
     table: { display: "flex", width: "auto", borderStyle: "solid", },
     tableRow: { flexDirection: "row", paddingVertical: 4 },
     tableHeader: { backgroundColor: "#003366", marginBottom: 2 },
     tableColHeader: { flex: 1, fontSize: 16, fontFamily: "Roboto", fontWeight: "bold", color: "#fff", padding: 2 },
-    tableCol: { flex: 1, fontSize: 14, fontFamily: "Roboto", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
-    tableColprice: { flex: 1, fontSize: 14, fontFamily: "Roboto", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
-    tableColquantity: { flex: 1, fontSize: 14, fontFamily: "Roboto", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
-    tableColtotal: { flex: 1, fontSize: 14, fontFamily: "Roboto", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
+    tableCol: { flex: 1, fontSize: 14, fontFamily: "Poppins", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
+    tableColprice: { flex: 1, fontSize: 14, fontFamily: "Poppins", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
+    tableColquantity: { flex: 1, fontSize: 14, fontFamily: "Poppins", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
+    tableColtotal: { flex: 1, fontSize: 14, fontFamily: "Poppins", paddingHorizontal: 2, paddingVertical: 2, backgroundColor: "#f0f6ff" },
     totalRow: { flexDirection: "row", backgroundColor: "#003366", paddingVertical: 4, justifyContent: "space-between" },
     totalText: { flex: 1, fontSize: 14, fontWeight: "bold", color: "#fff", paddingHorizontal: 2 },
     amountWords: { fontSize: 14, fontWeight: "bold", color: "#fff", padding: 2, marginRight: 2 },
@@ -260,23 +267,78 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <View style={styles.column2}>
                     <Text style={styles.label2}>PREPARED FOR</Text>
                     <Text style={styles.text2}>{proposal.clienttitle} {proposal.clientName}</Text>
+                    {proposal.clientAddress ? (
+                        <Text style={{
+                            fontFamily: 'Poppins',
+                            fontSize: 12,
+                            lineHeight: 1.5,
+                            textAlign: "justify",
+                        }}>
+                            <Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} /><Text>  {proposal.clientAddress}</Text>
+                        </Text>) : null}
                     {proposal.clientPhone ? (
-                        <Text style={styles.text2}>
+                        <Text style={{
+                            fontFamily: 'Poppins',
+                            fontSize: 12,
+                            lineHeight: 1.5,
+                            textAlign: "justify",
+                        }}>
                             <Image source={phonecall} style={{ width: 16, height: 16, marginRight: 4 }} /><Text>  {proposal.clientPhone}</Text>
                         </Text>) : null}
-                    {proposal.clientEmail ? (
-                        <Text style={styles.text2}>
+                         {proposal.clientEmail ? (
+                        <Text style={{
+                            fontFamily: 'Poppins',
+                            fontSize: 12,
+                            lineHeight: 1.5,
+                            textAlign: "justify",
+                        }}>
                             <Image source={communicate} style={{ width: 16, height: 16, marginRight: 4 }} /><Text>  {proposal.clientEmail}</Text>
-                        </Text>) : null}
-                    {proposal.clientAddress ? (
-                        <Text style={styles.text2}>
-                            <Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} /><Text>  {proposal.clientAddress}</Text>
                         </Text>) : null}
                     <Text style={{ fontSize: 14, marginBottom: 4 }}>
                         <Image src={calander} />  Date: {proposal.date
                             ? new Date(proposal.date).toLocaleDateString("en-GB")
                             : "NA"}
                     </Text>
+                </View>
+                <View style={{ marginTop: 2, }}>
+                    <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "Bold" }}>SUNMAYO PRIVATE LIMITED</Text>
+                    <View>
+                        <Text style={{
+                            fontFamily: 'Poppins',
+                            fontSize: 12,
+                            lineHeight: 1.5,
+                            textAlign: "justify",
+                        }}><Image source={location} style={{ width: 12, height: 12, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
+                        <Text style={{
+                            fontSize: 12,
+                            lineHeight: 1.5,
+                            textAlign: "justify",
+                        }}>   Gurgaon, Haryana 122001</Text>
+                    </View>
+                    <View style={styles.row}>
+                        <Image src={phonecall} style={{ width: 12, height: 12, marginRight: 4 }} />
+                        <Text style={{
+                            fontSize: 12,
+                            lineHeight: 1.5,
+                            textAlign: "justify",
+                        }}>+91 9643800850</Text>
+                    </View>
+                    <View style={styles.row}>
+                        <Image src={communicate} style={{ width: 12, height: 12, marginRight: 4 }} />
+                        <Text style={{
+                            fontSize: 12,
+                            lineHeight: 1.5,
+                            textAlign: "justify",
+                        }}>info@sunmayo.com</Text>
+                    </View>
+                    <View style={styles.row}>
+                        <Image src={worldwide} style={{ width: 12, height: 12, marginRight: 4 }} />
+                        <Text style={{
+                            fontSize: 12,
+                            lineHeight: 1.5,
+                            textAlign: "justify",
+                        }}>www.sunmayo.com</Text>
+                    </View>
                 </View>
             </View>
             <View style={{ marginTop: 5 }}>
@@ -304,7 +366,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
                 <Text
                     style={{
-                        fontFamily: 'Roboto',
+                        fontFamily: 'Poppins',
                         fontSize: 14,
                         marginTop: 10,
                         lineHeight: 1.5,
@@ -317,7 +379,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 </Text>
                 <Text
                     style={{
-                        fontFamily: 'Roboto',
+                        fontFamily: 'Poppins',
                         fontSize: 14,
                         marginTop: 10,
                         lineHeight: 1.5,
@@ -331,7 +393,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 </Text>
                 <Text
                     style={{
-                        fontFamily: 'Roboto',
+                        fontFamily: 'Poppins',
                         fontSize: 14,
                         marginTop: 10,
                         lineHeight: 1.5,
@@ -341,35 +403,35 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     Together, let’s build a future that’s powered by clean, renewable energy. We are excited to partner with you on this journey
                     and look forward to creating not just a solar project, but a long-term relationship built on trust, service, and shared vision.
                 </Text>
-                
+
                 <View style={{ marginTop: 10 }}>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14, fontWeight: "semibold", marginBottom: 2 }}>• High-efficiency panels with long term performance warranty.</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14, fontWeight: "semibold", marginBottom: 2 }}>• Robust hot-dip galvanised elevated structure.</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 14, fontWeight: "semibold", marginBottom: 2 }}>• Turnkey installation with quality-tested BOS components.</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 14, fontWeight: "semibold", marginBottom: 2 }}>• High-efficiency panels with long term performance warranty.</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 14, fontWeight: "semibold", marginBottom: 2 }}>• Robust hot-dip galvanised elevated structure.</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 14, fontWeight: "semibold", marginBottom: 2 }}>• Turnkey installation with quality-tested BOS components.</Text>
                 </View>
                 <View style={{ marginTop: 20 }}>
-                    <Text style={{ fontFamily: 'Roboto', fontWeight: "bold", fontSize: 14, marginBottom: 4, lineHeight: 1 }}>Thanks & Regards,</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontWeight: "600", fontSize: 14, marginBottom: 4, lineHeight: 1 }}>SUNMAYO PRIVATE LIMITED</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontWeight: "bold", fontSize: 14, marginBottom: 4, lineHeight: 1 }}>Thanks & Regards,</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontWeight: "600", fontSize: 14, marginBottom: 4, lineHeight: 1 }}>SUNMAYO PRIVATE LIMITED</Text>
                     <View>
                         {/* <Image src={location} style={styles.smallImage} /> */}
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 14, lineHeight: 1, marginBottom: 5 }}><Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 14, marginLeft: 8 }}>    Gurgaon, Haryana 122001</Text>
+                        <Text style={{ fontFamily: 'Poppins', fontSize: 14, lineHeight: 1, marginBottom: 5 }}><Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
+                        <Text style={{ fontFamily: 'Poppins', fontSize: 14, marginLeft: 8 }}>    Gurgaon, Haryana 122001</Text>
                     </View>
 
                     <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4, lineHeight: 1 }}>
                         <Image src={phonecall} style={{ width: 12, height: 12, marginRight: 4 }} />
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>+91 9643800850</Text>
+                        <Text style={{ fontFamily: 'Poppins', fontSize: 14 }}>+91 9643800850</Text>
                     </View>
                     <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2, lineHeight: 1 }}>
                         <Image src={communicate} style={{ width: 12, height: 12, marginRight: 4 }} />
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>info@sunmayo.com</Text>
+                        <Text style={{ fontFamily: 'Poppins', fontSize: 14 }}>info@sunmayo.com</Text>
                     </View>
                     <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2, lineHeight: 1 }}>
                         <Image src={worldwide} style={{ width: 12, height: 12, marginRight: 4 }} />
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 14 }}>www.sunmayo.com</Text>
+                        <Text style={{ fontFamily: 'Poppins', fontSize: 14 }}>www.sunmayo.com</Text>
                     </View>
                 </View>
-                <Image src={banner}/>
+                <Image src={banner} />
             </View>
         </Page>
         {/* PAGE 3: SPECIFICATIONS & GRAPH */}
@@ -415,14 +477,14 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     height={300}
                 />
             </View>
-            <Image style={{marginTop: 20}} src={graphpageimage} />
+            <Image style={{ marginTop: 20 }} src={graphpageimage} />
         </Page>
 
         <Page size="A4" style={styles.page}>
             {/* Commercial Offer & Payment */}
             <View style={styles.section}>
                 <Text style={styles.subHeader}>Commercial Offer</Text>
-                <Text style={{ fontSize: 16, marginBottom: 5, fontFamily: "Roboto" }}>
+                <Text style={{ fontSize: 16, marginBottom: 5, fontFamily: "Poppins" }}>
                     Price Quote & Payment schedule for {proposal.projectsize} KW {proposal.invertortype} Rooftop Solar System:
                 </Text>
                 <View style={styles.table}>
@@ -485,8 +547,6 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                                         ? (charges.price * charges.quantityother).toLocaleString("en-IN")
                                         : ""}
                                 </Text>
-
-                                {/* Note (only if exists) */}
                                 {charges.note?.trim() ? (
                                     <Text style={{ fontSize: 8, }}>
                                         {charges.note}
@@ -548,7 +608,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     <Text style={{ fontFamily: "Work Sans", fontWeight: "bold", marginBottom: 8, fontSize: 20 }}>
                         Payment Details
                     </Text>
-                    <Text style={{ fontFamily: "Roboto", fontSize: 16 }}>
+                    <Text style={{ fontFamily: "Poppins", fontSize: 16 }}>
                         Payment can be paid via Cheque / scanner code / Netbanking
                     </Text>
                     <Text style={{ fontFamily: "Work Sans", fontSize: 16, fontWeight: "bold" }}>
@@ -567,7 +627,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
                 {/* Terms */}
                 <View style={{ marginTop: 15 }}>
-                    <Text style={{ fontFamily: "Roboto", fontSize: 16 }}>
+                    <Text style={{ fontFamily: "Poppins", fontSize: 16 }}>
                         Terms: Prices are firm for 10 days from offer date. Delivery 2–3 weeks. Force major applies.
                     </Text>
                 </View>
@@ -581,16 +641,16 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
             {/* Watt, Panels, Type */}
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Solar Panel</Text>
-                <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>
+                <Text style={{ fontFamily: 'Poppins', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Solar Panel</Text>
+                <Text style={{ fontFamily: 'Poppins', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>
                     Panel Brands:
                 </Text>
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
                 <View style={{ marginTop: 10 }}>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Watt Peak: {proposal.Wattpeak} Wp</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Panel NOS: {proposal.quantity}</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Watt Peak: {proposal.Wattpeak} Wp</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Panel NOS: {proposal.quantity}</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>
                         Panel type: {proposal.paneltype}
                     </Text>
                 </View>
@@ -598,7 +658,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <View>
                     <View>
                         {(proposal.panelBrands as string[] | []).map((brand, index) => (
-                            <Text key={index} style={{ fontFamily: 'Roboto', fontSize: 16 }}>
+                            <Text key={index} style={{ fontFamily: 'Poppins', fontSize: 16 }}>
                                 {brand}
                             </Text>
                         ))}
@@ -610,23 +670,23 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
 
             {/* Inverter & Phase */}
             <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Solar Inverter</Text>
-                <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>
+                <Text style={{ fontFamily: 'Poppins', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Solar Inverter</Text>
+                <Text style={{ fontFamily: 'Poppins', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>
                     Inverter Brands:
                 </Text>
             </View>
             <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10 }}>
 
                 <View style={{ marginTop: 10 }}>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Inverter: {proposal.invertorSize}</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Phase: {proposal.invertorPhase}</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Phase NOS: {proposal.invertorquantitiy}</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Inverter: {proposal.invertorSize}</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Phase: {proposal.invertorPhase}</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Phase NOS: {proposal.invertorquantitiy}</Text>
                 </View>
                 {/* <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} /> */}
                 <View>
                     <View>
                         {(proposal.invertorBrands as string[] | []).map((brand, index) => (
-                            <Text key={index} style={{ fontFamily: 'Roboto', fontSize: 16 }}>
+                            <Text key={index} style={{ fontFamily: 'Poppins', fontSize: 16 }}>
                                 {brand}
                             </Text>
                         ))}
@@ -641,35 +701,35 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 {/* Cable */}
                 <View style={{ flexDirection: "row" }}>
                     <View>
-                        <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Cable</Text>
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Cable brand: {proposal.cableBrands}</Text>
-                        <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Battery</Text>
-                        <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Battery Brand: 
+                        <Text style={{ fontFamily: 'Poppins', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Cable</Text>
+                        <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Cable brand: {proposal.cableBrands}</Text>
+                        <Text style={{ fontFamily: 'Poppins', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Battery</Text>
+                        <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Battery Brand:
                             {proposal.batteryBrands ? proposal.batteryBrands : 'NA'}
                         </Text>
                         <View>
-                            <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Battery Type: {proposal.batterytype}</Text>
+                            <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Battery Type: {proposal.batterytype}</Text>
 
                             {typeof proposal.batterytype === "string" &&
                                 proposal.batterytype.toLowerCase() === "lead-acid" &&
                                 proposal.leadAcidSubtype && (
-                                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Battery Capacity: {proposal.leadAcidSubtype}</Text>
+                                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Battery Capacity: {proposal.leadAcidSubtype}</Text>
                                 )}
                         </View>
-                        <Text  style={{ fontFamily: 'Roboto', fontSize: 16 }}>Battery Warranty: {proposal.batterywarranty} year(s)</Text>
-                        <Text  style={{ fontFamily: 'Roboto', fontSize: 16 }}>Battery NOS: {proposal.batteryquantity}</Text>
-                        
+                        <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Battery Warranty: {proposal.batterywarranty} year(s)</Text>
+                        <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Battery NOS: {proposal.batteryquantity}</Text>
+
                     </View>
                     {/* <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} /> */}
                 </View>
 
                 {/* Warranty */}
                 <View>
-                    <Text style={{ fontFamily: 'Roboto', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Warranty</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Panel Performance: {proposal.performancewarranty} Year(s)</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Panel Product Warranty: {proposal.warranty} Year(s)</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Inverter: {proposal.Invertorwarranty} Year(s)</Text>
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>Balance of System: {proposal.systemwarranty} Year(s)</Text>
+                    <Text style={{ fontFamily: 'Poppins', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Warranty</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Panel Performance: {proposal.performancewarranty} Year(s)</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Panel Product Warranty: {proposal.warranty} Year(s)</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Inverter: {proposal.Invertorwarranty} Year(s)</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Balance of System: {proposal.systemwarranty} Year(s)</Text>
                 </View>
             </View>
             <Image src={Bill} />
@@ -679,7 +739,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             <View style={{ marginBottom: 2 }}>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 20, fontWeight: "bold", marginBottom: 4 }}>Terms & Condition</Text>
                 <Text style={{
-                    fontFamily: 'Roboto',
+                    fontFamily: 'Poppins',
                     fontSize: 12,
                     marginTop: 10,
                     lineHeight: 1.5,
@@ -689,7 +749,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             <View style={{ marginBottom: 2 }}>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "bold", color: "#2563eb" }}>Balance Of System</Text>
                 <Text style={{
-                    fontFamily: 'Roboto',
+                    fontFamily: 'Poppins',
                     fontSize: 12,
                     marginTop: 10,
                     lineHeight: 1.5,
@@ -699,7 +759,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             <View style={{ marginBottom: 2 }}>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "bold", color: "#2563eb" }}>Coustomer Scope:</Text>
                 <Text style={{
-                    fontFamily: 'Roboto',
+                    fontFamily: 'Poppins',
                     fontSize: 12,
                     marginTop: 10,
                     lineHeight: 1.5,
@@ -710,7 +770,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             <View>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "bold", color: "#2563eb" }}>Our Scope:</Text>
                 <Text style={{
-                    fontFamily: 'Roboto',
+                    fontFamily: 'Poppins',
                     fontSize: 12,
                     marginTop: 10,
                     lineHeight: 1.5,
@@ -719,62 +779,23 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             </View>
             <View style={{ marginTop: 2, }}>
                 <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "Bold" }}>SUNMAYO PRIVATE LIMITED</Text>
-                <View>
-                    <Text style={{fontFamily: 'Roboto',
-                    fontSize: 12,
-                    lineHeight: 1.5,
-                    textAlign: "justify", }}><Image source={location} style={{ width: 12, height: 12, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
-                    <Text style={{ fontSize: 12,
-                    lineHeight: 1.5,
-                    textAlign: "justify", }}>   Gurgaon, Haryana 122001</Text>
-                </View>
                 <View style={styles.row}>
                     <Image src={phonecall} style={{ width: 12, height: 12, marginRight: 4 }} />
-                    <Text style={{ fontSize: 12,
-                    lineHeight: 1.5,
-                    textAlign: "justify", }}>+91 9643800850</Text>
-                </View>
-                <View style={styles.row}>
-                    <Image src={communicate} style={{ width: 12, height: 12, marginRight: 4 }} />
-                    <Text style={{ fontSize: 12,
-                    lineHeight: 1.5,
-                    textAlign: "justify", }}>info@sunmayo.com</Text>
+                    <Text style={{
+                        fontSize: 12,
+                        lineHeight: 1.5,
+                        textAlign: "justify",
+                    }}>+91 9643800850</Text>
                 </View>
                 <View style={styles.row}>
                     <Image src={worldwide} style={{ width: 12, height: 12, marginRight: 4 }} />
-                    <Text style={{ fontSize: 12,
-                    lineHeight: 1.5,
-                    textAlign: "justify", }}>www.sunmayo.com</Text>
+                    <Text style={{
+                        fontSize: 12,
+                        lineHeight: 1.5,
+                        textAlign: "justify",
+                    }}>www.sunmayo.com</Text>
                 </View>
             </View>
         </Page>
-
-        {/* PAGE 6: SCOPE & ACCEPTANCE */}
-        {/* <Page size="A4" style={styles.page}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginVertical: 10 }}>
-            </View>
-            <Image src={solarbackground} style={{ width: "100%", height: "70%", marginTop: 10 }} />
-            <View style={{ marginTop: 20, }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "Bold" }}>SUNMAYO PRIVATE LIMITED</Text>
-                <View>
-                    <Text style={{ fontSize: 16, fontFamily: "Roboto" }}><Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
-                    <Text style={{ fontSize: 16, fontFamily: "Roboto" }}>   Gurgaon, Haryana 122001</Text>
-                </View>
-                <View style={styles.row}>
-                    <Image src={phonecall} style={styles.smallImage} />
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>+91 9643800850</Text>
-                </View>
-                <View style={styles.row}>
-                    <Image src={communicate} style={styles.smallImage} />
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>info@sunmayo.com</Text>
-                </View>
-                <View style={styles.row}>
-                    <Image src={worldwide} style={styles.smallImage} />
-                    <Text style={{ fontFamily: 'Roboto', fontSize: 16 }}>www.sunmayo.com</Text>
-                </View>
-            </View>
-
-
-        </Page> */}
     </Document>
 );

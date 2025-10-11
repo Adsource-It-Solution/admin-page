@@ -95,16 +95,16 @@ type ClientPrefix = "Mr." | "Mrs." | "Ms.";
 type CustomerType = "Industrial" | "Commercial" | "Government" | "Residential" | "others";
 type PanelType = "Mono" | "Mono-Perc" | "Poly" | "BIVP" | "Mono-Perc Half Cut" | "Mono BiFacial" | "TopCon MonoFacial" | "TopCon BiFacial";
 type InvertorSize = "2KW" | "3KW" | "5KW" | "6KW" | "8KW" | "10KW" | "12KW" | "15KW" | "20KW" | "25KW" | "30KW" | "50KW" | "100KW"
-                      | "2KVA/24V" | "3KVA/36V" | "3.5KVA/48V" | "5KVA/48V" |"6KVA/96V" | "7.5KVA/96V" | "10.1KVA/120V" 
-                      | "3.75KVA/48V" | "5KVA/48V" | "3KVA" | "5KVA";
+  | "2KVA/24V" | "3KVA/36V" | "3.5KVA/48V" | "5KVA/48V" | "6KVA/96V" | "7.5KVA/96V" | "10.1KVA/120V"
+  | "3.75KVA/48V" | "5KVA/48V" | "3KVA" | "5KVA";
 type Invertortype = "On Grid" | "Off Grid" | "Hybrid" | "";
 type InvertorPhase = "Single Phase" | "Three Phase";
 type ProposalStructure = "Elevated" | "Standard" | "Metal Shed";
 type StrucrtureDes = "Hot Dip Galvanised" | "Pre Galvanised" | "Slotted Channel" | "Ms Channel & Gi Channel"
 const inverterSizesByType: Record<Invertortype, InvertorSize[]> = {
   "On Grid": ["2KW", "3KW", "5KW", "6KW", "8KW", "10KW", "12KW", "15KW", "20KW", "25KW", "10KW", "12KW", "15KW", "30KW", "50KW", "100KW"],
-  "Off Grid": ["2KVA/24V", "3KVA/36V", "3.5KVA/48V", "5KVA/48V", "6KVA/96V",  "7.5KVA/96V", "10.1KVA/120V"],
-  Hybrid: [ "3.75KVA/48V", "5KVA/48V", "3KVA", "5KVA"],
+  "Off Grid": ["2KVA/24V", "3KVA/36V", "3.5KVA/48V", "5KVA/48V", "6KVA/96V", "7.5KVA/96V", "10.1KVA/120V"],
+  Hybrid: ["3.75KVA/48V", "5KVA/48V", "3KVA", "5KVA"],
   "": [],
 };
 
@@ -1496,11 +1496,13 @@ export default function ProposalPage() {
                           }
                           disabled={!proposal.invertortype} // Disable until type is selected
                         >
-                          {sizesToShow.map((size) => (
-                            <MenuItem key={size} value={size}>
-                              {size}
-                            </MenuItem>
-                          ))}
+                          {Array.isArray(sizesToShow) &&
+                            sizesToShow.map((size) => (
+                              <MenuItem key={size} value={size}>
+                                {size}
+                              </MenuItem>
+                            ))}
+
                         </Select>
                       </FormControl>
 
