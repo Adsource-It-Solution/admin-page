@@ -41,8 +41,7 @@ function Login() {
       setLoading(true);
 
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/service/employee-login`,
-        // "http://localhost:5000/api/service/employee-login",
+        `${import.meta.env.VITE_API_URL}/api/admin/employee-login`,
          {
         method: "POST",
         headers: { "Content-Type": "application/json" },

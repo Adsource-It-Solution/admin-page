@@ -12,7 +12,6 @@ import {
 } from "@react-pdf/renderer";
 import type { Proposal } from "../pages/Proposal"
 import communicate from "../assets/communication.png"
-// import solarbackground from "../assets/solar_background.jpg"
 import logo from "../assets/logo.jpg"
 import phonecall from "../assets/phone-call.png"
 import solarproposal from "../assets/Solar_Proposal.jpg"
@@ -107,8 +106,6 @@ interface BarChart10YearsProps {
     height?: number;
 }
 
-// Graph component
-
 const LineChart10Years: React.FC<BarChart10YearsProps> = ({
     consumption,
     generation,
@@ -119,9 +116,9 @@ const LineChart10Years: React.FC<BarChart10YearsProps> = ({
 
     // Generate 10-year data
     const data = Array.from({ length: 10 }, (_, i) => ({
-        year: (i + 1).toString(), // start from 1
-        increment: consumption * Math.pow(1 + 0.02, i), // +2% per year
-        decrement: generation * Math.pow(1 - 0.004, i), // -0.4% per year
+        year: (i + 1).toString(),
+        increment: consumption * Math.pow(1 + 0.02, i),
+        decrement: generation * Math.pow(1 - 0.004, i),
     }));
 
     const padding = 30;
