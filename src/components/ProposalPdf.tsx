@@ -56,7 +56,7 @@ Font.register({
 })
 // PDF Styles
 const styles = StyleSheet.create({
-    page: { paddingLeft: 25, paddingRight: 25, paddingTop: 20, fontFamily: "Work Sans", fontSize: 12 },
+    page: { paddingLeft: 25, paddingRight: 25, paddingTop: 30, fontFamily: "Work Sans", fontSize: 12 },
     page2: { paddingLeft: 25, paddingRight: 25, paddingTop: 48, fontFamily: "Work Sans", fontSize: 12 },
     header: { fontFamily: 'Work Sans', fontSize: 32, fontWeight: "bold", textAlign: "center", marginBottom: 20 },
     subHeader: { fontFamily: 'Roboto', fontSize: 24, fontWeight: "bold", marginBottom: 10 },
