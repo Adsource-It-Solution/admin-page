@@ -37,6 +37,11 @@ const routes = [
     path: '/recycle',
     name: 'Recycle Bin',
     icon: <RecyclingIcon/>
+  },
+  {
+    path: '/employeeclient',
+    name: "Employee Work",
+    icon: <ManageAccountsIcon/>
   }
 ]
 

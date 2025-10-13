@@ -56,7 +56,8 @@ Font.register({
 })
 // PDF Styles
 const styles = StyleSheet.create({
-    page: { paddingLeft: 25, paddingRight: 25, paddingTop: 10, fontFamily: "Work Sans", fontSize: 12 },
+    page: { paddingLeft: 25, paddingRight: 25, paddingTop: 20, fontFamily: "Work Sans", fontSize: 12 },
+    page2: { paddingLeft: 25, paddingRight: 25, paddingTop: 48, fontFamily: "Work Sans", fontSize: 12 },
     header: { fontFamily: 'Work Sans', fontSize: 32, fontWeight: "bold", textAlign: "center", marginBottom: 20 },
     subHeader: { fontFamily: 'Roboto', fontSize: 24, fontWeight: "bold", marginBottom: 10 },
     subHeader2: { fontFamily: 'Poppins', fontSize: 24, fontWeight: "bold", marginBottom: 10, color: "#1e40af" },
@@ -265,8 +266,14 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             {/* Prepared By / For */}
             <View style={styles.row2}>
                 <View style={styles.column2}>
-                    <Text style={styles.label2}>PREPARED FOR</Text>
-                    <Text style={styles.text2}>{proposal.clienttitle} {proposal.clientName}</Text>
+                    <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "Bold" }}>Prepared For</Text>
+                    <Text style={{
+                        fontFamily: 'Poppins',
+                        fontSize: 12,
+                        lineHeight: 1.5,
+                        textAlign: "justify",
+                    }}>{proposal.clienttitle} {proposal.clientName}</Text>
+
                     {proposal.clientAddress ? (
                         <Text style={{
                             fontFamily: 'Poppins',
@@ -274,34 +281,44 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                             lineHeight: 1.5,
                             textAlign: "justify",
                         }}>
-                            <Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} /><Text>  {proposal.clientAddress}</Text>
+                            <Image source={location} style={{ width: 12, height: 12, marginRight: 4 }} /><Text>  {proposal.clientAddress}</Text>
                         </Text>) : null}
-                    {proposal.clientPhone ? (
-                        <Text style={{
-                            fontFamily: 'Poppins',
-                            fontSize: 12,
-                            lineHeight: 1.5,
-                            textAlign: "justify",
-                        }}>
-                            <Image source={phonecall} style={{ width: 16, height: 16, marginRight: 4 }} /><Text>  {proposal.clientPhone}</Text>
-                        </Text>) : null}
-                         {proposal.clientEmail ? (
-                        <Text style={{
-                            fontFamily: 'Poppins',
-                            fontSize: 12,
-                            lineHeight: 1.5,
-                            textAlign: "justify",
-                        }}>
-                            <Image source={communicate} style={{ width: 16, height: 16, marginRight: 4 }} /><Text>  {proposal.clientEmail}</Text>
-                        </Text>) : null}
-                    <Text style={{ fontSize: 14, marginBottom: 4 }}>
-                        <Image src={calander} />  Date: {proposal.date
+                    <View style={styles.row}>
+
+                        {proposal.clientPhone ? (
+                            <Text style={{
+                                fontFamily: 'Poppins',
+                                fontSize: 12,
+                                lineHeight: 1.5,
+                                textAlign: "justify",
+                            }}>
+                                <Image source={phonecall} style={{ width: 12, height: 12, marginRight: 4 }} /><Text>  {proposal.clientPhone}</Text>
+                            </Text>) : null}
+                    </View>
+                    <View style={styles.row}>
+                        {proposal.clientEmail ? (
+                            <Text style={{
+                                fontFamily: 'Poppins',
+                                fontSize: 12,
+                                lineHeight: 1.5,
+                                textAlign: "justify",
+                            }}>
+                                <Image source={communicate} style={{ width: 12, height: 12, marginRight: 4 }} /><Text>  {proposal.clientEmail}</Text>
+                            </Text>) : null}
+                    </View>
+                    <Text style={{
+                        fontFamily: 'Poppins',
+                        fontSize: 12,
+                        lineHeight: 1.5,
+                        textAlign: "justify",
+                    }}>
+                        <Image src={calander} style={{ width: 12, height: 12, marginRight: 4 }} />  Date: {proposal.date
                             ? new Date(proposal.date).toLocaleDateString("en-GB")
                             : "NA"}
                     </Text>
                 </View>
                 <View style={{ marginTop: 2, }}>
-                    <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "Bold" }}>SUNMAYO PRIVATE LIMITED</Text>
+                    <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "Bold" }}>Sunmayo Private Limited</Text>
                     <View>
                         <Text style={{
                             fontFamily: 'Poppins',
@@ -412,12 +429,6 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <View style={{ marginTop: 20 }}>
                     <Text style={{ fontFamily: 'Poppins', fontWeight: "bold", fontSize: 14, marginBottom: 4, lineHeight: 1 }}>Thanks & Regards,</Text>
                     <Text style={{ fontFamily: 'Poppins', fontWeight: "600", fontSize: 14, marginBottom: 4, lineHeight: 1 }}>SUNMAYO PRIVATE LIMITED</Text>
-                    <View>
-                        {/* <Image src={location} style={styles.smallImage} /> */}
-                        <Text style={{ fontFamily: 'Poppins', fontSize: 14, lineHeight: 1, marginBottom: 5 }}><Image source={location} style={{ width: 16, height: 16, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
-                        <Text style={{ fontFamily: 'Poppins', fontSize: 14, marginLeft: 8 }}>    Gurgaon, Haryana 122001</Text>
-                    </View>
-
                     <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4, lineHeight: 1 }}>
                         <Image src={phonecall} style={{ width: 12, height: 12, marginRight: 4 }} />
                         <Text style={{ fontFamily: 'Poppins', fontSize: 14 }}>+91 9643800850</Text>
@@ -425,10 +436,6 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2, lineHeight: 1 }}>
                         <Image src={communicate} style={{ width: 12, height: 12, marginRight: 4 }} />
                         <Text style={{ fontFamily: 'Poppins', fontSize: 14 }}>info@sunmayo.com</Text>
-                    </View>
-                    <View style={{ flexDirection: "row", alignItems: "center", marginTop: 2, lineHeight: 1 }}>
-                        <Image src={worldwide} style={{ width: 12, height: 12, marginRight: 4 }} />
-                        <Text style={{ fontFamily: 'Poppins', fontSize: 14 }}>www.sunmayo.com</Text>
                     </View>
                 </View>
                 <Image src={banner} />
@@ -735,55 +742,55 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
             <Image src={Bill} />
         </Page>
 
-        <Page size="A4" style={styles.page}>
+        <Page size="A4" style={styles.page2}>
             <View style={{ marginBottom: 2 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 20, fontWeight: "bold", marginBottom: 4 }}>Terms & Condition</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "bold", marginBottom: 4 }}>Terms & Condition</Text>
                 <Text style={{
                     fontFamily: 'Poppins',
                     fontSize: 12,
                     marginTop: 10,
-                    lineHeight: 1.5,
+                    lineHeight: 1.2,
                     textAlign: "justify",
                 }} >{proposal.termandcondition}</Text>
             </View>
             <View style={{ marginBottom: 2 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "bold", color: "#2563eb" }}>Balance Of System</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 12, fontWeight: "bold", color: "#2563eb" }}>Balance Of System</Text>
                 <Text style={{
                     fontFamily: 'Poppins',
                     fontSize: 12,
                     marginTop: 10,
-                    lineHeight: 1.5,
+                    lineHeight: 1.2,
                     textAlign: "justify"
                 }}>{proposal.balanceOfSystem}</Text>
             </View>
             <View style={{ marginBottom: 2 }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "bold", color: "#2563eb" }}>Coustomer Scope:</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 12, fontWeight: "bold", color: "#2563eb" }}>Coustomer Scope:</Text>
                 <Text style={{
                     fontFamily: 'Poppins',
                     fontSize: 12,
                     marginTop: 10,
-                    lineHeight: 1.5,
+                    lineHeight: 1.2,
                     textAlign: "justify"
                 }}>{proposal.customerScope}</Text>
             </View>
 
             <View>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "bold", color: "#2563eb" }}>Our Scope:</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 12, fontWeight: "bold", color: "#2563eb" }}>Our Scope:</Text>
                 <Text style={{
                     fontFamily: 'Poppins',
                     fontSize: 12,
                     marginTop: 10,
-                    lineHeight: 1.5,
+                    lineHeight: 1.2,
                     textAlign: "justify"
                 }}>{proposal.ourScope}</Text>
             </View>
             <View style={{ marginTop: 2, }}>
-                <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "Bold" }}>SUNMAYO PRIVATE LIMITED</Text>
+                <Text style={{ fontFamily: 'Work Sans', fontSize: 12, fontWeight: "Bold" }}>SUNMAYO PRIVATE LIMITED</Text>
                 <View style={styles.row}>
                     <Image src={phonecall} style={{ width: 12, height: 12, marginRight: 4 }} />
                     <Text style={{
                         fontSize: 12,
-                        lineHeight: 1.5,
+                        lineHeight: 1.2,
                         textAlign: "justify",
                     }}>+91 9643800850</Text>
                 </View>
@@ -791,9 +798,17 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     <Image src={worldwide} style={{ width: 12, height: 12, marginRight: 4 }} />
                     <Text style={{
                         fontSize: 12,
-                        lineHeight: 1.5,
+                        lineHeight: 1.2,
                         textAlign: "justify",
                     }}>www.sunmayo.com</Text>
+                </View>
+                <View style={styles.row}>
+                    <Image src={communicate} style={{ width: 12, height: 12, marginRight: 4 }} />
+                    <Text style={{
+                        fontSize: 12,
+                        lineHeight: 1.2,
+                        textAlign: "justify",
+                    }}>info@sunmayo.com</Text>
                 </View>
             </View>
         </Page>

@@ -20,6 +20,48 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
+// ✅ Base API setup
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+axios.defaults.withCredentials = true; // 👈 allow cookies (for refreshToken)
+
+// ✅ Request interceptor: attach access token
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem("accessToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// ✅ Response interceptor: auto-refresh expired tokens
+axios.interceptors.response.use(
+  (response) => {
+    const newToken = response.headers["x-access-token"];
+    if (newToken) localStorage.setItem("accessToken", newToken);
+    return response;
+  },
+  async (error) => {
+    // handle refresh logic
+    if (error.response?.status === 401 && !error.config._retry) {
+      error.config._retry = true;
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/refresh-token`, {
+          withCredentials: true,
+        });
+        localStorage.setItem("accessToken", res.data.accessToken);
+        error.config.headers.Authorization = `Bearer ${res.data.accessToken}`;
+        return axios(error.config);
+      } catch (refreshErr) {
+        console.error("Refresh failed", refreshErr);
+        localStorage.removeItem("accessToken");
+        window.location.href = "/login"; // or redirect to login
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+
 type employeeClient = {
     _id?: string;
     nameemployeeclient: string;
@@ -66,7 +108,7 @@ function employeePage() {
         try {
             setLoading(true);
             const res = await axios.get
-            (`${import.meta.env.VITE_API_URL}/api/service/employee-client`)
+                (`${import.meta.env.VITE_API_URL}/api/service/employee-client`)
             // ("http://localhost:5000/api/service/employee-client");
             setEmployeeClients(res.data || []);
         } catch (err) {
@@ -84,8 +126,8 @@ function employeePage() {
         e.preventDefault();
         try {
             await axios.post
-                  (`${import.meta.env.VITE_API_URL}/api/service/add-employee-client`, employeeClient,)
-                // ("http://localhost:5000/api/service/add-employee-client", employeeClient);
+                (`${import.meta.env.VITE_API_URL}/api/service/add-employee-client`, employeeClient,)
+            // ("http://localhost:5000/api/service/add-employee-client", employeeClient);
             setEmployeeClient({ nameemployeeclient: "", email: "", address: "", phoneno: "", title: "", clienttype: "", aboutclient: "" });
             fetchEmployeeClients();
             toast.success("✅ Client added successfully!");
@@ -102,7 +144,7 @@ function employeePage() {
     const handleSaveEdit = async (id: string) => {
         try {
             await axios.put
-            (`${import.meta.env.VITE_API_URL}/api/service/employee-clients-edit/${id}`, editData)
+                (`${import.meta.env.VITE_API_URL}/api/service/employee-clients-edit/${id}`, editData)
             // (`http://localhost:5000/api/service/employee-clients-edit/${id}`, editData);
             toast.success("✅ Client updated");
             fetchEmployeeClients();
@@ -118,21 +160,21 @@ function employeePage() {
     };
     const handleDelete = async (id: string) => {
         try {
-          await axios.delete
-          (`${import.meta.env.VITE_API_URL}/api/service/employee-clients/${id}`)
-        //   (`http://localhost:5000/api/service/employee-clients/${id}`);
-          toast.success("🗑️ Client deleted");
-          setEmployeeClients((prev) => prev.filter((cl) => cl._id !== id));
+            await axios.delete
+                (`${import.meta.env.VITE_API_URL}/api/service/employee-clients/${id}`)
+            //   (`http://localhost:5000/api/service/employee-clients/${id}`);
+            toast.success("🗑️ Client deleted");
+            setEmployeeClients((prev) => prev.filter((cl) => cl._id !== id));
         } catch (err) {
-          toast.error("❌ Failed to delete client");
+            toast.error("❌ Failed to delete client");
         }
-      };
+    };
 
     const searchClients = async (query: string) => {
         try {
             const res = await axios.get
-                  (`${import.meta.env.VITE_API_URL}/api/service/search-employee-client?query=${query}`)
-                // (`http://localhost:5000/api/service/search-employee-client?query=${query}`);
+                (`${import.meta.env.VITE_API_URL}/api/service/search-employee-client?query=${query}`)
+            // (`http://localhost:5000/api/service/search-employee-client?query=${query}`);
             setEmployeeClients(res.data.results || []);
         } catch (err) {
             console.error(err);
@@ -227,6 +269,7 @@ function employeePage() {
             />
 
             {/* Client List */}
+            {/* Client List */}
             <Stack spacing={2}>
                 {loading ? (
                     <Stack alignItems="center" py={4}>
@@ -241,25 +284,87 @@ function employeePage() {
                         <Card key={cl._id}>
                             <CardContent>
                                 {editingId === cl._id ? (
-                                    <Stack spacing={2}>
+                                    // ✅ Full edit box for ALL fields
+                                    <Stack spacing={2} sx={{ background: "#f8fafc", p: 2, borderRadius: 2 }}>
+                                        <Stack direction="row" spacing={2}>
+                                            <FormControl sx={{ width: 100 }} variant="filled">
+                                                <InputLabel id="client-title-label-edit">Title</InputLabel>
+                                                <Select
+                                                    labelId="client-title-label-edit"
+                                                    value={editData.title || ""}
+                                                    onChange={(e) =>
+                                                        setEditData({ ...editData, title: e.target.value })
+                                                    }
+                                                >
+                                                    <MenuItem value="Mr.">Mr.</MenuItem>
+                                                    <MenuItem value="Mrs.">Mrs.</MenuItem>
+                                                    <MenuItem value="Ms.">Ms.</MenuItem>
+                                                </Select>
+                                            </FormControl>
+
+                                            <TextField
+                                                label="Client Name"
+                                                variant="filled"
+                                                value={editData.nameemployeeclient || ""}
+                                                onChange={(e) =>
+                                                    setEditData({
+                                                        ...editData,
+                                                        nameemployeeclient: e.target.value,
+                                                    })
+                                                }
+                                                fullWidth
+                                            />
+                                        </Stack>
+
                                         <TextField
-                                            label="Name"
+                                            label="Phone Number"
                                             variant="filled"
-                                            value={editData.nameemployeeclient || ""}
+                                            value={editData.phoneno || ""}
                                             onChange={(e) =>
-                                                setEditData({ ...editData, nameemployeeclient: e.target.value })
+                                                setEditData({ ...editData, phoneno: e.target.value })
                                             }
                                         />
                                         <TextField
                                             label="Email"
                                             variant="filled"
-                                            type="email"
                                             value={editData.email || ""}
                                             onChange={(e) =>
                                                 setEditData({ ...editData, email: e.target.value })
                                             }
                                         />
-                                        <Stack direction="row" spacing={2}>
+                                        <TextField
+                                            label="Address"
+                                            variant="filled"
+                                            value={editData.address || ""}
+                                            onChange={(e) =>
+                                                setEditData({ ...editData, address: e.target.value })
+                                            }
+                                            fullWidth
+                                        />
+                                        <TextField
+                                            label="Client Type"
+                                            variant="filled"
+                                            value={editData.clienttype || ""}
+                                            onChange={(e) =>
+                                                setEditData({ ...editData, clienttype: e.target.value })
+                                            }
+                                        />
+                                        <TextField
+                                            label="About Client"
+                                            variant="filled"
+                                            value={editData.aboutclient || ""}
+                                            onChange={(e) =>
+                                                setEditData({ ...editData, aboutclient: e.target.value })
+                                            }
+                                            multiline
+                                            minRows={3}
+                                            fullWidth
+                                            InputProps={{
+                                                inputComponent: TextareaAutosize as any,
+                                            }}
+                                        />
+
+                                        <Stack direction="row" spacing={2} justifyContent="flex-end">
                                             <Button
                                                 startIcon={<SaveIcon />}
                                                 variant="contained"
@@ -271,6 +376,7 @@ function employeePage() {
                                             <Button
                                                 startIcon={<CancelIcon />}
                                                 variant="outlined"
+                                                color="inherit"
                                                 onClick={handleCancelEdit}
                                             >
                                                 Cancel
@@ -278,11 +384,19 @@ function employeePage() {
                                         </Stack>
                                     </Stack>
                                 ) : (
-                                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                    // ✅ Normal view mode
+                                    <Stack
+                                        direction="row"
+                                        justifyContent="space-between"
+                                        alignItems="center"
+                                    >
                                         <div>
-                                            <h3 className="font-bold">{cl.nameemployeeclient}</h3>
+                                            <h3 className="font-bold text-lg">{cl.title} {cl.nameemployeeclient}</h3>
                                             <p className="text-gray-600">{cl.email}</p>
-                                            <p className="text-blue-600 font-mono">ID: {cl._id}</p>
+                                            <p className="text-sm text-gray-500">📞 {cl.phoneno}</p>
+                                            <p className="text-sm text-gray-500">🏠 {cl.address}</p>
+                                            <p className="text-blue-600 font-mono">Type: {cl.clienttype}</p>
+                                            <p className="text-sm text-gray-500 mt-1">{cl.aboutclient}</p>
                                         </div>
                                         <Stack direction="row" spacing={1}>
                                             <IconButton color="primary" onClick={() => handleEditClick(cl)}>

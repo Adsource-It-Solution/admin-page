@@ -69,7 +69,7 @@ export default function Welcome() {
 
       const endpoint = isAdmin
         ? "/api/admin/admin-login"
-        : "/api/service/employee-login";
+        : "/api/admin/employee-login";
 
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}${endpoint}`,

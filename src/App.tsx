@@ -11,6 +11,7 @@ import Login from "./pages/Login"
 import EmployeePage from "./components/EmployeePage"
 import ForgetPassword from "./components/ForgetPassword"
 import Recycle from "./pages/Recycle"
+import EmployeeClientsDashboard from "./pages/Employeeclient"
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/proposal/:id" element = {<Proposal/>}/>
           <Route path="/proposallist" element = {<ProposalList/>}/>
           <Route path="/ourclient" element = {<Client/>}/>
+          <Route path="/employeeclient" element={<EmployeeClientsDashboard/>}/>
         </Route>
 
       </Routes>
