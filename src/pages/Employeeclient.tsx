@@ -39,7 +39,7 @@ export default function EmployeeClientsDashboard() {
         `${import.meta.env.VITE_API_URL}/api/service/employee-clients-by-employee`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // 🔐 if using JWT
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
