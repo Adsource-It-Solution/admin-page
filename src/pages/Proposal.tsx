@@ -537,16 +537,33 @@ export default function ProposalPage() {
 
 
 
-  useEffect(() => {
-    const { rows = [], otherCharge = [], gst = 0 } = proposal;
+useEffect(() => {
+  const { rows = [], otherCharge = [], gst = 0 } = proposal;
 
-    const subtotal = rows.reduce((acc, r) => acc + (r.price || 0) * (r.quantitytable || 0), 0);
-    const otherChargesTotal = otherCharge.reduce((acc, oc) => acc + oc.price, 0);
-    const gstAmount = (subtotal * gst) / 100;
-    const total = subtotal + otherChargesTotal + gstAmount;
+  // ✅ Calculate subtotal for main rows
+  const subtotal = rows.reduce(
+    (acc, r) => acc + (r.price || 0) * (r.quantitytable || 0),
+    0
+  );
 
-    setProposal((prev) => ({ ...prev, subtotal, gstAmount, total }));
-  }, [proposal.rows, proposal.otherCharge, proposal.gst]);
+  // ✅ Calculate other charges with quantity
+  const otherChargesTotal = otherCharge.reduce(
+    (acc, oc) => acc + (oc.price || 0) * (oc.quantityother || 0),
+    0
+  ); 
+
+  // ✅ GST and total
+  const gstAmount = (subtotal * gst) / 100;
+  const total = subtotal + otherChargesTotal + gstAmount;
+
+  setProposal((prev) => ({
+    ...prev,
+    subtotal,
+    gstAmount,
+    total,
+  }));
+}, [proposal.rows, proposal.otherCharge, proposal.gst]);
+
 
 
   const toWords = new ToWords({
