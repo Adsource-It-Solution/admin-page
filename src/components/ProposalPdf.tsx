@@ -303,16 +303,21 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                                 <Image source={communicate} style={{ width: 12, height: 12, marginRight: 4 }} /><Text>  {proposal.clientEmail}</Text>
                             </Text>) : null}
                     </View>
-                    <Text style={{
-                        fontFamily: 'Poppins',
-                        fontSize: 12,
-                        lineHeight: 1.5,
-                        textAlign: "justify",
-                    }}>
-                        <Image src={calander} style={{ width: 12, height: 12, marginRight: 4 }} />  Date: {proposal.date
+                    <Text
+                        style={{
+                            fontFamily: 'Poppins',
+                            fontSize: 12,
+                            lineHeight: 1.5,
+                            textAlign: "justify",
+                        }}
+                    >
+                        <Image src={calander} style={{ width: 12, height: 12, marginRight: 4 }} />
+                        Date:{" "}
+                        {proposal.date && !isNaN(new Date(proposal.date).getTime())
                             ? new Date(proposal.date).toLocaleDateString("en-GB")
-                            : "NA"}
+                            : new Date().toLocaleDateString("en-GB")}
                     </Text>
+
                 </View>
                 <View style={{ marginTop: 2, }}>
                     <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "Bold" }}>Sunmayo Private Limited</Text>
