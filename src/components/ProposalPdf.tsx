@@ -321,6 +321,13 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 </View>
                 <View style={{ marginTop: 2, }}>
                     <Text style={{ fontFamily: 'Work Sans', fontSize: 16, fontWeight: "Bold" }}>Sunmayo Private Limited</Text>
+                     <View>
+                        <Text style={{
+                            fontSize: 12,
+                            lineHeight: 1.5,
+                            textAlign: "justify",
+                        }}>{proposal.name}</Text>
+                    </View>
                     <View>
                         <Text style={{
                             fontFamily: 'Poppins',
@@ -689,7 +696,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                 <View style={{ marginTop: 10 }}>
                     <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Inverter: {proposal.invertorSize}</Text>
                     <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Phase: {proposal.invertorPhase}</Text>
-                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Phase NOS: {proposal.invertorquantitiy}</Text>
+                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>NOS: {proposal.invertorquantitiy}</Text>
                 </View>
                 {/* <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} /> */}
                 <View>
@@ -712,8 +719,7 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                     <View>
                         <Text style={{ fontFamily: 'Poppins', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Cable</Text>
                         <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Cable brand: {proposal.cableBrands}</Text>
-                        <Text style={{ fontFamily: 'Poppins', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Battery</Text>
-                        <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Battery Brand:
+                        {/* <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Battery Brand:
                             {proposal.batteryBrands ? proposal.batteryBrands : 'NA'}
                         </Text>
                         <View>
@@ -724,9 +730,31 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                                 proposal.leadAcidSubtype && (
                                     <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Battery Capacity: {proposal.leadAcidSubtype}</Text>
                                 )}
-                        </View>
-                        <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Battery Warranty: {proposal.batterywarranty} year(s)</Text>
+                        </View> */}
+                        {proposal.invertortype?.toLowerCase() !== "on grid" && (
+                            <>
+                            <Text style={{ fontFamily: 'Poppins', color: "#1d4ed8", fontSize: 16, fontWeight: "bold" }}>Battery</Text>
+                                <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>
+                                    Battery Brand: {proposal.batteryBrands ? proposal.batteryBrands : 'NA'}
+                                </Text>
+
+                                <View>
+                                    <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>
+                                        Battery Type: {proposal.batterytype}
+                                    </Text>
+
+                                    {typeof proposal.batterytype === "string" &&
+                                        proposal.batterytype.toLowerCase() === "lead-acid" &&
+                                        proposal.leadAcidSubtype && (
+                                            <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>
+                                                Battery Capacity: {proposal.leadAcidSubtype}
+                                            </Text>
+                                        )}
+                                </View>
+                                <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Battery Warranty: {proposal.batterywarranty} year(s)</Text>
                         <Text style={{ fontFamily: 'Poppins', fontSize: 16 }}>Battery NOS: {proposal.batteryquantity}</Text>
+                            </>
+                        )}
 
                     </View>
                     {/* <View style={{ backgroundColor: "#696969", width: 2, height: 85, marginLeft: 100 }} /> */}

@@ -162,6 +162,7 @@ const preloadedCableBrands = [
 
 export type Proposal = {
   _id?: string;
+  name: string;
   clientName: string;
   clientPhone: string;
   clientEmail: string;
@@ -235,6 +236,7 @@ export default function ProposalPage() {
   const { id } = useParams();
   // const navigate = useNavigate();
   const [proposal, setProposal] = useState<Proposal>({
+    name: "",
     clientName: "",
     clientPhone: "",
     clientEmail: "",
@@ -903,7 +905,13 @@ useEffect(() => {
           <form onSubmit={handleAddOrUpdateProposal}>
 
             <Stack spacing={4}>
-              <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%" }}>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", width: "100%", gap: 4 }}>
+                <TextField
+                  label="Prepared By"
+                  variant="filled"
+                  value={proposal.name}
+                  onChange={(e) => setProposal({ ...proposal, name: e.target.value })}
+                />
                 <TextField
                   label="Select Date"
                   type="date"
