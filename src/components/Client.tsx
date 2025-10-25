@@ -6,12 +6,12 @@ import {
   Stack,
   Card,
   CardContent,
-  TextField,
   Select,
   InputLabel,
   FormControl,
   MenuItem,
-  TextareaAutosize
+  TextareaAutosize,
+  TextField,
 } from "@mui/material";
 import { toast } from "react-toastify";
 import SaveIcon from "@mui/icons-material/Save";
@@ -19,7 +19,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-// Client type
+// Define the client type
 type Client = {
   _id?: string;
   nameclient: string;
@@ -27,6 +27,7 @@ type Client = {
   address: string;
   phoneno?: string;
   title?: string;
+  details?: string;
 };
 
 function Client() {
@@ -36,6 +37,7 @@ function Client() {
     address: "",
     phoneno: "",
     title: "",
+    details: ""
   });
 
   const [clients, setClients] = useState<Client[]>([]);
@@ -54,16 +56,13 @@ function Client() {
       } else {
         searchClients(searchQuery);
       }
-    }, 300); // debounce 300ms
-
+    }, 300);
     return () => clearTimeout(timeout);
   }, [searchQuery]);
 
   const fetchClients = async () => {
     try {
-      const res = await axios.get
-      (`${import.meta.env.VITE_API_URL}/api/service/client`,)
-      // ("http://localhost:5000/api/service/client");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/service/client`);
       setClients(res.data || []);
     } catch (err) {
       toast.error("❌ Failed to fetch clients");
@@ -73,9 +72,7 @@ function Client() {
   const handleAddClient = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post
-      (`${import.meta.env.VITE_API_URL}/api/service/add-client`, client,)
-      // ("http://localhost:5000/api/service/add-client", client);
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/service/add-client`, client);
       setClient({ nameclient: "", email: "", address: "", phoneno: "", title: "" });
       fetchClients();
       toast.success("✅ Client added successfully!");
@@ -91,13 +88,11 @@ function Client() {
 
   const handleSaveEdit = async (id: string) => {
     try {
-      await axios.put
-      (`${import.meta.env.VITE_API_URL}/api/service/clients/${id}`, editData)
-      // (`http://localhost:5000/api/service/clients/${id}`, editData);
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/service/clients/${id}`, editData);
       setEditingId(null);
       setEditData({});
       fetchClients();
-      toast.success("✏️ Client updated");
+      toast.success("✏️ Client updated successfully!");
     } catch (err) {
       toast.error("❌ Failed to update client");
     }
@@ -111,9 +106,7 @@ function Client() {
   const handleDelete = async (id?: string) => {
     if (!id) return;
     try {
-      await axios.delete
-      (`${import.meta.env.VITE_API_URL}/api/service/clients/${id}`)
-      // (`http://localhost:5000/api/service/clients/${id}`);
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/service/clients/${id}`);
       fetchClients();
       toast.success("🗑️ Client deleted");
     } catch (err) {
@@ -123,12 +116,9 @@ function Client() {
 
   const searchClients = async (query: string) => {
     try {
-      const res = await axios.get
-      (`${import.meta.env.VITE_API_URL}/api/service/search?query=${query}`)
-      // (`http://localhost:5000/api/service/search?query=${query}`);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/service/search?query=${query}`);
       setClients(res.data.results || []);
     } catch (err) {
-      console.error(err);
       setClients([]);
       toast.error("❌ Failed to search clients");
     }
@@ -136,7 +126,7 @@ function Client() {
 
   return (
     <Stack spacing={5} sx={{ maxWidth: 700, margin: "auto", mt: 5 }}>
-      {/* Add Client Form */}
+      {/* ➕ Add Client Form */}
       <form onSubmit={handleAddClient}>
         <Stack spacing={2}>
           <div className="flex flex-row gap-2">
@@ -186,7 +176,7 @@ function Client() {
             minRows={3}
             fullWidth
             InputProps={{
-              inputComponent: TextareaAutosize as any, 
+              inputComponent: TextareaAutosize as any,
             }}
           />
 
@@ -196,16 +186,16 @@ function Client() {
         </Stack>
       </form>
 
-      {/* Search Input */}
+      {/* 🔍 Search */}
       <TextField
-        placeholder="Search client by name or first letter"
+        placeholder="Search client by name or email"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         fullWidth
         variant="outlined"
       />
 
-      {/* Client List */}
+      {/* 🧾 Client List */}
       <Stack spacing={2}>
         {clients.length === 0 ? (
           <p className="border border-slate-600 flex justify-center py-3">
@@ -216,24 +206,55 @@ function Client() {
             <Card key={cl._id}>
               <CardContent>
                 {editingId === cl._id ? (
+                  // ✏️ Full Edit Mode
                   <Stack spacing={2}>
+                    <FormControl variant="filled">
+                      <InputLabel id="edit-title-label">Title</InputLabel>
+                      <Select
+                        labelId="edit-title-label"
+                        value={editData.title || ""}
+                        onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+                      >
+                        <MenuItem value="Mr.">Mr.</MenuItem>
+                        <MenuItem value="Mrs.">Mrs.</MenuItem>
+                        <MenuItem value="Ms.">Ms.</MenuItem>
+                      </Select>
+                    </FormControl>
+
                     <TextField
                       label="Name"
                       variant="filled"
                       value={editData.nameclient || ""}
-                      onChange={(e) =>
-                        setEditData({ ...editData, nameclient: e.target.value })
-                      }
+                      onChange={(e) => setEditData({ ...editData, nameclient: e.target.value })}
                     />
                     <TextField
                       label="Email"
                       variant="filled"
                       type="email"
                       value={editData.email || ""}
-                      onChange={(e) =>
-                        setEditData({ ...editData, email: e.target.value })
-                      }
+                      onChange={(e) => setEditData({ ...editData, email: e.target.value })}
                     />
+                    <TextField
+                      label="Phone"
+                      variant="filled"
+                      value={editData.phoneno || ""}
+                      onChange={(e) => setEditData({ ...editData, phoneno: e.target.value })}
+                    />
+                    <TextField
+                      label="Address"
+                      variant="filled"
+                      value={editData.address || ""}
+                      onChange={(e) => setEditData({ ...editData, address: e.target.value })}
+                    />
+                    <TextField
+                      label="Client Details"
+                      variant="filled"
+                      multiline
+                      minRows={3}
+                      value={editData.details || ""}
+                      onChange={(e) => setEditData({ ...editData, details: e.target.value })}
+                    />
+
                     <Stack direction="row" spacing={2}>
                       <Button
                         startIcon={<SaveIcon />}
@@ -253,13 +274,16 @@ function Client() {
                     </Stack>
                   </Stack>
                 ) : (
+                  // 📋 Display Mode
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <div>
-                      <h3 className="font-bold">{cl.nameclient}</h3>
-                      <p className="text-gray-600">{cl.email}</p>
-                      <p className="text-blue-600 font-mono">
-                        ID: {cl._id}
-                      </p>
+                      <h3 className="font-bold">
+                        {cl.title} {cl.nameclient}
+                      </h3>
+                      <p>{cl.email}</p>
+                      <p>{cl.phoneno}</p>
+                      <p>{cl.address}</p>
+                      <p className="text-blue-600 font-mono">ID: {cl._id}</p>
                     </div>
                     <Stack direction="row" spacing={1}>
                       <IconButton color="primary" onClick={() => handleEditClick(cl)}>
