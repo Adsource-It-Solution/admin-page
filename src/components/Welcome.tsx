@@ -208,8 +208,6 @@ export default function Welcome() {
           </motion.form>
         </AnimatePresence>
       </motion.div>
-      <div>
-      </div>
     </div>
   );
 }
