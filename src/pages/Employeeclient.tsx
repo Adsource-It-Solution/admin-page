@@ -19,6 +19,7 @@ type Client = {
   nameemployeeclient: string;
   email: string;
   address: string;
+  requirement: string;
   phoneno: string;
   title: string;
   clienttype: string;
@@ -120,6 +121,7 @@ export default function EmployeeClientsDashboard() {
                         <>
                           <Typography>Email: {client.email}</Typography>
                           <Typography>Phone: {client.phoneno}</Typography>
+                          <Typography>Requirement: {client.requirement} KWH</Typography>
                           <Typography>Type: {client.clienttype}</Typography>
                           <Typography>Address: {client.address}</Typography>
                           <Typography color="text.secondary">

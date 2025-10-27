@@ -75,6 +75,7 @@ type employeeClient = {
   title?: string;
   clienttype: string;
   aboutclient: string;
+  requirement: string;
 };
 
 function EmployeePage() {
@@ -86,6 +87,7 @@ function EmployeePage() {
     title: "",
     clienttype: "",
     aboutclient: "",
+    requirement: "",
   });
 
   const [employeeClients, setEmployeeClients] = useState<employeeClient[]>([]);
@@ -168,6 +170,7 @@ function EmployeePage() {
         title: "",
         clienttype: "",
         aboutclient: "",
+        requirement: "",
       });
       fetchEmployeeClients();
       toast.success("✅ Client added successfully!");
@@ -297,6 +300,15 @@ function EmployeePage() {
             value={employeeClient.phoneno}
             onChange={(e) =>
               setEmployeeClient({ ...employeeClient, phoneno: e.target.value })
+            }
+          />
+          <TextField
+            label="Requirement"
+            variant="filled"
+            placeholder="in KWH"
+            value={employeeClient.requirement}
+            onChange={(e) =>
+              setEmployeeClient({ ...employeeClient, requirement: e.target.value })
             }
           />
           <TextField
