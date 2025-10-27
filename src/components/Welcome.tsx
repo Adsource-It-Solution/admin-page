@@ -64,6 +64,7 @@ export default function Welcome() {
     e.preventDefault();
     if (!validateForm()) return;
 
+
     try {
       setLoading(true);
 
@@ -207,6 +208,8 @@ export default function Welcome() {
           </motion.form>
         </AnimatePresence>
       </motion.div>
+      <div>
+      </div>
     </div>
   );
 }
