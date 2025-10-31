@@ -27,19 +27,25 @@ import LogoutIcon from "@mui/icons-material/Logout";
 axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 axios.defaults.withCredentials = true; // Important for cookies
 
-// ✅ Attach access token automatically
+// ✅ Attach correct token automatically (admin or employee)
 axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  const employeeToken = localStorage.getItem("employeeToken");
+  const token = employeeToken;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
   return config;
 });
+
 
 // ✅ Intercept responses to handle token refresh
 axios.interceptors.response.use(
   response => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // Prevent infinite loop
     if (
       error.response?.status === 401 &&
@@ -95,19 +101,20 @@ function EmployeePage() {
   const [editData, setEditData] = useState<Partial<employeeClient>>({});
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<{ name: string; email: string } | null>(null);
+  const [user, setUser] = useState<{ _id: string; name: string; email: string } | null>(null);
 
   // ✅ Fetch logged-in employee details
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        console.log("👤 Fetching logged-in user...");
-        const res = await axios.get(`/api/admin/me`, { withCredentials: true });
-        setUser(res.data.employee);
-        console.log("✅ User info loaded:", res.data.employee);
+        console.log("👤 Fetching employee profile...");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/employee/me`, { withCredentials: true });
+        setUser(res.data.employee || res.data);
+
+        console.log("✅ Employee loaded:", res.data.employee);
       } catch (err) {
         console.error("❌ Failed to fetch user info", err);
-        toast.error("Failed to load user info");
+        toast.error("Failed to load employee info — please log in again");
       }
     };
     fetchUser();
@@ -122,35 +129,15 @@ function EmployeePage() {
     return () => clearTimeout(timeout);
   }, [searchQuery]);
 
-  const fetchEmployeeClients = async () => {
-    try {
-      setLoading(true);
-      console.log("📦 Fetching employee clients...");
-      const res = await axios.get(`/api/service/employee-client`, {
-        withCredentials: true,
-      });
-      setEmployeeClients(res.data || []);
-    } catch (err) {
-      console.error("❌ Failed to fetch clients", err);
-      toast.error("Failed to fetch clients");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchEmployeeClients();
-  }, []);
-
-  // ✅ Logout handler
+  // ✅ Logout
   const handleLogout = async () => {
     try {
-      console.log("🚪 Logging out...");
-      await axios.post(`/api/admin/logout`, {}, { withCredentials: true });
+      console.log("🚪 Logging out employee...");
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/employee/logout`, {}, { withCredentials: true });
     } catch (err) {
-      console.warn("⚠️ Logout API failed but clearing tokens anyway");
+      console.warn("⚠️ Logout API failed, clearing tokens anyway");
     }
-    localStorage.removeItem("accessToken");
+    localStorage.removeItem("employeeToken");
     toast.info("👋 Logged out");
     window.location.href = "/login";
   };
@@ -158,10 +145,22 @@ function EmployeePage() {
   // ✅ Add new client
   const handleAddClient = async (e: FormEvent) => {
     e.preventDefault();
+    console.log("🟢 [DEBUG] handleAddClient triggered");
+    console.log("👤 Current user:", user);
+
+    if (!user?._id) {
+      toast.error("User not found. Please log in again.");
+      return;
+    }
+
+    const newClient = { ...employeeClient, createdBy: user._id };
+    console.log("🚀 Sending client:", newClient);
+
     try {
-      await axios.post(`/api/service/add-employee-client`, employeeClient, {
-        withCredentials: true,
-      });
+      const res = await axios.post(`/api/employee/add-employee-client`, newClient);
+      console.log("✅ Added client:", res.data);
+      toast.success("✅ Client added successfully!");
+
       setEmployeeClient({
         nameemployeeclient: "",
         email: "",
@@ -172,11 +171,11 @@ function EmployeePage() {
         aboutclient: "",
         requirement: "",
       });
+
       fetchEmployeeClients();
-      toast.success("✅ Client added successfully!");
     } catch (err: any) {
-      console.error("❌ Add client failed", err);
-      toast.error(err.response?.data?.error || "Something went wrong");
+      console.error("🔥 Add client failed:", err);
+      toast.error(err.response?.data?.error || "Something went wrong while adding client");
     }
   };
 
@@ -188,9 +187,7 @@ function EmployeePage() {
 
   const handleSaveEdit = async (id: string) => {
     try {
-      await axios.put(`/api/service/employee-clients-edit/${id}`, editData, {
-        withCredentials: true,
-      });
+      await axios.put(`/api/employee/employee-clients-edit/${id}`, editData);
       toast.success("✅ Client updated");
       fetchEmployeeClients();
       handleCancelEdit();
@@ -208,9 +205,7 @@ function EmployeePage() {
   // ✅ Delete client
   const handleDelete = async (id: string) => {
     try {
-      await axios.delete(`/api/service/employee-clients/${id}`, {
-        withCredentials: true,
-      });
+      await axios.delete(`/api/employee/employee-clients/${id}`);
       toast.success("🗑️ Client deleted");
       setEmployeeClients((prev) => prev.filter((cl) => cl._id !== id));
     } catch (err) {
@@ -219,19 +214,43 @@ function EmployeePage() {
     }
   };
 
+  // ✅ Search clients
   const searchClients = async (query: string) => {
     try {
-      const res = await axios.get(
-        `/api/service/search-employee-client?query=${query}`,
-        { withCredentials: true }
-      );
+      const res = await axios.get(`/api/employee/search-employee-client?query=${query}`);
       setEmployeeClients(res.data.results || []);
     } catch (err) {
       console.error("❌ Failed to search clients", err);
-      setEmployeeClients([]);
       toast.error("Failed to search clients");
     }
   };
+
+  // ✅ Fetch all employee clients
+  const fetchEmployeeClients = async () => {
+    try {
+      if (!user?._id) {
+        console.warn("⚠️ No logged-in user found while fetching clients");
+        return;
+      }
+      setLoading(true);
+      console.log("📦 Fetching employee clients for:", user._id);
+
+      const res = await axios.get(`/api/employee/employee-client?employeeId=${user._id}`);
+      setEmployeeClients(res.data || []);
+    } catch (err) {
+      console.error("❌ Failed to fetch clients", err);
+      toast.error("Failed to fetch clients");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?._id) {
+      console.log("👷 Auto-fetching clients for:", user.name);
+      fetchEmployeeClients();
+    }
+  }, [user]);
 
   return (
     <Stack spacing={5} sx={{ maxWidth: 700, margin: "auto", mt: 5 }}>

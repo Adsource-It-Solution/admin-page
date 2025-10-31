@@ -34,14 +34,14 @@ export default function Welcome() {
   const [isAdmin, setIsAdmin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [backendReady, setBackendReady] = useState(false); // NEW: Backend ready state
+  const [backendReady, setBackendReady] = useState(false);
 
   const [form, setForm] = useState<FormData>({ email: "", password: "" });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const validateForm = (): boolean => {
@@ -52,18 +52,29 @@ export default function Welcome() {
     else if (!emailRegex.test(form.email)) errors.email = "Invalid email format";
 
     if (!form.password) errors.password = "Password is required";
-    else if (form.password.length < 6) errors.password = "Password must be at least 6 characters";
+    else if (form.password.length < 6)
+      errors.password = "Password must be at least 6 characters";
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  const handleClickShowPassword = () => setShowPassword(prev => !prev);
+  const handleClickShowPassword = () => setShowPassword((prev) => !prev);
 
   const submitLogin = async (e: FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    console.log("🟡 Form submitted:", form);
 
+    if (!validateForm()) {
+      console.log("❌ Validation failed");
+      return;
+    }
+
+    // Clear any old tokens
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("employeeToken");
+
+    console.log("🟢 Validation passed, preparing API call...");
 
     try {
       setLoading(true);
@@ -72,19 +83,40 @@ export default function Welcome() {
         ? "/api/admin/admin-login"
         : "/api/admin/employee-login";
 
-      const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}${endpoint}`,
-        form,
-        { withCredentials: true, headers: { "Content-Type": "application/json" } }
-      );
+      const url = `${import.meta.env.VITE_API_URL}${endpoint}`;
+      console.log("🔗 Endpoint:", url);
 
-      if (res.data.token) {
-        localStorage.setItem(isAdmin ? "adminToken" : "employeeToken", res.data.token);
+      const res = await axios.post(url, form, {
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" },
+      });
+
+      console.log("✅ Server response:", res.data);
+
+      // Check token field from backend
+      const token = res.data.accessToken;
+      if (!token) {
+        console.error("❌ No access token received from backend!");
+        toast.error("No access token received");
+        return;
       }
 
-      toast.success(res.data.message || "Login successful");
+      // Store tokens properly
+      if (isAdmin) {
+        localStorage.setItem("adminToken", token);
+        localStorage.setItem("accessToken", token);
+        localStorage.setItem("role", "admin");
+        console.log("👑 Stored admin token");
+      } else {
+        localStorage.setItem("employeeToken", token);
+        localStorage.setItem("role", "employee");
+        console.log("👷 Stored employee token");
+      }
+
+      toast.success(res.data.message || "Login successful!");
       navigate(isAdmin ? "/proposal" : "/employeepage");
     } catch (err: any) {
+      console.error("❌ Login failed:", err.response?.data || err.message);
       toast.error(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
@@ -92,14 +124,14 @@ export default function Welcome() {
   };
 
   useEffect(() => {
-    console.log("Waking up the backend")
+    console.log("🌐 Pinging backend health endpoint...");
     fetch(`${import.meta.env.VITE_API_URL}/api/health`)
       .then(() => {
-        console.log("Render backend woken up");
-        setBackendReady(true); 
+        console.log("✅ Backend awake and ready");
+        setBackendReady(true);
       })
       .catch((err) => {
-        console.error("Failed to wake backend:", err);
+        console.error("💥 Failed to reach backend:", err);
       });
   }, []);
 
@@ -190,8 +222,8 @@ export default function Welcome() {
                 "&:hover": { backgroundColor: "primary.dark" }
               }}
             >
-              {loading ? <CircularProgress size={24} sx={{ color: "white" }} /> 
-                       : backendReady ? "Login" : "Connecting to Server..."}
+              {loading ? <CircularProgress size={24} sx={{ color: "white" }} />
+                : backendReady ? "Login" : "Connecting to Server..."}
             </Button>
 
             <div className="flex justify-between text-white mt-2 text-sm">
