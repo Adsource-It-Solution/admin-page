@@ -237,6 +237,11 @@ export default function Welcome() {
               <span>{isAdmin ? "Use your Admin credentials" : "Use your Employee credentials"}</span>
             </div>
 
+            <a href="https://sunmayo.com/" 
+            className="text-white mt-2 text-sm text-left">
+              ← Return to the Website
+            </a>
+
           </motion.form>
         </AnimatePresence>
       </motion.div>
