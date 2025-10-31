@@ -539,32 +539,32 @@ export default function ProposalPage() {
 
 
 
-useEffect(() => {
-  const { rows = [], otherCharge = [], gst = 0 } = proposal;
+  useEffect(() => {
+    const { rows = [], otherCharge = [], gst = 0 } = proposal;
 
-  // ✅ Calculate subtotal for main rows
-  const subtotal = rows.reduce(
-    (acc, r) => acc + (r.price || 0) * (r.quantitytable || 0),
-    0
-  );
+    // ✅ Calculate subtotal for main rows
+    const subtotal = rows.reduce(
+      (acc, r) => acc + (r.price || 0) * (r.quantitytable || 0),
+      0
+    );
 
-  // ✅ Calculate other charges with quantity
-  const otherChargesTotal = otherCharge.reduce(
-    (acc, oc) => acc + (oc.price || 0) * (oc.quantityother || 0),
-    0
-  ); 
+    // ✅ Calculate other charges with quantity
+    const otherChargesTotal = otherCharge.reduce(
+      (acc, oc) => acc + (oc.price || 0) * (oc.quantityother || 0),
+      0
+    );
 
-  // ✅ GST and total
-  const gstAmount = (subtotal * gst) / 100;
-  const total = subtotal + otherChargesTotal + gstAmount;
+    // ✅ GST and total
+    const gstAmount = (subtotal * gst) / 100;
+    const total = subtotal + otherChargesTotal + gstAmount;
 
-  setProposal((prev) => ({
-    ...prev,
-    subtotal,
-    gstAmount,
-    total,
-  }));
-}, [proposal.rows, proposal.otherCharge, proposal.gst]);
+    setProposal((prev) => ({
+      ...prev,
+      subtotal,
+      gstAmount,
+      total,
+    }));
+  }, [proposal.rows, proposal.otherCharge, proposal.gst]);
 
 
 
@@ -2498,14 +2498,29 @@ useEffect(() => {
               </div>
               {previewUrl && (
                 <div
-                  className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70"
+                  className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-2"
                 >
-                  <div className="relative w-11/12 max-w-5xl h-[98vh] bg-white shadow-lg rounded">
+                  <div
+                    className="
+                        relative w-full max-w-5xl h-[95vh] bg-white shadow-lg rounded-lg
+                        overflow-hidden flex flex-col
+                        sm:w-11/12 sm:h-[90vh]
+                        md:w-10/12 md:h-[92vh]
+                        lg:w-9/12 lg:h-[95vh]
+                      "
+                  >
                     {/* Close Button */}
                     <IconButton
                       onClick={handleClosePreview}
-                      style={{ position: "absolute", top: 24, right: 12, zIndex: 10 }}
+                      sx={{
+                        position: "relative",
+                        right: 3,
+                        top: 3,
+                        zIndex: 20
+                      }}
+                      // className="absolute top-3 right-3 z-10"
                       color="error"
+                      size= "large"
                     >
                       <CloseIcon />
                     </IconButton>
@@ -2514,9 +2529,10 @@ useEffect(() => {
                     <iframe
                       src={previewUrl}
                       title="Proposal Preview"
-                      width="100%"
-                      height="100%"
-                      style={{ border: "none", borderRadius: 4 }}
+                      className="
+                            flex-grow w-full h-full border-0 rounded-b-lg
+                            sm:rounded-lg ml-12
+                          "
                     />
                   </div>
                 </div>
