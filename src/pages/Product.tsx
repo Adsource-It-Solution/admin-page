@@ -49,7 +49,7 @@ export default function Product() {
         `${import.meta.env.VITE_API_URL}/api/service/products`,
         // "http://localhost:5000/api/service/products"
       );
-      console.log("Fetched products:", res.data);
+      // console.log("Fetched products:", res.data);
       setProducts(res.data);
     } catch (error) {
       console.error("❌ Product unable to fetch", error);

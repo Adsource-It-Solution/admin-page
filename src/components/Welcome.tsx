@@ -63,7 +63,7 @@ export default function Welcome() {
 
   const submitLogin = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("🟡 Form submitted:", form);
+    // console.log("🟡 Form submitted:", form);
 
     if (!validateForm()) {
       console.log("❌ Validation failed");
@@ -74,7 +74,7 @@ export default function Welcome() {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("employeeToken");
 
-    console.log("🟢 Validation passed, preparing API call...");
+    // console.log("🟢 Validation passed, preparing API call...");
 
     try {
       setLoading(true);
@@ -84,19 +84,19 @@ export default function Welcome() {
         : "/api/admin/employee-login";
 
       const url = `${import.meta.env.VITE_API_URL}${endpoint}`;
-      console.log("🔗 Endpoint:", url);
+      // console.log("🔗 Endpoint:", url);
 
       const res = await axios.post(url, form, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       });
 
-      console.log("✅ Server response:", res.data);
+      // console.log("✅ Server response:", res.data);
 
       // Check token field from backend
       const token = res.data.accessToken;
       if (!token) {
-        console.error("❌ No access token received from backend!");
+        // console.error("❌ No access token received from backend!");
         toast.error("No access token received");
         return;
       }
@@ -106,11 +106,11 @@ export default function Welcome() {
         localStorage.setItem("adminToken", token);
         localStorage.setItem("accessToken", token);
         localStorage.setItem("role", "admin");
-        console.log("👑 Stored admin token");
+        // console.log("👑 Stored admin token");
       } else {
         localStorage.setItem("employeeToken", token);
         localStorage.setItem("role", "employee");
-        console.log("👷 Stored employee token");
+        // console.log("👷 Stored employee token");
       }
 
       toast.success(res.data.message || "Login successful!");

@@ -60,7 +60,7 @@ export default function EmployeeClientsDashboard() {
         }
       );
 
-      console.log("📦 API Response Data:", res.data);
+      // console.log("📦 API Response Data:", res.data);
       setGroupedClients(res.data);
     } catch (err: any) {
       console.error("❌ Error fetching clients:", err);

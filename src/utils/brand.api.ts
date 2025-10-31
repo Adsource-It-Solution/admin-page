@@ -1,7 +1,7 @@
 export const fetchBrandsByCategory = async (category: string) => {
   const res = await fetch(`${import.meta.env.VITE_API_URL}/brands/${category}`);
   const text = await res.text();
-  console.log("Raw response:", text); 
+  // console.log("Raw response:", text); 
   if (!res.ok) throw new Error("Failed to fetch brands");
   try {
     return JSON.parse(text);

@@ -74,11 +74,11 @@ function Employee() {
         designation: employee.designation || "",
       };
 
-      const res = await axios.post(
+      await axios.post(
         `${import.meta.env.VITE_API_URL}/api/service/add-employee`,
         payload
       );
-      console.log(res.data.message);
+      // console.log(res.data.message);
       setEmployee({ name: "", email: "", phoneno: "", designation: "", password: "" });
       fetchEmployees();
       toast.success("✅ Employee added successfully!");

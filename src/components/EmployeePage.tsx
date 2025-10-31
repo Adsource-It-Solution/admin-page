@@ -107,11 +107,11 @@ function EmployeePage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        console.log("👤 Fetching employee profile...");
+        // console.log("👤 Fetching employee profile...");
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/employee/me`, { withCredentials: true });
         setUser(res.data.employee || res.data);
 
-        console.log("✅ Employee loaded:", res.data.employee);
+        // console.log("✅ Employee loaded:", res.data.employee);
       } catch (err) {
         console.error("❌ Failed to fetch user info", err);
         toast.error("Failed to load employee info — please log in again");
@@ -132,7 +132,7 @@ function EmployeePage() {
   // ✅ Logout
   const handleLogout = async () => {
     try {
-      console.log("🚪 Logging out employee...");
+      // console.log("🚪 Logging out employee...");
       await axios.post(`${import.meta.env.VITE_API_URL}/api/employee/logout`, {}, { withCredentials: true });
     } catch (err) {
       console.warn("⚠️ Logout API failed, clearing tokens anyway");
@@ -145,8 +145,8 @@ function EmployeePage() {
   // ✅ Add new client
   const handleAddClient = async (e: FormEvent) => {
     e.preventDefault();
-    console.log("🟢 [DEBUG] handleAddClient triggered");
-    console.log("👤 Current user:", user);
+    // console.log("🟢 [DEBUG] handleAddClient triggered");
+    // console.log("👤 Current user:", user);
 
     if (!user?._id) {
       toast.error("User not found. Please log in again.");
@@ -154,11 +154,11 @@ function EmployeePage() {
     }
 
     const newClient = { ...employeeClient, createdBy: user._id };
-    console.log("🚀 Sending client:", newClient);
+    // console.log("🚀 Sending client:", newClient);
 
     try {
-      const res = await axios.post(`/api/employee/add-employee-client`, newClient);
-      console.log("✅ Added client:", res.data);
+       await axios.post(`/api/employee/add-employee-client`, newClient);
+      // console.log("✅ Added client:", res.data);
       toast.success("✅ Client added successfully!");
 
       setEmployeeClient({
@@ -233,7 +233,7 @@ function EmployeePage() {
         return;
       }
       setLoading(true);
-      console.log("📦 Fetching employee clients for:", user._id);
+      // console.log("📦 Fetching employee clients for:", user._id);
 
       const res = await axios.get(`/api/employee/employee-client?employeeId=${user._id}`);
       setEmployeeClients(res.data || []);
@@ -247,7 +247,7 @@ function EmployeePage() {
 
   useEffect(() => {
     if (user?._id) {
-      console.log("👷 Auto-fetching clients for:", user.name);
+      // console.log("👷 Auto-fetching clients for:", user.name);
       fetchEmployeeClients();
     }
   }, [user]);

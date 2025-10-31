@@ -420,8 +420,8 @@ export default function ProposalPage() {
           fetchBrandsByCategory("cable"),
         ]);
 
-        console.log("Fetched panels:", panels);
-        console.log("Fetched inverters:", inverters);
+        // console.log("Fetched panels:", panels);
+        // console.log("Fetched inverters:", inverters);
 
         const mergeBrands = (preloaded: any[], backend: any[]) => [
           ...preloaded,
@@ -585,7 +585,7 @@ export default function ProposalPage() {
   };
 
   // Example:
-  console.log(numberToWords(102.5));
+  // console.log(numberToWords(102.5));
 
   // Row actions
   const handleRowChange = <K extends keyof RowType>(
