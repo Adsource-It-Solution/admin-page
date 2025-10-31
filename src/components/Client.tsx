@@ -73,7 +73,15 @@ function Client() {
     e.preventDefault();
     try {
       await axios.post(`${import.meta.env.VITE_API_URL}/api/service/add-client`, client);
-      setClient({ nameclient: "", email: "", address: "", phoneno: "", title: "" });
+      setClient({
+        nameclient: "",
+        email: "",
+        address: "",
+        phoneno: "",
+        title: "",
+        details: "",
+      });
+      
       fetchClients();
       toast.success("✅ Client added successfully!");
     } catch (err: any) {
@@ -172,6 +180,8 @@ function Client() {
           <TextField
             label="Client Details"
             variant="filled"
+            value={client.details}
+            onChange={(e) => setClient({ ...client, details: e.target.value })}
             multiline
             minRows={3}
             fullWidth
@@ -280,9 +290,10 @@ function Client() {
                       <h3 className="font-bold">
                         {cl.title} {cl.nameclient}
                       </h3>
-                      <p>{cl.email}</p>
-                      <p>{cl.phoneno}</p>
-                      <p>{cl.address}</p>
+                      <p>Email: {cl.email}</p>
+                      <p>Phone no: {cl.phoneno}</p>
+                      <p>Address: {cl.address}</p>
+                      <p>Client Details: {cl.details}</p>
                       <p className="text-blue-600 font-mono">ID: {cl._id}</p>
                     </div>
                     <Stack direction="row" spacing={1}>
