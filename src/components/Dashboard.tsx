@@ -23,12 +23,14 @@ import "react-toastify/dist/ReactToastify.css";
 
 const routes = [
   { path: "/proposal", name: "Proposal", icon: <AddBusinessIcon /> },
-  { path: "/employee", name: "Employee", icon: <ManageAccountsIcon /> },
   { path: "/proposallist", name: "Proposal List", icon: <ChecklistIcon /> },
-  { path: "/ourclient", name: "Our Client", icon: <ListAltIcon /> },
   { path: "/recycle", name: "Recycle Bin", icon: <RecyclingIcon /> },
+  { path: "/ourclient", name: "Our Client", icon: <ListAltIcon /> },
+  { path: "/employee", name: "Employee", icon: <ManageAccountsIcon /> },
   { path: "/employeeclient", name: "Employee Work", icon: <ManageAccountsIcon /> },
 ];
+
+
 
 const drawerWidth = 240;
 
