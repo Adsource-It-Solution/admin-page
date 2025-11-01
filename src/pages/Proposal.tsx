@@ -2498,45 +2498,40 @@ export default function ProposalPage() {
               </div>
               {previewUrl && (
                 <div
-                  className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 p-2"
+                  className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-0 p-2"
                 >
                   <div
                     className="
-                        relative w-full max-w-5xl h-[95vh] bg-white shadow-lg rounded-lg
-                        overflow-hidden flex flex-col
-                        sm:w-11/12 sm:h-[90vh]
-                        md:w-10/12 md:h-[92vh]
-                        lg:w-9/12 lg:h-[95vh]
-                      "
+                      relative w-full max-w-5xl h-[95vh] bg-white shadow-lg rounded-lg
+                      overflow-hidden flex flex-col
+                      sm:w-11/12 sm:h-[90vh]
+                      md:w-10/12 md:h-[92vh]
+                      lg:w-9/12 lg:h-[95vh]
+                    "
                   >
-                    {/* Close Button */}
                     <IconButton
                       onClick={handleClosePreview}
                       sx={{
-                        position: "relative",
-                        right: 3,
-                        top: 3,
-                        zIndex: 20
+                        position: "absolute",
+                        right: 12,
+                        top: 12,
+                        zIndex: 20,
                       }}
-                      // className="absolute top-3 right-3 z-10"
                       color="error"
-                      size= "large"
+                      size="large"
                     >
                       <CloseIcon />
                     </IconButton>
 
-                    {/* PDF iframe */}
                     <iframe
                       src={previewUrl}
                       title="Proposal Preview"
-                      className="
-                            flex-grow w-full h-full border-0 rounded-b-lg
-                            sm:rounded-lg ml-12
-                          "
+                      className="flex-grow w-full h-full border-0 rounded-b-lg sm:rounded-lg"
                     />
                   </div>
                 </div>
               )}
+
             </Stack>
           </form>
         </CardContent>
