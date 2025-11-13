@@ -334,12 +334,12 @@ export const SolarProposalPDF: React.FC<SolarProposalPDFProps> = ({ proposal }) 
                             fontSize: 12,
                             lineHeight: 1.5,
                             textAlign: "justify",
-                        }}><Image source={location} style={{ width: 12, height: 12, marginRight: 4 }} />26/18 Laxmi Garden, Sector 11,</Text>
+                        }}><Image source={location} style={{ width: 12, height: 12, marginRight: 4 }} />office No. 2 Opposite M3M Urbana Premium</Text>
                         <Text style={{
                             fontSize: 12,
                             lineHeight: 1.5,
                             textAlign: "justify",
-                        }}>   Gurgaon, Haryana 122001</Text>
+                        }}>   Sector 67, Badshahpur, Gurugram, Haryana,  122101</Text>
                     </View>
                     <View style={styles.row}>
                         <Image src={phonecall} style={{ width: 12, height: 12, marginRight: 4 }} />
