@@ -104,7 +104,7 @@ type StrucrtureDes = "Hot Dip Galvanised" | "Pre Galvanised" | "Slotted Channel"
 const inverterSizesByType: Record<Invertortype, InvertorSize[]> = {
   "On Grid": ["2KW", "3KW", "5KW", "6KW", "8KW", "10KW", "12KW", "15KW", "20KW", "25KW", "10KW", "12KW", "15KW", "30KW", "50KW", "100KW", "150KW","200KW", "250KW", "300KW"],
   "Off Grid": ["2KVA/24V", "3KVA/36V", "3.5KVA/48V", "5KVA/48V", "6KVA/96V", "7.5KVA/96V", "10.1KVA/120V", "12KVA",  "15Kva",  "20KVA", "25KVA", "30KVA", "50KVA", "100KVA" ],
-  "Hybrid": ["3.75KVA/48V", "5KVA/48V", "3KVA", "5KVA", "8kva" , "10kva" , "12kva",  "15kva", "20kva", "25KVA", "30KVA", "40KVA", "100Kva";],
+  "Hybrid": ["3.75KVA/48V", "5KVA/48V", "3KVA", "5KVA", "8kva" , "10kva" , "12kva",  "15kva", "20kva", "25KVA", "30KVA", "40KVA", "100KVA"],
   "": [],
 };
 
